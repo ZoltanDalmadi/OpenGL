@@ -66,8 +66,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>dist\$(Configuration)\</OutDir>
-    <IntDir>build\$(Configuration)\</IntDir>
+    <OutDir>dist\$(Configuration)\$(PlatformName)\</OutDir>
+    <IntDir>build\$(Configuration)\$(PlatformName)\</IntDir>
     <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
     <LibraryPath>E:\Development\OpenGL\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
@@ -78,8 +78,8 @@
     <IntDir>build\$(Configuration)\$(PlatformName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>dist\$(Configuration)\</OutDir>
-    <IntDir>build\$(Configuration)\</IntDir>
+    <OutDir>dist\$(Configuration)\$(PlatformName)\</OutDir>
+    <IntDir>build\$(Configuration)\$(PlatformName)\</IntDir>
     <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
     <LibraryPath>E:\Development\OpenGL\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
@@ -131,6 +131,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)/include</AdditionalIncludeDirectories>
+      <DebugInformationFormat />
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -150,6 +151,8 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
