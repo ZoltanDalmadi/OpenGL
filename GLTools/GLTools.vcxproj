@@ -66,33 +66,33 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>dist\$(Configuration)\$(PlatformName)\</OutDir>
-    <IntDir>build\$(Configuration)\$(PlatformName)\</IntDir>
+    <OutDir>$(SolutionDir)bin\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</IntDir>
     <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
     <LibraryPath>E:\Development\OpenGL\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>dist\$(Configuration)\$(PlatformName)\</OutDir>
-    <IntDir>build\$(Configuration)\$(PlatformName)\</IntDir>
+    <OutDir>$(SolutionDir)bin\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</IntDir>
     <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
     <LibraryPath>E:\Development\OpenGL\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>dist\$(Configuration)\$(PlatformName)\</OutDir>
-    <IntDir>build\$(Configuration)\$(PlatformName)\</IntDir>
+    <OutDir>$(SolutionDir)bin\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</IntDir>
     <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
     <LibraryPath>E:\Development\OpenGL\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>dist\$(Configuration)\$(PlatformName)\</OutDir>
-    <IntDir>build\$(Configuration)\$(PlatformName)\</IntDir>
+    <OutDir>$(SolutionDir)bin\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</IntDir>
     <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
     <LibraryPath>
     </LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)/include</AdditionalIncludeDirectories>
@@ -104,7 +104,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)/include</AdditionalIncludeDirectories>
@@ -116,14 +116,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)/include</AdditionalIncludeDirectories>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -134,14 +134,18 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <FunctionLevelLinking>
+      </FunctionLevelLinking>
+      <SDLCheck>
+      </SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)/include</AdditionalIncludeDirectories>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
