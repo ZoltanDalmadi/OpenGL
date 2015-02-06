@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloOpenGL", "HelloOpenGL\HelloOpenGL.vcxproj", "{2E83E723-6367-44E3-9011-5E6AFA76360C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLTools", "GLTools\GLTools.vcxproj", "{B9FC47A5-A9D5-44C0-9555-32D67C9751B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{2E83E723-6367-44E3-9011-5E6AFA76360C}.Release|Win32.Build.0 = Release|Win32
 		{2E83E723-6367-44E3-9011-5E6AFA76360C}.Release|x64.ActiveCfg = Release|x64
 		{2E83E723-6367-44E3-9011-5E6AFA76360C}.Release|x64.Build.0 = Release|x64
+		{B9FC47A5-A9D5-44C0-9555-32D67C9751B2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B9FC47A5-A9D5-44C0-9555-32D67C9751B2}.Debug|Win32.Build.0 = Debug|Win32
+		{B9FC47A5-A9D5-44C0-9555-32D67C9751B2}.Debug|x64.ActiveCfg = Debug|x64
+		{B9FC47A5-A9D5-44C0-9555-32D67C9751B2}.Debug|x64.Build.0 = Debug|x64
+		{B9FC47A5-A9D5-44C0-9555-32D67C9751B2}.Release|Win32.ActiveCfg = Release|Win32
+		{B9FC47A5-A9D5-44C0-9555-32D67C9751B2}.Release|Win32.Build.0 = Release|Win32
+		{B9FC47A5-A9D5-44C0-9555-32D67C9751B2}.Release|x64.ActiveCfg = Release|x64
+		{B9FC47A5-A9D5-44C0-9555-32D67C9751B2}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
