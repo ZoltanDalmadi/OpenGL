@@ -72,7 +72,7 @@
     <LibraryPath>E:\Development\OpenGL\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Development\OpenGL\include;$(SolutionDir)GLTools\include;$(IncludePath)</IncludePath>
     <LibraryPath>E:\Development\OpenGL\lib;$(LibraryPath)</LibraryPath>
     <OutDir>dist\$(Configuration)\$(PlatformName)\</OutDir>
     <IntDir>build\$(Configuration)\$(PlatformName)\</IntDir>
@@ -80,11 +80,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>dist\$(Configuration)\$(PlatformName)\</OutDir>
     <IntDir>build\$(Configuration)\$(PlatformName)\</IntDir>
-    <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Development\OpenGL\include;$(SolutionDir)GLTools\include;$(IncludePath)</IncludePath>
     <LibraryPath>E:\Development\OpenGL\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Development\OpenGL\include;$(SolutionDir)GLTools\include;$(IncludePath)</IncludePath>
     <LibraryPath>E:\Development\OpenGL\lib;$(LibraryPath)</LibraryPath>
     <OutDir>dist\$(Configuration)\$(PlatformName)\</OutDir>
     <IntDir>build\$(Configuration)\$(PlatformName)\</IntDir>
@@ -119,8 +119,10 @@
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>libc.lib;libcmt.lib;msvcrt.lib;libcd.lib;libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
-      <SubSystem>Windows</SubSystem>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <SubSystem>
+      </SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -164,12 +166,19 @@
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>libc.lib;libcmt.lib;libcd.lib;libcmtd.lib;msvcrtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
-      <SubSystem>Windows</SubSystem>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <SubSystem>
+      </SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GLTools\GLTools.vcxproj">
+      <Project>{b9fc47a5-a9d5-44c0-9555-32d67c9751b2}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
