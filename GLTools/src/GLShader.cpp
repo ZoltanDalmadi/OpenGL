@@ -17,6 +17,10 @@ GLShader::GLShader(shaderType type)
   case GLShader::FRAGMENT_SHADER:
     gl_type = GL_FRAGMENT_SHADER;
     break;
+
+  case GLShader::GEOMETRY_SHADER:
+    gl_type = GL_GEOMETRY_SHADER;
+    break;
   }
 
   m_id = glCreateShader(gl_type);

@@ -11,7 +11,8 @@ public:
   enum shaderType
   {
     VERTEX_SHADER,
-    FRAGMENT_SHADER
+    FRAGMENT_SHADER,
+    GEOMETRY_SHADER
   };
 
   GLShader(shaderType type);
