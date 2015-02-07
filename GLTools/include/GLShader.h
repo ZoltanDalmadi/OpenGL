@@ -8,7 +8,7 @@ class GLShader
 {
 public:
 
-  enum shaderType
+  enum class shaderType
   {
     VERTEX_SHADER,
     FRAGMENT_SHADER,

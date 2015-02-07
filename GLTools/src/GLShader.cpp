@@ -10,15 +10,15 @@ GLShader::GLShader(shaderType type)
 
   switch (m_type)
   {
-  case GLShader::VERTEX_SHADER:
+  case shaderType::VERTEX_SHADER:
     gl_type = GL_VERTEX_SHADER;
     break;
 
-  case GLShader::FRAGMENT_SHADER:
+  case shaderType::FRAGMENT_SHADER:
     gl_type = GL_FRAGMENT_SHADER;
     break;
 
-  case GLShader::GEOMETRY_SHADER:
+  case shaderType::GEOMETRY_SHADER:
     gl_type = GL_GEOMETRY_SHADER;
     break;
   }
