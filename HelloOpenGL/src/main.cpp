@@ -13,7 +13,7 @@
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mode)
 {
-  if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q && action == GLFW_PRESS)
+  if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
@@ -21,12 +21,12 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 GLuint setupShaders()
 {
   GLShader vertexShader(GLShader::VERTEX_SHADER);
-  vertexShader.loadSource("C:\\Users\\DMZ\\Desktop\\OpenGL\\HelloOpenGL\\src\\shaders\\vertex_shader.glsl");
+  vertexShader.loadSource("vertex_shader.glsl");
   vertexShader.compile();
   std::cout << vertexShader.log() << std::endl;
 
   GLShader fragmentShader(GLShader::FRAGMENT_SHADER);
-  fragmentShader.loadSource("C:\\Users\\DMZ\\Desktop\\OpenGL\\HelloOpenGL\\src\\shaders\\fragment_shader.glsl");
+  fragmentShader.loadSource("fragment_shader.glsl");
   fragmentShader.compile();
   std::cout << fragmentShader.log() << std::endl;
 
