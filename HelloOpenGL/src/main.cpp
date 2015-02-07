@@ -20,12 +20,12 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 // SHADERS --------------------------------------------------------------------
 GLuint setupShaders()
 {
-  GLShader vertexShader(GLShader::VERTEX_SHADER);
+  GLShader vertexShader(GLShader::shaderType::VERTEX_SHADER);
   vertexShader.loadSource("vertex_shader.glsl");
   vertexShader.compile();
   std::cout << vertexShader.log() << std::endl;
 
-  GLShader fragmentShader(GLShader::FRAGMENT_SHADER);
+  GLShader fragmentShader(GLShader::shaderType::FRAGMENT_SHADER);
   fragmentShader.loadSource("fragment_shader.glsl");
   fragmentShader.compile();
   std::cout << fragmentShader.log() << std::endl;
