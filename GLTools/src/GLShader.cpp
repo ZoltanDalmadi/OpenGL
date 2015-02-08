@@ -6,7 +6,7 @@
 GLShader::GLShader(shaderType type)
   : m_type(type)
 {
-  GLuint gl_type;
+  GLuint gl_type = 0;
 
   switch (m_type)
   {
