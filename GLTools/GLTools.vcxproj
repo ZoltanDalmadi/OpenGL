@@ -68,27 +68,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</IntDir>
-    <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\Development\OpenGL\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\Development\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\Development\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</IntDir>
-    <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\Development\OpenGL\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\Development\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\Development\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</IntDir>
-    <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\Development\OpenGL\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\Development\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\Development\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</IntDir>
-    <IncludePath>E:\Development\OpenGL\include;$(IncludePath)</IncludePath>
-    <LibraryPath>
-    </LibraryPath>
+    <IncludePath>E:\Development\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\Development\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
