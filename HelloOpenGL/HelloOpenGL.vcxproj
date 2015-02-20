@@ -68,24 +68,24 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</IntDir>
-    <IncludePath>E:\Development\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\Development\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)GLTools\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>E:\Development\include;$(SolutionDir)GLTools\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\Development\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)GLTools\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</IntDir>
-    <IncludePath>E:\Development\include;$(SolutionDir)GLTools\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\Development\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)GLTools\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>E:\Development\include;$(SolutionDir)GLTools\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\Development\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)GLTools\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortName)\$(Configuration)\</IntDir>
   </PropertyGroup>
