@@ -7,7 +7,6 @@
 class GLShader
 {
 public:
-
   enum class shaderType
   {
     VERTEX_SHADER,
@@ -16,7 +15,7 @@ public:
   };
 
   GLShader(shaderType type);
-  ~GLShader();
+  virtual ~GLShader();
 
   void addSource(const std::string& source);
   bool loadSource(const std::string& filePath);
