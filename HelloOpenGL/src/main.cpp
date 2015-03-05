@@ -1,8 +1,6 @@
-#define GLEW_STATIC
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <iostream>
 #include "GLShaderProgram.h"
+#include "GLFWApplication.h"
 
 // Is called whenever a key is pressed/released via GLFW
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -35,30 +33,15 @@ void setupShaders(GLShaderProgram& shaderProgram)
 // The MAIN function
 int main()
 {
-  // Init GLFW
-  glfwInit();
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
-  GLFWwindow *w = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr);
-  glfwMakeContextCurrent(w);
-  glfwSwapInterval(1);
+  GLFWApplication app(4, 3);
+  app.createWindow(800, 600, "OpenGL");
 
   // Set the required callback functions
-  glfwSetKeyCallback(w, key_callback);
+  glfwSetKeyCallback(app.getWindow(), key_callback);
 
-  // Initialize GLEW to setup the OpenGL Function pointers
-  glewExperimental = GL_TRUE;
-  glewInit();
-
-  // Define the viewport dimensions
-  glViewport(0, 0, 800, 600);
   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   // STUFF --------------------------------------------------------------------
-  //GLuint shaderProgram = setupShaders();
   GLShaderProgram shaderProgram;
   setupShaders(shaderProgram);
 
@@ -131,7 +114,7 @@ int main()
   glBindVertexArray(0);
 
   // Program loop -------------------------------------------------------------
-  while (!glfwWindowShouldClose(w))
+  while (!glfwWindowShouldClose(app.getWindow()))
   {
     // Check and call events
     glfwPollEvents();
@@ -162,9 +145,10 @@ int main()
     glBindVertexArray(0);
 
     // Swap the buffers
-    glfwSwapBuffers(w);
+    glfwSwapBuffers(app.getWindow());
   }
 
   glfwTerminate();
+
   return 0;
 }
