@@ -1,13 +1,8 @@
-#include <iostream>
-
-// GLEW
 #define GLEW_STATIC
 #include <GL/glew.h>
-
-// GLFW
 #include <GLFW/glfw3.h>
-
-#include "GLShader.h"
+#include <iostream>
+#include "GLShaderProgram.h"
 
 // Is called whenever a key is pressed/released via GLFW
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -18,7 +13,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 }
 
 // SHADERS --------------------------------------------------------------------
-GLuint setupShaders()
+void setupShaders(GLShaderProgram& shaderProgram)
 {
   GLShader vertexShader(GLShader::shaderType::VERTEX_SHADER);
   vertexShader.loadSource("vertex_shader.glsl");
@@ -31,23 +26,10 @@ GLuint setupShaders()
   std::cout << fragmentShader.log() << std::endl;
 
   // Shader program
-  GLuint shaderProgram = glCreateProgram();
-  glAttachShader(shaderProgram, vertexShader.ID());
-  glAttachShader(shaderProgram, fragmentShader.ID());
-  glLinkProgram(shaderProgram);
-
-  // Check link success
-  GLint success;
-  GLchar infolog[512];
-  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-
-  if (!success)
-  {
-    glGetProgramInfoLog(shaderProgram, 512, nullptr, infolog);
-    std::cerr << infolog << std::endl;
-  }
-
-  return shaderProgram;
+  shaderProgram.addShader(vertexShader);
+  shaderProgram.addShader(fragmentShader);
+  shaderProgram.link();
+  std::cout << shaderProgram.log() << std::endl;
 }
 
 // The MAIN function
@@ -55,7 +37,7 @@ int main()
 {
   // Init GLFW
   glfwInit();
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
@@ -76,7 +58,9 @@ int main()
   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   // STUFF --------------------------------------------------------------------
-  GLuint shaderProgram = setupShaders();
+  //GLuint shaderProgram = setupShaders();
+  GLShaderProgram shaderProgram;
+  setupShaders(shaderProgram);
 
   //GLfloat vertices[] =
   //{
@@ -157,7 +141,7 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Render
-    glUseProgram(shaderProgram);
+    shaderProgram.use();
     glBindVertexArray(VAO);
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glDrawArrays(GL_TRIANGLES, 0, 3);
