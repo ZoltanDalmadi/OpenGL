@@ -1,6 +1,8 @@
 #include <iostream>
 #include "GLShaderProgram.h"
 #include "GLFWApplication.h"
+#include "GLVertexArrayObject.h"
+#include "GLBufferObject.h"
 
 // Is called whenever a key is pressed/released via GLFW
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -39,6 +41,7 @@ int main()
   // Set the required callback functions
   glfwSetKeyCallback(app.getWindow(), key_callback);
 
+  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   // STUFF --------------------------------------------------------------------
@@ -71,28 +74,23 @@ int main()
   };
 
   // VAO, VBO
-  GLuint VAO, VBO, EBO;
-  glGenVertexArrays(1, &VAO);
-  glGenBuffers(1, &VBO);
-  glGenBuffers(1, &EBO);
+  GLVertexArrayObject VAO;
+  GLBufferObject VBO;
+  GLBufferObject EBO(GLBufferObject::BufferType::INDEX_BUFFER);
 
   // --------------------------------------------------------------------------
-  glBindVertexArray(VAO);
+  VAO.bind();
 
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,
-               GL_STATIC_DRAW);
+  VBO.bind();
+  VBO.upload(vertices, sizeof(vertices));
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  EBO.bind();
+  EBO.upload(indices, sizeof(indices));
 
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
-                        (GLvoid *)0);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
-                        (GLvoid *)(2 * sizeof(GLfloat)));
-  glEnableVertexAttribArray(1);
-  glBindVertexArray(0);
+  GLVertexArrayObject::setVertexAttrib(0, 2, GL_FLOAT, GL_FALSE, 5, 0);
+  GLVertexArrayObject::setVertexAttrib(1, 3, GL_FLOAT, GL_FALSE, 5, 2);
+
+  VAO.unbind();
 
   // Program loop -------------------------------------------------------------
   while (!glfwWindowShouldClose(app.getWindow()))
@@ -101,15 +99,15 @@ int main()
     glfwPollEvents();
 
     // Clear the colorbuffer
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Render
     shaderProgram.use();
-    glBindVertexArray(VAO);
+
+    VAO.bind();
     glDrawElements(GL_TRIANGLES, 8 * 3, GL_UNSIGNED_INT, 0);
 
-    glBindVertexArray(0);
+    VAO.unbind();
 
     // Swap the buffers
     glfwSwapBuffers(app.getWindow());
