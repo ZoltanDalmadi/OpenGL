@@ -152,14 +152,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\GLBufferObject.h" />
     <ClInclude Include="include\GLFWApplication.h" />
     <ClInclude Include="include\GLShader.h" />
     <ClInclude Include="include\GLShaderProgram.h" />
+    <ClInclude Include="include\GLVertexArrayObject.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\GLBufferObject.cpp" />
     <ClCompile Include="src\GLFWApplication.cpp" />
     <ClCompile Include="src\GLShader.cpp" />
     <ClCompile Include="src\GLShaderProgram.cpp" />
+    <ClCompile Include="src\GLVertexArrayObject.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
