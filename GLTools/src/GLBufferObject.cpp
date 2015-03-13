@@ -3,7 +3,6 @@
 GLBufferObject::GLBufferObject()
   : m_type(BufferType::VERTEX_BUFFER), m_usage(Usage::STATIC_DRAW)
 {
-  glGenBuffers(1, &m_id);
   setGLType();
   setGLUsage();
 }
@@ -11,7 +10,6 @@ GLBufferObject::GLBufferObject()
 GLBufferObject::GLBufferObject(BufferType type)
   : m_type(type), m_usage(Usage::STATIC_DRAW)
 {
-  glGenBuffers(1, &m_id);
   setGLType();
   setGLUsage();
 }
@@ -19,14 +17,13 @@ GLBufferObject::GLBufferObject(BufferType type)
 GLBufferObject::GLBufferObject(BufferType type, Usage usage)
   : m_type(type), m_usage(usage)
 {
-  glGenBuffers(1, &m_id);
   setGLType();
   setGLUsage();
 }
 
 GLBufferObject::~GLBufferObject()
 {
-  glDeleteBuffers(1, &m_id);
+  destroy();
 }
 
 void GLBufferObject::bind()
@@ -37,6 +34,16 @@ void GLBufferObject::bind()
 void GLBufferObject::unbind()
 {
   glBindBuffer(m_gltype, 0);
+}
+
+void GLBufferObject::create()
+{
+  glGenBuffers(1, &m_id);
+}
+
+void GLBufferObject::destroy()
+{
+  glDeleteBuffers(1, &m_id);
 }
 
 void GLBufferObject::upload(const void *data, size_t count)

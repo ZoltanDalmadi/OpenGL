@@ -31,6 +31,8 @@ public:
 
   void bind();
   void unbind();
+  void create();
+  void destroy();
   void upload(const void *data, size_t count);
   void write(size_t offset, const void *data, size_t count);
 
