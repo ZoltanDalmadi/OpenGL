@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include "GLShaderProgram.h"
 #include "GLFWApplication.h"
 #include "GLVertexArrayObject.h"
@@ -42,13 +43,12 @@ int main()
   glfwSetKeyCallback(app.getWindow(), key_callback);
 
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-  //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   // STUFF --------------------------------------------------------------------
   GLShaderProgram shaderProgram;
   setupShaders(shaderProgram);
 
-  GLfloat vertices[] =
+  std::vector<GLfloat> vertices =
   {
     0.0f, 0.0f, 1.0f, 1.0f, 1.0f,   //  0
     -0.2f, 0.2f, 0.0f, 1.0f, 1.0f,  //  1
@@ -61,7 +61,7 @@ int main()
     -0.9f, 0.0f, 1.0f, 0.0f, 1.0f,  //  8
   };
 
-  GLuint indices[] =
+  std::vector<GLuint> indices =
   {
     0, 1, 2,
     2, 3, 0,
@@ -70,22 +70,24 @@ int main()
     0, 5, 6,
     6, 7, 0,
     0, 7, 8,
-    8, 1, 0,
+    8, 1, 0
   };
 
   // VAO, VBO
   GLVertexArrayObject VAO;
   GLBufferObject VBO;
   GLBufferObject EBO(GLBufferObject::BufferType::INDEX_BUFFER);
+  VBO.create();
+  EBO.create();
 
   // --------------------------------------------------------------------------
   VAO.bind();
 
   VBO.bind();
-  VBO.upload(vertices, sizeof(vertices));
+  VBO.upload(vertices.data(), sizeof(vertices[0]) * vertices.size());
 
   EBO.bind();
-  EBO.upload(indices, sizeof(indices));
+  EBO.upload(indices.data(), sizeof(indices[0]) * indices.size());
 
   GLVertexArrayObject::setVertexAttrib(0, 2, GL_FLOAT, GL_FALSE, 5, 0);
   GLVertexArrayObject::setVertexAttrib(1, 3, GL_FLOAT, GL_FALSE, 5, 2);
@@ -105,7 +107,9 @@ int main()
     shaderProgram.use();
 
     VAO.bind();
-    glDrawElements(GL_TRIANGLES, 8 * 3, GL_UNSIGNED_INT, 0);
+
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()),
+                   GL_UNSIGNED_INT, 0);
 
     VAO.unbind();
 
