@@ -1,11 +1,16 @@
 #include "GLVertexArrayObject.h"
 
-GLVertexArrayObject::GLVertexArrayObject()
+GLVertexArrayObject::~GLVertexArrayObject()
+{
+  destroy();
+}
+
+void GLVertexArrayObject::create()
 {
   glGenVertexArrays(1, &m_id);
 }
 
-GLVertexArrayObject::~GLVertexArrayObject()
+void GLVertexArrayObject::destroy()
 {
   glDeleteVertexArrays(1, &m_id);
 }
@@ -26,7 +31,8 @@ void GLVertexArrayObject::setVertexAttrib(
 {
   size_t typeSize = getGLTypeSize(type);
   glVertexAttribPointer(index, size, type, normalize,
-                        stride * typeSize, reinterpret_cast<GLvoid *>(offset * typeSize));
+                        static_cast<GLsizei>(stride * typeSize),
+                        reinterpret_cast<GLvoid *>(offset * typeSize));
   glEnableVertexAttribArray(index);
 }
 

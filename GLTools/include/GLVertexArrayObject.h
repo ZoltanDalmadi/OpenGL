@@ -6,9 +6,10 @@
 class GLVertexArrayObject
 {
 public:
-  GLVertexArrayObject();
   virtual ~GLVertexArrayObject();
 
+  void create();
+  void destroy();
   void bind();
   void unbind();
   GLuint ID() const;
