@@ -1,19 +1,21 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
-#include <GLFW\glfw3.h>
-#include <glm\glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 #include <vector>
+#include <random>
 
 #include "GLShaderProgram.h"
+#include "GLCamera.h"
 
-const GLuint WIDTH = 800;
-const GLuint HEIGHT = 600;
+const GLuint WIDTH = 1280;
+const GLuint HEIGHT = 720;
 
 GLFWwindow *window;
 glm::mat4 model;
-glm::mat4 view;
 glm::mat4 projection;
 
 struct Vertex
@@ -22,43 +24,63 @@ struct Vertex
   glm::vec3 color;
 };
 
+std::random_device rd;
+std::mt19937 gen(rd());
+std::uniform_real_distribution<float> dis(-3, 3);
+
+glm::vec3 randpositions[20];
+
+double lastX = WIDTH / 2.0f, lastY = HEIGHT / 2.0f;
+
+GLCamera camera(glm::vec3(0.0f, 0.0f, -10.0f));
+
+void getRand()
+{
+  for (size_t i = 0; i < 20; i++)
+    randpositions[i] = glm::vec3(dis(gen), dis(gen), dis(gen));
+}
+
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
 {
   if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
 
-  if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    model = glm::rotate(model, -0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
-
-  if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    model = glm::rotate(model, 0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
-
   if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    model = glm::rotate(model, -0.1f, glm::vec3(1.0f, 0.0f, 0.0f));
+    camera.dolly(-0.1f);
 
   if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    model = glm::rotate(model, 0.1f, glm::vec3(1.0f, 0.0f, 0.0f));
+    camera.dolly(0.1f);
 
-  if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, 0.1f));
+  if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    camera.pan(0.1f);
 
-  if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -0.1f));
+  if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    camera.pan(-0.1f);
 
   if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    view = glm::translate(view, glm::vec3(0.1f, 0.0f, 0.0f));
+    camera.rotate(0.0f, 1.0f);
 
   if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    view = glm::translate(view, glm::vec3(-0.1f, 0.0f, 0.0f));
+    camera.rotate(0.0f, -1.0f);
 
-  if (key == GLFW_KEY_LEFT && mods == GLFW_MOD_SHIFT &&
-      (action == GLFW_PRESS || action == GLFW_REPEAT))
-    view = glm::rotate(view, -0.01f, glm::vec3(1.0f, 1.0f, 0.0f));
+  if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    camera.rotate(-1.0f, 0.0f);
 
-  if (key == GLFW_KEY_RIGHT && mods == GLFW_MOD_SHIFT &&
-      (action == GLFW_PRESS || action == GLFW_REPEAT))
-    view = glm::rotate(view, 0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
+  if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    camera.rotate(1.0f, 0.0f);
+
+  if (key == GLFW_KEY_SPACE && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    getRand();
+}
+
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
+{
+  double xoffset = xpos - lastX;
+  double yoffset = ypos - lastY;
+  lastX = xpos;
+  lastY = ypos;
+  camera.FPSMode(static_cast<float>(xoffset), static_cast<float>(yoffset));
 }
 
 void init()
@@ -79,6 +101,8 @@ void init()
 
   glViewport(0, 0, WIDTH, HEIGHT);
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
@@ -106,6 +130,8 @@ int main()
   init();
 
   glfwSetKeyCallback(window, key_callback);
+  glfwSetCursorPosCallback(window, mouse_callback);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   // STUFF --------------------------------------------------------------------
   GLShaderProgram shaderProgram;
@@ -176,13 +202,13 @@ int main()
                         reinterpret_cast<GLvoid *>(offsetof(Vertex, color)));
   glBindVertexArray(0);
 
-  view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-  projection = glm::perspective(45.0f, WIDTH / static_cast<float>(HEIGHT),
-                                0.1f, 100.0f);
+  projection = glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 100.0f);
 
   GLint mLoc = glGetUniformLocation(shaderProgram.ID(), "model");
   GLint vLoc = glGetUniformLocation(shaderProgram.ID(), "view");
   GLint pLoc = glGetUniformLocation(shaderProgram.ID(), "projection");
+
+  getRand();
 
   // Program loop -------------------------------------------------------------
   while (!glfwWindowShouldClose(window))
@@ -193,15 +219,23 @@ int main()
 
     // Render
     shaderProgram.use();
-    glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(indices.size()),
-                   GL_UNSIGNED_INT, 0);
+
+    for (size_t i = 0; i < 20; i++)
+    {
+      glm::mat4 model;
+      model = glm::translate(model, randpositions[i]);
+      model = glm::rotate(model, 20.0f * i, randpositions[i]);
+      glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(model));
+      glDrawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(indices.size()),
+                     GL_UNSIGNED_INT, 0);
+    }
 
     glBindVertexArray(0);
+
+    glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(camera.getViewMatrix()));
+    glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     // Swap the buffers
     glfwSwapBuffers(window);
