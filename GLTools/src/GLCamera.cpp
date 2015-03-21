@@ -74,3 +74,11 @@ void GLCamera::rotate(float pitch, float yaw)
   m_up = glm::normalize(glm::cross(right, m_direction));
   update();
 }
+
+void GLCamera::FPSMode(float xoffset, float yoffset)
+{
+  xoffset *= 0.05f;
+  yoffset *= 0.05f;
+
+  rotate(yoffset, xoffset);
+}

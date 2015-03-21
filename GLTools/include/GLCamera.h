@@ -32,6 +32,7 @@ public:
   void pan(float delta);
 
   void rotate(float pitch, float yaw);
+  void FPSMode(float xOffset, float yOffset);
 
 private:
   float m_pitch;
