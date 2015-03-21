@@ -23,10 +23,11 @@ GLFWwindow *window;
 glm::mat4 model;
 glm::mat4 projection;
 
+glm::vec3 lightPosition(-1.0f, 1.0f, -2.0f);
+
 struct Vertex
 {
   glm::vec3 position;
-  glm::vec3 color;
 };
 
 double lastX = WIDTH / 2.0f, lastY = HEIGHT / 2.0f;
@@ -99,7 +100,7 @@ void init()
 }
 
 // SHADERS --------------------------------------------------------------------
-void setupShaders(GLShaderProgram& shaderProgram)
+void setupShaders(GLShaderProgram& shaderProgram, GLShaderProgram lightShader)
 {
   GLShader vertexShader(GLShader::shaderType::VERTEX_SHADER);
   vertexShader.loadSource("vertex_shader.glsl");
@@ -109,10 +110,18 @@ void setupShaders(GLShaderProgram& shaderProgram)
   fragmentShader.loadSource("fragment_shader.glsl");
   fragmentShader.compile();
 
+  GLShader lightFragment(GLShader::shaderType::FRAGMENT_SHADER);
+  lightFragment.loadSource("fragment_shader_light.glsl");
+  lightFragment.compile();
+
   // Shader program
   shaderProgram.addShader(vertexShader);
   shaderProgram.addShader(fragmentShader);
   shaderProgram.link();
+
+  lightShader.addShader(vertexShader);
+  lightShader.addShader(lightFragment);
+  lightShader.link();
 }
 
 // The MAIN function
@@ -126,7 +135,8 @@ int main()
 
   // STUFF --------------------------------------------------------------------
   GLShaderProgram shaderProgram;
-  setupShaders(shaderProgram);
+  GLShaderProgram lightShaderProgram;
+  setupShaders(shaderProgram, lightShaderProgram);
 
   Assimp::Importer importer;
   const aiScene *scene = importer.ReadFile("model.obj", aiProcess_Triangulate);
@@ -144,7 +154,6 @@ int main()
     vector.y = mesh->mVertices[i].y;
     vector.z = mesh->mVertices[i].z;
     vert.position = vector;
-    vert.color = vec3(0.0f);
     vertices.push_back(vert);
   }
 
@@ -157,35 +166,49 @@ int main()
   }
 
   // VAO, VBO
-  GLuint VAO, VBO, EBO;
+  GLuint VAO, lightVAO, VBO, lightVBO, EBO;
   glGenVertexArrays(1, &VAO);
+  glGenVertexArrays(1, &lightVAO);
   glGenBuffers(1, &VBO);
+  glGenBuffers(1, &lightVBO);
   glGenBuffers(1, &EBO);
 
+  // --------------------------------------------------------------------
   glBindVertexArray(VAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex),
-               vertices.data(), GL_STATIC_DRAW);
+  glBufferData(
+    GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex),
+    vertices.data(), GL_STATIC_DRAW
+  );
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint),
-               indices.data(), GL_STATIC_DRAW);
+  glBufferData(
+    GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint),
+    indices.data(), GL_STATIC_DRAW
+  );
 
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        reinterpret_cast<GLvoid *>(0));
+  glVertexAttribPointer(
+    0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(0)
+  );
 
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        reinterpret_cast<GLvoid *>(offsetof(Vertex, color)));
+  // --------------------------------------------------------------------
+  glBindVertexArray(lightVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
+  glBufferData(
+    GL_ARRAY_BUFFER, 3 * sizeof(float),
+    &lightPosition, GL_STATIC_DRAW
+  );
+
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(
+    0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), reinterpret_cast<GLvoid *>(0)
+  );
   glBindVertexArray(0);
+  // --------------------------------------------------------------------
 
   projection = glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 100.0f);
-
-  GLint mLoc = glGetUniformLocation(shaderProgram.ID(), "model");
-  GLint vLoc = glGetUniformLocation(shaderProgram.ID(), "view");
-  GLint pLoc = glGetUniformLocation(shaderProgram.ID(), "projection");
 
   // Program loop -------------------------------------------------------------
   while (!glfwWindowShouldClose(window))
@@ -196,17 +219,35 @@ int main()
 
     // Render
     shaderProgram.use();
-
-    glBindVertexArray(VAO);
-
-    glDrawElements(GL_POINTS, static_cast<GLsizei>(indices.size()),
-                   GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
+    GLint mLoc = glGetUniformLocation(shaderProgram.ID(), "model");
+    GLint vLoc = glGetUniformLocation(shaderProgram.ID(), "view");
+    GLint pLoc = glGetUniformLocation(shaderProgram.ID(), "projection");
+    GLint objectColorLoc = glGetUniformLocation(shaderProgram.ID(), "objectColor");
+    GLint lightColorLoc = glGetUniformLocation(shaderProgram.ID(), "lightColor");
 
     glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(camera.getViewMatrix()));
     glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.3f);
+    glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
+
+    glBindVertexArray(VAO);
+
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()),
+                   GL_UNSIGNED_INT, 0);
+
+    lightShaderProgram.use();
+    mLoc = glGetUniformLocation(lightShaderProgram.ID(), "model");
+    vLoc = glGetUniformLocation(lightShaderProgram.ID(), "view");
+    pLoc = glGetUniformLocation(lightShaderProgram.ID(), "projection");
+    glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(camera.getViewMatrix()));
+    glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+    glBindVertexArray(lightVAO);
+    glDrawArrays(GL_POINTS, 0, 1);
+
+    glBindVertexArray(0);
 
     // Swap the buffers
     glfwSwapBuffers(window);
