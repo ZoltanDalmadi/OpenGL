@@ -15,6 +15,7 @@
     </ClCompile>
     <Link>
       <IgnoreSpecificDefaultLibraries>libc.lib;libcmt.lib;libc.lib;libcmt.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>$(PlatformShortName)\glfw3.lib;$(PlatformShortName)\glew32s.lib;$(PlatformShortName)\assimp.lib;OpenGL32.Lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy $(ProjectDir)src\shaders\*.* $(OutDir)</Command>
