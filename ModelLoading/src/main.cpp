@@ -195,7 +195,7 @@ int main()
   Assimp::Importer importer;
   const aiScene *scene
     = importer.ReadFile("model.obj",
-                        aiProcess_Triangulate | aiProcess_GenNormals);
+                        aiProcess_Triangulate | aiProcess_GenSmoothNormals);
 
   aiMesh *mesh = scene->mMeshes[0];
 
@@ -291,6 +291,7 @@ int main()
     GLint objectColorLoc = glGetUniformLocation(shaderProgram.ID(), "objectColor");
     GLint lightColorLoc = glGetUniformLocation(shaderProgram.ID(), "lightColor");
     GLint lightPosLoc = glGetUniformLocation(shaderProgram.ID(), "lightPosition");
+    GLint cameraPosLoc = glGetUniformLocation(shaderProgram.ID(), "cameraPosition");
 
     glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(camera.getViewMatrix()));
@@ -298,6 +299,10 @@ int main()
     glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.3f);
     glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
     glUniform3f(lightPosLoc, lightPosition.x, lightPosition.y, lightPosition.z);
+    glUniform3f(
+      cameraPosLoc, camera.getPosition().x,
+      camera.getPosition().y, camera.getPosition().z
+    );
 
     glBindVertexArray(VAO);
 
