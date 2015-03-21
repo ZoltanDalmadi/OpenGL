@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLTools", "GLTools\GLTools.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Cube", "Cube\Cube.vcxproj", "{79900412-4CDC-4C1A-9ADD-988BE51321FF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelLoading", "ModelLoading\ModelLoading.vcxproj", "{11147DBE-7009-432F-9981-B5E78C21171C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -47,13 +49,26 @@ Global
 		{79900412-4CDC-4C1A-9ADD-988BE51321FF}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{79900412-4CDC-4C1A-9ADD-988BE51321FF}.Debug|Win32.ActiveCfg = Debug|Win32
 		{79900412-4CDC-4C1A-9ADD-988BE51321FF}.Debug|Win32.Build.0 = Debug|Win32
-		{79900412-4CDC-4C1A-9ADD-988BE51321FF}.Debug|x64.ActiveCfg = Debug|Win32
+		{79900412-4CDC-4C1A-9ADD-988BE51321FF}.Debug|x64.ActiveCfg = Debug|x64
+		{79900412-4CDC-4C1A-9ADD-988BE51321FF}.Debug|x64.Build.0 = Debug|x64
 		{79900412-4CDC-4C1A-9ADD-988BE51321FF}.Release|Mixed Platforms.ActiveCfg = Release|Win32
 		{79900412-4CDC-4C1A-9ADD-988BE51321FF}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{79900412-4CDC-4C1A-9ADD-988BE51321FF}.Release|Win32.ActiveCfg = Release|Win32
 		{79900412-4CDC-4C1A-9ADD-988BE51321FF}.Release|Win32.Build.0 = Release|Win32
 		{79900412-4CDC-4C1A-9ADD-988BE51321FF}.Release|x64.ActiveCfg = Release|x64
 		{79900412-4CDC-4C1A-9ADD-988BE51321FF}.Release|x64.Build.0 = Release|x64
+		{11147DBE-7009-432F-9981-B5E78C21171C}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{11147DBE-7009-432F-9981-B5E78C21171C}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{11147DBE-7009-432F-9981-B5E78C21171C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{11147DBE-7009-432F-9981-B5E78C21171C}.Debug|Win32.Build.0 = Debug|Win32
+		{11147DBE-7009-432F-9981-B5E78C21171C}.Debug|x64.ActiveCfg = Debug|x64
+		{11147DBE-7009-432F-9981-B5E78C21171C}.Debug|x64.Build.0 = Debug|x64
+		{11147DBE-7009-432F-9981-B5E78C21171C}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{11147DBE-7009-432F-9981-B5E78C21171C}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{11147DBE-7009-432F-9981-B5E78C21171C}.Release|Win32.ActiveCfg = Release|Win32
+		{11147DBE-7009-432F-9981-B5E78C21171C}.Release|Win32.Build.0 = Release|Win32
+		{11147DBE-7009-432F-9981-B5E78C21171C}.Release|x64.ActiveCfg = Release|x64
+		{11147DBE-7009-432F-9981-B5E78C21171C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
