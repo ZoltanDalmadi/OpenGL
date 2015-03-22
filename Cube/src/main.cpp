@@ -34,6 +34,8 @@ double lastX = WIDTH / 2.0f, lastY = HEIGHT / 2.0f;
 
 GLCamera camera(glm::vec3(0.0f, 0.0f, -10.0f));
 
+bool keys[1024];
+
 void getRand()
 {
   for (size_t i = 0; i < 20; i++)
@@ -43,35 +45,16 @@ void getRand()
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
 {
-  if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, GL_TRUE);
+  if (action == GLFW_PRESS)
+    keys[key] = true;
+  else if (action == GLFW_RELEASE)
+    keys[key] = false;
 
-  if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.dolly(-0.1f);
-
-  if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.dolly(0.1f);
-
-  if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.pan(0.1f);
-
-  if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.pan(-0.1f);
-
-  if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.rotate(0.0f, 1.0f);
-
-  if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.rotate(0.0f, -1.0f);
-
-  if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.rotate(-1.0f, 0.0f);
-
-  if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.rotate(1.0f, 0.0f);
-
-  if (key == GLFW_KEY_SPACE && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
     getRand();
+
+  if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q && action == GLFW_PRESS)
+    glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
@@ -104,6 +87,7 @@ void init()
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+  camera.clearTarget();
   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
@@ -216,6 +200,26 @@ int main()
     glfwPollEvents();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    GLfloat cameraSpeed = 0.1f;
+
+    if (keys[GLFW_KEY_W])
+      camera.dolly(-cameraSpeed);
+
+    if (keys[GLFW_KEY_S])
+      camera.dolly(cameraSpeed);
+
+    if (keys[GLFW_KEY_A])
+      camera.pan(cameraSpeed);
+
+    if (keys[GLFW_KEY_D])
+      camera.pan(-cameraSpeed);
+
+    if (keys[GLFW_KEY_SPACE])
+      camera.pedestal(cameraSpeed);
+
+    if (keys[GLFW_KEY_LEFT_CONTROL])
+      camera.pedestal(-cameraSpeed);
 
     // Render
     shaderProgram.use();
