@@ -30,6 +30,7 @@ public:
 
   void dolly(float delta);
   void pan(float delta);
+  void pedestal(float delta);
 
   void rotate(float pitch, float yaw);
   void FPSMode(float xOffset, float yOffset);

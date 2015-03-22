@@ -50,6 +50,7 @@ void GLCamera::orbit(const vec3& target, float angle, float radius)
 void GLCamera::dolly(float delta)
 {
   m_position += m_direction * delta;
+  m_target += m_direction * delta;
   update();
 }
 
@@ -58,6 +59,13 @@ void GLCamera::pan(float delta)
   vec3 right = glm::normalize(glm::cross(m_direction, m_up));
   m_position += right * delta;
   m_target += right * delta;
+  update();
+}
+
+void GLCamera::pedestal(float delta)
+{
+  m_position += m_up * delta;
+  m_target += m_up * delta;
   update();
 }
 
