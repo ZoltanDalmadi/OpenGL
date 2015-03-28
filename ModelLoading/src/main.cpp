@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -13,6 +14,8 @@
 #include <vector>
 
 #include "GLShaderProgram.h"
+#include "GLBufferObject.h"
+#include "GLVertexArrayObject.h"
 #include "GLCamera.h"
 
 const GLuint WIDTH = 1280;
@@ -21,8 +24,13 @@ const GLuint HEIGHT = 720;
 GLFWwindow *window;
 
 glm::mat4 model;
+glm::mat4 view;
 glm::mat4 lightModel;
 glm::mat4 projection;
+
+glm::vec3 camPos;
+glm::vec3 camTarget;
+glm::vec3 camUp;
 
 glm::vec3 lightPosition(-1.0f, 1.0f, -2.0f);
 
@@ -49,22 +57,50 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     camera.dolly(0.1f);
 
   if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.pan(0.1f);
+    //camera.pan(0.1f);
+  {
+    camPos += glm::vec3(0.1f, 0.0f, 0.0f);
+    view = glm::lookAt(camPos, camTarget, vec3(0.0f, 1.0f, 0.0f));
+  }
 
   if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.pan(-0.1f);
+    //camera.pan(-0.1f);
+  {
+    camPos -= glm::vec3(0.1f, 0.0f, 0.0f);
+    view = glm::lookAt(camPos, camTarget, vec3(0.0f, 1.0f, 0.0f));
+  }
 
   if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.rotate(0.0f, 1.0f);
+    //camera.rotate(0.0f, 1.0f);
+  {
+    camPos = glm::rotateY(camPos, glm::radians(5.0f));
+    camUp = glm::rotateY(camUp, glm::radians(5.0f));
+    view = glm::lookAt(camPos, camTarget, camUp);
+  }
 
   if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.rotate(0.0f, -1.0f);
+    //camera.rotate(0.0f, -1.0f);
+  {
+    camPos = glm::rotateY(camPos, glm::radians(-5.0f));
+    camUp = glm::rotateY(camUp, glm::radians(-5.0f));
+    view = glm::lookAt(camPos, camTarget, camUp);
+  }
 
   if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.rotate(-1.0f, 0.0f);
+    //camera.rotate(-1.0f, 0.0f);
+  {
+    camPos = glm::rotateX(camPos, glm::radians(5.0f));
+    camUp = glm::rotateX(camUp, glm::radians(5.0f));
+    view = glm::lookAt(camPos, camTarget, camUp);
+  }
 
   if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.rotate(1.0f, 0.0f);
+    //camera.rotate(1.0f, 0.0f);
+  {
+    camPos = glm::rotateX(camPos, glm::radians(-5.0f));
+    camUp = glm::rotateX(camUp, glm::radians(-5.0f));
+    view = glm::lookAt(camPos, camTarget, camUp);
+  }
 
   if (key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
@@ -125,7 +161,7 @@ void init()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-  glfwWindowHint(GLFW_SAMPLES, 4);
+  glfwWindowHint(GLFW_SAMPLES, 8);
 
   window = glfwCreateWindow(WIDTH, HEIGHT, "ModelLoading", nullptr, nullptr);
   glfwMakeContextCurrent(window);
@@ -146,32 +182,38 @@ void init()
 // SHADERS --------------------------------------------------------------------
 void setupShaders(GLShaderProgram& shaderProgram, GLShaderProgram& lightShader)
 {
-  GLShader vertexShader(GLShader::shaderType::VERTEX_SHADER);
-  vertexShader.loadSource("vertex_shader.glsl");
-  vertexShader.compile();
-  std::cout << vertexShader.log() << std::endl;
+  auto vertexShader =
+    std::make_shared<GLShader>(GLShader::shaderType::VERTEX_SHADER);
+  vertexShader->loadSource("vertex_shader.glsl");
+  vertexShader->compile();
+  std::cout << vertexShader->log() << std::endl;
 
-  GLShader fragmentShader(GLShader::shaderType::FRAGMENT_SHADER);
-  fragmentShader.loadSource("fragment_shader.glsl");
-  fragmentShader.compile();
-  std::cout << fragmentShader.log() << std::endl;
+  auto fragmentShader =
+    std::make_shared<GLShader>(GLShader::shaderType::FRAGMENT_SHADER);
+  fragmentShader->loadSource("fragment_shader.glsl");
+  fragmentShader->compile();
+  std::cout << fragmentShader->log() << std::endl;
 
-  GLShader lightVertex(GLShader::shaderType::VERTEX_SHADER);
-  lightVertex.loadSource("vertex_shader_light.glsl");
-  lightVertex.compile();
-  std::cout << lightVertex.log() << std::endl;
+  auto lightVertex =
+    std::make_shared<GLShader>(GLShader::shaderType::VERTEX_SHADER);
+  lightVertex->loadSource("vertex_shader_light.glsl");
+  lightVertex->compile();
+  std::cout << lightVertex->log() << std::endl;
 
-  GLShader lightFragment(GLShader::shaderType::FRAGMENT_SHADER);
-  lightFragment.loadSource("fragment_shader_light.glsl");
-  lightFragment.compile();
-  std::cout << lightFragment.log() << std::endl;
+  auto lightFragment =
+    std::make_shared<GLShader>(GLShader::shaderType::FRAGMENT_SHADER);
+  lightFragment->loadSource("fragment_shader_light.glsl");
+  lightFragment->compile();
+  std::cout << lightFragment->log() << std::endl;
 
   // Shader program
+  shaderProgram.create();
   shaderProgram.addShader(vertexShader);
   shaderProgram.addShader(fragmentShader);
   shaderProgram.link();
   std::cout << shaderProgram.log() << std::endl;
 
+  lightShader.create();
   lightShader.addShader(lightVertex);
   lightShader.addShader(lightFragment);
   lightShader.link();
@@ -226,55 +268,43 @@ int main()
   }
 
   // VAO, VBO
-  GLuint VAO, lightVAO, lightVBO, VBO, EBO;
-  glGenVertexArrays(1, &VAO);
-  glGenVertexArrays(1, &lightVAO);
-  glGenBuffers(1, &VBO);
-  glGenBuffers(1, &lightVBO);
-  glGenBuffers(1, &EBO);
+  GLVertexArrayObject VAO, lightVAO;
+  VAO.create();
+  lightVAO.create();
+
+  GLBufferObject VBO, lightVBO;
+  GLBufferObject EBO(GLBufferObject::BufferType::IndexBuffer);
+  VBO.create();
+  lightVBO.create();
+  EBO.create();
 
   // --------------------------------------------------------------------
-  glBindVertexArray(VAO);
+  VAO.bind();
 
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(
-    GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex),
-    vertices.data(), GL_STATIC_DRAW
-  );
+  VBO.bind();
+  VBO.upload(vertices.data(), vertices.size() * sizeof(Vertex));
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(
-    GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint),
-    indices.data(), GL_STATIC_DRAW
-  );
+  EBO.bind();
+  EBO.upload(indices.data(), indices.size() * sizeof(GLuint));
 
-  glVertexAttribPointer(
-    0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(0)
-  );
-  glEnableVertexAttribArray(0);
+  shaderProgram.setAttributeArray(0, 3, offsetof(Vertex, position),
+                                  sizeof(Vertex));
 
-  glVertexAttribPointer(
-    1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-    reinterpret_cast<GLvoid *>(offsetof(Vertex, normal))
-  );
-  glEnableVertexAttribArray(1);
+  shaderProgram.setAttributeArray(1, 3, offsetof(Vertex, normal),
+                                  sizeof(Vertex));
 
   // --------------------------------------------------------------------
-  glBindVertexArray(lightVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-  glBufferData(
-    GL_ARRAY_BUFFER, sizeof(lightPosition),
-    &lightPosition, GL_STATIC_DRAW
-  );
+  lightVAO.bind();
+  lightVBO.bind();
+  lightVBO.upload(&lightPosition, sizeof(lightPosition));
+  lightShaderProgram.setAttributeArray(0, 3, 0, sizeof(lightPosition));
+  lightVAO.unbind();
 
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(
-    0, 3, GL_FLOAT, GL_FALSE, sizeof(lightPosition), reinterpret_cast<GLvoid *>(0)
-  );
-  glBindVertexArray(0);
   // --------------------------------------------------------------------
-
   projection = glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 100.0f);
+  camPos = vec3(0.0f, 0.0f, -10.0f);
+  camUp = vec3(0.0f, 1.0f, 0.0f);
+  view = glm::lookAt(camPos, camTarget, glm::vec3(0.0f, 1.0f, 0.0f));
 
   // Program loop -------------------------------------------------------------
   while (!glfwWindowShouldClose(window))
@@ -285,52 +315,33 @@ int main()
 
     // Render
     shaderProgram.use();
-    GLint mLoc = glGetUniformLocation(shaderProgram.ID(), "model");
-    GLint vLoc = glGetUniformLocation(shaderProgram.ID(), "view");
-    GLint pLoc = glGetUniformLocation(shaderProgram.ID(), "projection");
-    GLint objectColorLoc = glGetUniformLocation(shaderProgram.ID(), "objectColor");
-    GLint lightColorLoc = glGetUniformLocation(shaderProgram.ID(), "lightColor");
-    GLint lightPosLoc = glGetUniformLocation(shaderProgram.ID(), "lightPosition");
-    GLint cameraPosLoc = glGetUniformLocation(shaderProgram.ID(), "cameraPosition");
+    shaderProgram.setUniformValue("model", model);
+    shaderProgram.setUniformValue("view", view);
+    shaderProgram.setUniformValue("projection", projection);
+    shaderProgram.setUniformValue("objectColor", 1.0f, 0.5f, 0.3f);
+    shaderProgram.setUniformValue("lightColor", 1.0f, 1.0f, 1.0f);
+    shaderProgram.setUniformValue("lightPosition", lightPosition);
+    shaderProgram.setUniformValue("cameraPosition", camera.getPosition());
 
-    glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(camera.getViewMatrix()));
-    glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
-    glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.3f);
-    glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
-    glUniform3f(lightPosLoc, lightPosition.x, lightPosition.y, lightPosition.z);
-    glUniform3f(
-      cameraPosLoc, camera.getPosition().x,
-      camera.getPosition().y, camera.getPosition().z
-    );
-
-    glBindVertexArray(VAO);
+    VAO.bind();
 
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()),
                    GL_UNSIGNED_INT, 0);
 
     lightShaderProgram.use();
-    mLoc = glGetUniformLocation(lightShaderProgram.ID(), "model");
-    vLoc = glGetUniformLocation(lightShaderProgram.ID(), "view");
-    pLoc = glGetUniformLocation(lightShaderProgram.ID(), "projection");
-    glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(lightModel));
-    glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(camera.getViewMatrix()));
-    glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    lightShaderProgram.setUniformValue("model", lightModel);
+    lightShaderProgram.setUniformValue("view", view);
+    lightShaderProgram.setUniformValue("projection", projection);
 
-    glBindVertexArray(lightVAO);
+    lightVAO.bind();
     glDrawArrays(GL_POINTS, 0, 1);
 
-    glBindVertexArray(0);
+    lightVAO.unbind();
 
     // Swap the buffers
     glfwSwapBuffers(window);
   }
 
-  glDeleteVertexArrays(1, &VAO);
-  glDeleteVertexArrays(1, &lightVAO);
-  glDeleteBuffers(1, &VBO);
-  glDeleteBuffers(1, &lightVBO);
-  glDeleteBuffers(1, &EBO);
   glfwTerminate();
 
   return 0;
