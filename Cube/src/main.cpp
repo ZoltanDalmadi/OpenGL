@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "GLShaderProgram.h"
-#include "GLCamera.h"
+#include "GLFPSCamera.h"
 
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
@@ -33,7 +33,7 @@ glm::vec3 randpositions[20];
 
 double lastX = WIDTH / 2.0f, lastY = HEIGHT / 2.0f;
 
-GLCamera camera(glm::vec3(0.0f, 0.0f, -10.0f));
+GLFPSCamera camera(glm::vec3(0.0f, 0.0f, -10.0f));
 
 bool keys[1024];
 
@@ -64,7 +64,7 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
   double yoffset = ypos - lastY;
   lastX = xpos;
   lastY = ypos;
-  camera.FPSMode(static_cast<float>(xoffset), static_cast<float>(yoffset));
+  camera.rotate(static_cast<float>(xoffset), static_cast<float>(yoffset));
 }
 
 void init()
@@ -88,7 +88,6 @@ void init()
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-  camera.clearTarget();
   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
@@ -205,25 +204,23 @@ int main()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    GLfloat cameraSpeed = 0.1f;
-
     if (keys[GLFW_KEY_W])
-      camera.dolly(-cameraSpeed);
+      camera.move(GLFPSCamera::Direction::FORWARD);
 
     if (keys[GLFW_KEY_S])
-      camera.dolly(cameraSpeed);
+      camera.move(GLFPSCamera::Direction::BACKWARD);
 
     if (keys[GLFW_KEY_A])
-      camera.pan(cameraSpeed);
+      camera.move(GLFPSCamera::Direction::LEFT);
 
     if (keys[GLFW_KEY_D])
-      camera.pan(-cameraSpeed);
+      camera.move(GLFPSCamera::Direction::RIGHT);
 
     if (keys[GLFW_KEY_SPACE])
-      camera.pedestal(cameraSpeed);
+      camera.move(GLFPSCamera::Direction::UP);
 
     if (keys[GLFW_KEY_LEFT_CONTROL])
-      camera.pedestal(-cameraSpeed);
+      camera.move(GLFPSCamera::Direction::DOWN);
 
     // Render
     shaderProgram.use();
@@ -242,7 +239,7 @@ int main()
 
     glBindVertexArray(0);
 
-    glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(camera.getViewMatrix()));
+    glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(camera.m_viewMatrix));
     glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     // Swap the buffers
