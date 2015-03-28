@@ -24,3 +24,12 @@ void GLTools::GLVertexArrayObject::unbind()
 {
   glBindVertexArray(0);
 }
+
+void GLTools::GLVertexArrayObject::setAttributeArray
+(GLint location, GLint size, GLsizei stride, size_t offset)
+{
+  glVertexAttribPointer
+  (location, size, GL_FLOAT, GL_FALSE, stride,
+   reinterpret_cast<GLvoid *>(offset));
+  glEnableVertexAttribArray(location);
+}

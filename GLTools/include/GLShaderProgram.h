@@ -22,9 +22,6 @@ public:
   void destroy();
   void use() const;
 
-  void setAttributeArray
-  (GLint location, GLint size, size_t offset, GLsizei stride = 0);
-
   GLint uniformLocation(const char *name) const;
   GLint uniformLocation(const std::string& name) const;
 

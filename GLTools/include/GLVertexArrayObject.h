@@ -17,6 +17,9 @@ public:
   void unbind();
   GLuint ID() const;
 
+  void setAttributeArray
+  (GLint location, GLint size, GLsizei stride, size_t offset = 0);
+
 private:
   GLuint m_id;
 };

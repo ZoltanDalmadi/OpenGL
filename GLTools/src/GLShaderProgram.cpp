@@ -51,15 +51,6 @@ void GLTools::GLShaderProgram::use() const
   glUseProgram(m_id);
 }
 
-void GLTools::GLShaderProgram::setAttributeArray
-(GLint location, GLint size, size_t offset, GLsizei stride)
-{
-  glVertexAttribPointer
-  (location, size, GL_FLOAT, GL_FALSE, stride,
-   reinterpret_cast<GLvoid *>(offset));
-  glEnableVertexAttribArray(location);
-}
-
 GLint GLTools::GLShaderProgram::uniformLocation(const char *name) const
 {
   return glGetUniformLocation(m_id, name);
