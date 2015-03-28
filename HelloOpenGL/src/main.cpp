@@ -1,9 +1,16 @@
 #include <iostream>
 #include <vector>
+#include <memory>
 #include "GLShaderProgram.h"
 #include "GLFWApplication.h"
 #include "GLVertexArrayObject.h"
 #include "GLBufferObject.h"
+
+struct Vertex
+{
+  glm::vec2 position;
+  glm::vec3 color;
+};
 
 // Is called whenever a key is pressed/released via GLFW
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -16,17 +23,20 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 // SHADERS --------------------------------------------------------------------
 void setupShaders(GLShaderProgram& shaderProgram)
 {
-  GLShader vertexShader(GLShader::shaderType::VERTEX_SHADER);
-  vertexShader.loadSource("vertex_shader.glsl");
-  vertexShader.compile();
-  std::cout << vertexShader.log() << std::endl;
+  auto vertexShader =
+    std::make_shared<GLShader>(GLShader::shaderType::VERTEX_SHADER);
+  vertexShader->loadSource("vertex_shader.glsl");
+  vertexShader->compile();
+  std::cout << vertexShader->log() << std::endl;
 
-  GLShader fragmentShader(GLShader::shaderType::FRAGMENT_SHADER);
-  fragmentShader.loadSource("fragment_shader.glsl");
-  fragmentShader.compile();
-  std::cout << fragmentShader.log() << std::endl;
+  auto fragmentShader =
+    std::make_shared<GLShader>(GLShader::shaderType::FRAGMENT_SHADER);
+  fragmentShader->loadSource("fragment_shader.glsl");
+  fragmentShader->compile();
+  std::cout << fragmentShader->log() << std::endl;
 
   // Shader program
+  shaderProgram.create();
   shaderProgram.addShader(vertexShader);
   shaderProgram.addShader(fragmentShader);
   shaderProgram.link();
@@ -48,18 +58,43 @@ int main()
   GLShaderProgram shaderProgram;
   setupShaders(shaderProgram);
 
-  std::vector<GLfloat> vertices =
-  {
-    0.0f, 0.0f, 1.0f, 1.0f, 1.0f,   //  0
-    -0.2f, 0.2f, 0.0f, 1.0f, 1.0f,  //  1
-    0.0f, 0.9f, 1.0f, 0.0f, 1.0f,   //  2
-    0.2f, 0.2f, 0.0f, 1.0f, 1.0f,   //  3
-    0.9f, 0.0f, 1.0f, 0.0f, 1.0f,   //  4
-    0.2f, -0.2f, 0.0f, 1.0f, 1.0f,  //  5
-    0.0f, -0.9f, 1.0f, 0.0f, 1.0f,  //  6
-    -0.2f, -0.2f, 0.0f, 1.0f, 1.0f, //  7
-    -0.9f, 0.0f, 1.0f, 0.0f, 1.0f,  //  8
-  };
+  std::vector<Vertex> vertices;
+  Vertex vert;
+  vert.position = glm::vec2(0.0f, 0.0f);
+  vert.color = glm::vec3(1.0f, 1.0f, 1.0f);
+  vertices.push_back(vert);
+
+  vert.position = glm::vec2(-0.2f, 0.2f);
+  vert.color = glm::vec3(0.0f, 1.0f, 1.0f);
+  vertices.push_back(vert);
+
+  vert.position = glm::vec2(0.0f, 0.9f);
+  vert.color = glm::vec3(1.0f, 0.0f, 1.0f);
+  vertices.push_back(vert);
+
+  vert.position = glm::vec2(0.2f, 0.2f);
+  vert.color = glm::vec3(0.0f, 1.0f, 1.0f);
+  vertices.push_back(vert);
+
+  vert.position = glm::vec2(0.9f, 0.0f);
+  vert.color = glm::vec3(1.0f, 0.0f, 1.0f);
+  vertices.push_back(vert);
+
+  vert.position = glm::vec2(0.2f, -0.2f);
+  vert.color = glm::vec3(0.0f, 1.0f, 1.0f);
+  vertices.push_back(vert);
+
+  vert.position = glm::vec2(0.0f, -0.9f);
+  vert.color = glm::vec3(1.0f, 0.0f, 1.0f);
+  vertices.push_back(vert);
+
+  vert.position = glm::vec2(-0.2f, -0.2f);
+  vert.color = glm::vec3(0.0f, 1.0f, 1.0f);
+  vertices.push_back(vert);
+
+  vert.position = glm::vec2(-0.9f, 0.0f);
+  vert.color = glm::vec3(1.0f, 0.0f, 1.0f);
+  vertices.push_back(vert);
 
   std::vector<GLuint> indices =
   {
@@ -76,7 +111,7 @@ int main()
   // VAO, VBO
   GLVertexArrayObject VAO;
   GLBufferObject VBO;
-  GLBufferObject EBO(GLBufferObject::BufferType::INDEX_BUFFER);
+  GLBufferObject EBO(GLBufferObject::BufferType::IndexBuffer);
   VBO.create();
   EBO.create();
 
@@ -84,13 +119,15 @@ int main()
   VAO.bind();
 
   VBO.bind();
-  VBO.upload(vertices.data(), sizeof(vertices[0]) * vertices.size());
+  VBO.upload(vertices.data(), sizeof(Vertex) * vertices.size());
 
   EBO.bind();
-  EBO.upload(indices.data(), sizeof(indices[0]) * indices.size());
+  EBO.upload(indices.data(), sizeof(GLuint) * indices.size());
 
-  GLVertexArrayObject::setVertexAttrib(0, 2, GL_FLOAT, GL_FALSE, 5, 0);
-  GLVertexArrayObject::setVertexAttrib(1, 3, GL_FLOAT, GL_FALSE, 5, 2);
+  shaderProgram.setAttributeArray
+  (0, 2, offsetof(Vertex, position), sizeof(Vertex));
+  shaderProgram.setAttributeArray
+  (1, 3, offsetof(Vertex, color), sizeof(Vertex));
 
   VAO.unbind();
 
