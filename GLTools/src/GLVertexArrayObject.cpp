@@ -1,26 +1,26 @@
 #include "GLVertexArrayObject.h"
 
-GLVertexArrayObject::~GLVertexArrayObject()
+GLTools::GLVertexArrayObject::~GLVertexArrayObject()
 {
   destroy();
 }
 
-void GLVertexArrayObject::create()
+void GLTools::GLVertexArrayObject::create()
 {
   glGenVertexArrays(1, &m_id);
 }
 
-void GLVertexArrayObject::destroy()
+void GLTools::GLVertexArrayObject::destroy()
 {
   glDeleteVertexArrays(1, &m_id);
 }
 
-void GLVertexArrayObject::bind()
+void GLTools::GLVertexArrayObject::bind()
 {
   glBindVertexArray(m_id);
 }
 
-void GLVertexArrayObject::unbind()
+void GLTools::GLVertexArrayObject::unbind()
 {
   glBindVertexArray(0);
 }

@@ -12,6 +12,10 @@
 #include "GLShaderProgram.h"
 #include "GLFPSCamera.h"
 
+using GLTools::GLShader;
+using GLTools::GLShaderProgram;
+using GLTools::GLFPSCamera;
+
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
 

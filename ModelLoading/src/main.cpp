@@ -17,6 +17,8 @@
 #include "GLVertexArrayObject.h"
 #include "GLCamera.h"
 
+using namespace GLTools;
+
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
 
@@ -28,7 +30,7 @@ glm::mat4 projection;
 
 glm::vec3 lightPosition(-1.0f, 1.0f, -2.0f);
 
-GLCamera camera(vec3(0.0f, 0.0f, -5.0f));
+GLCamera camera(glm::vec3(0.0f, 0.0f, -5.0f));
 
 double lastX = WIDTH / 2.0f, lastY = HEIGHT / 2.0f;
 
@@ -63,49 +65,49 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     camera.moveTarget(glm::vec3(-0.1f, 0.0f, 0.0f));
 
   if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.moveTarget(glm::vec3(0.0f, 0.0f, 0.1f));
+    camera.moveTarget(glm::vec3(0.0f, 0.1f, 0.0f));
 
   if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.moveTarget(glm::vec3(0.0f, 0.0f, -0.1f));
+    camera.moveTarget(glm::vec3(0.0f, -0.1f, 0.0f));
 
   if (key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    vec3 delta(0.0f, 0.1f, 0.0f);
+    glm::vec3 delta(0.0f, 0.1f, 0.0f);
     lightPosition += delta;
     lightModel = glm::translate(lightModel, delta);
   }
 
   if (key == GLFW_KEY_K && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    vec3 delta(0.0f, -0.1f, 0.0f);
+    glm::vec3 delta(0.0f, -0.1f, 0.0f);
     lightPosition += delta;
     lightModel = glm::translate(lightModel, delta);
   }
 
   if (key == GLFW_KEY_L && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    vec3 delta(-0.1f, 0.0f, 0.0f);
+    glm::vec3 delta(-0.1f, 0.0f, 0.0f);
     lightPosition += delta;
     lightModel = glm::translate(lightModel, delta);
   }
 
   if (key == GLFW_KEY_J && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    vec3 delta(0.1f, 0.0f, 0.0f);
+    glm::vec3 delta(0.1f, 0.0f, 0.0f);
     lightPosition += delta;
     lightModel = glm::translate(lightModel, delta);
   }
 
   if (key == GLFW_KEY_O && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    vec3 delta(0.0f, 0.0f, 0.1f);
+    glm::vec3 delta(0.0f, 0.0f, 0.1f);
     lightPosition += delta;
     lightModel = glm::translate(lightModel, delta);
   }
 
   if (key == GLFW_KEY_P && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    vec3 delta(0.0f, 0.0f, -0.1f);
+    glm::vec3 delta(0.0f, 0.0f, -0.1f);
     lightPosition += delta;
     lightModel = glm::translate(lightModel, delta);
   }

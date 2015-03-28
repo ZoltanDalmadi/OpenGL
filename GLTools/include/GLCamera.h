@@ -1,10 +1,13 @@
 #pragma once
 #include <glm/glm.hpp>
 
-using glm::vec3;
+namespace GLTools
+{
 
 class GLCamera
 {
+  using vec3 = glm::vec3;
+
 public:
   vec3 m_position;
   vec3 m_target;
@@ -23,3 +26,5 @@ public:
 private:
   void update();
 };
+
+}

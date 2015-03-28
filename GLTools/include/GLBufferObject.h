@@ -2,6 +2,9 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 
+namespace GLTools
+{
+
 class GLBufferObject
 {
 public:
@@ -42,27 +45,31 @@ private:
   Usage m_usage;
 };
 
-inline GLuint GLBufferObject::ID() const
+}
+
+inline GLuint GLTools::GLBufferObject::ID() const
 {
   return m_id;
 }
 
-inline GLBufferObject::BufferType GLBufferObject::type() const
+inline GLTools::GLBufferObject::BufferType GLTools::GLBufferObject::type() const
 {
   return m_type;
 }
 
-inline GLBufferObject::Usage GLBufferObject::usage() const
+inline GLTools::GLBufferObject::Usage GLTools::GLBufferObject::usage() const
 {
   return m_usage;
 }
 
-inline void GLBufferObject::setType(GLBufferObject::BufferType type)
+inline void GLTools::GLBufferObject::setType
+(GLTools::GLBufferObject::BufferType type)
 {
   this->m_type = type;
 }
 
-inline void GLBufferObject::setUsage(GLBufferObject::Usage usage)
+inline void GLTools::GLBufferObject::setUsage
+(GLTools::GLBufferObject::Usage usage)
 {
   this->m_usage = usage;
 }

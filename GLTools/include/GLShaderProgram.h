@@ -5,10 +5,13 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "GLShader.h"
 
-using GLShader_ptr = std::shared_ptr<GLShader>;
+namespace GLTools
+{
 
 class GLShaderProgram
 {
+  using GLShader_ptr = std::shared_ptr<GLShader>;
+
 public:
   GLShaderProgram();
   virtual ~GLShaderProgram();
@@ -59,22 +62,25 @@ private:
   std::vector<GLShader_ptr> m_shaders;
 };
 
-inline bool GLShaderProgram::isLinked() const
+}
+
+inline bool GLTools::GLShaderProgram::isLinked() const
 {
   return m_linkSuccess;
 }
 
-inline const std::string& GLShaderProgram::log() const
+inline const std::string& GLTools::GLShaderProgram::log() const
 {
   return m_infoLog;
 }
 
-inline GLuint GLShaderProgram::ID() const
+inline GLuint GLTools::GLShaderProgram::ID() const
 {
   return m_id;
 }
 
-inline std::vector<GLShader_ptr> GLShaderProgram::shaders() const
+inline std::vector<GLTools::GLShaderProgram::GLShader_ptr>
+GLTools::GLShaderProgram::shaders() const
 {
   return m_shaders;
 }

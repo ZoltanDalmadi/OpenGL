@@ -2,7 +2,7 @@
 #include <GL/glew.h>
 #include "GLFWApplication.h"
 
-GLFWApplication::GLFWApplication(int major, int minor)
+GLTools::GLFWApplication::GLFWApplication(int major, int minor)
 {
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
@@ -11,12 +11,12 @@ GLFWApplication::GLFWApplication(int major, int minor)
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 }
 
-GLFWApplication::~GLFWApplication()
+GLTools::GLFWApplication::~GLFWApplication()
 {
 }
 
-void GLFWApplication::createWindow(int width, int height,
-                                   const std::string& title)
+void GLTools::GLFWApplication::createWindow(int width, int height,
+                                            const std::string& title)
 {
   m_window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
   glfwMakeContextCurrent(m_window);
@@ -28,7 +28,7 @@ void GLFWApplication::createWindow(int width, int height,
   glViewport(0, 0, width, height);
 }
 
-int GLFWApplication::exec()
+int GLTools::GLFWApplication::exec()
 {
   while (!glfwWindowShouldClose(m_window))
   {

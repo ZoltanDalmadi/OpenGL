@@ -4,6 +4,9 @@
 #include <GL/glew.h>
 #include <string>
 
+namespace GLTools
+{
+
 class GLShader
 {
 public:
@@ -36,27 +39,29 @@ private:
   std::string m_sourceCode;
 };
 
-inline bool GLShader::isCompiled() const
+}
+
+inline bool GLTools::GLShader::isCompiled() const
 {
   return m_compileSuccess;
 }
 
-inline const std::string& GLShader::log() const
+inline const std::string& GLTools::GLShader::log() const
 {
   return m_infoLog;
 }
 
-inline GLShader::shaderType GLShader::type() const
+inline GLTools::GLShader::shaderType GLTools::GLShader::type() const
 {
   return m_type;
 }
 
-inline const std::string& GLShader::source() const
+inline const std::string& GLTools::GLShader::source() const
 {
   return m_sourceCode;
 }
 
-inline GLuint GLShader::ID() const
+inline GLuint GLTools::GLShader::ID() const
 {
   return m_id;
 }

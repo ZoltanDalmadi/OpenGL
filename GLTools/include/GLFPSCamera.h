@@ -1,14 +1,15 @@
 #pragma once
 #include <glm/glm.hpp>
 
-using glm::vec3;
-using glm::mat4;
-using cvec3r = const vec3&;
-using cvec3r = const vec3&;
+namespace GLTools
+{
 
 class GLFPSCamera
 {
 public:
+  using vec3 = glm::vec3;
+  using mat4 = glm::mat4;
+
   enum class Direction
   {
     FORWARD,
@@ -30,7 +31,7 @@ public:
 
   mat4 m_viewMatrix;
 
-  GLFPSCamera(cvec3r position);
+  GLFPSCamera(const vec3& position);
   virtual ~GLFPSCamera();
 
   void move(Direction dir);
@@ -39,3 +40,5 @@ public:
 private:
   void update();
 };
+
+}

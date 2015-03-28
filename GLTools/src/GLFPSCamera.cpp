@@ -1,7 +1,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "GLFPSCamera.h"
 
-GLFPSCamera::GLFPSCamera(cvec3r position)
+GLTools::GLFPSCamera::GLFPSCamera(const vec3& position)
   : m_pitch(0),
     m_yaw(-90.0f),
     m_position(position),
@@ -10,10 +10,10 @@ GLFPSCamera::GLFPSCamera(cvec3r position)
   this->update();
 }
 
-GLFPSCamera::~GLFPSCamera()
+GLTools::GLFPSCamera::~GLFPSCamera()
 {}
 
-void GLFPSCamera::move(GLFPSCamera::Direction dir)
+void GLTools::GLFPSCamera::move(GLFPSCamera::Direction dir)
 {
   switch (dir)
   {
@@ -45,7 +45,7 @@ void GLFPSCamera::move(GLFPSCamera::Direction dir)
   this->update();
 }
 
-void GLFPSCamera::rotate(float xoffset, float yoffset, bool constrain)
+void GLTools::GLFPSCamera::rotate(float xoffset, float yoffset, bool constrain)
 {
   xoffset *= this->m_sensivity;
   yoffset *= this->m_sensivity;
@@ -65,7 +65,7 @@ void GLFPSCamera::rotate(float xoffset, float yoffset, bool constrain)
   this->update();
 }
 
-void GLFPSCamera::update()
+void GLTools::GLFPSCamera::update()
 {
   glm::vec3 front;
   front.x = std::cos(glm::radians(m_yaw)) * std::cos(glm::radians(m_pitch));

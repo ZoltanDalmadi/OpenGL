@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iostream>
 
-GLShader::GLShader(shaderType type)
+GLTools::GLShader::GLShader(shaderType type)
   : m_type(type)
 {
   GLuint gl_type = 0;
@@ -26,12 +26,12 @@ GLShader::GLShader(shaderType type)
   m_id = glCreateShader(gl_type);
 }
 
-GLShader::~GLShader()
+GLTools::GLShader::~GLShader()
 {
   glDeleteShader(m_id);
 }
 
-void GLShader::addSource(const std::string& source)
+void GLTools::GLShader::addSource(const std::string& source)
 {
   m_sourceCode = source;
 
@@ -39,7 +39,7 @@ void GLShader::addSource(const std::string& source)
   glShaderSource(m_id, 1, &c_str, nullptr);
 }
 
-bool GLShader::loadSource(const std::string& filePath)
+bool GLTools::GLShader::loadSource(const std::string& filePath)
 {
   std::stringstream buffer;
 
@@ -63,7 +63,7 @@ bool GLShader::loadSource(const std::string& filePath)
   return true;
 }
 
-bool GLShader::compile()
+bool GLTools::GLShader::compile()
 {
   glCompileShader(m_id);
 

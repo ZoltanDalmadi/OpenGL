@@ -6,6 +6,8 @@
 #include "GLVertexArrayObject.h"
 #include "GLBufferObject.h"
 
+using namespace GLTools;
+
 struct Vertex
 {
   glm::vec2 position;

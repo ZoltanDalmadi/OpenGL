@@ -3,6 +3,9 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 
+namespace GLTools
+{
+
 class GLVertexArrayObject
 {
 public:
@@ -21,4 +24,6 @@ private:
 inline GLuint GLVertexArrayObject::ID() const
 {
   return m_id;
+}
+
 }

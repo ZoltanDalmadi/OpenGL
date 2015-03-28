@@ -3,6 +3,9 @@
 #include <string>
 #include <functional>
 
+namespace GLTools
+{
+
 class GLFWApplication
 {
 public:
@@ -29,4 +32,6 @@ inline void GLFWApplication::setRenderFunc(std::function<void()>&& func)
 inline GLFWwindow *GLFWApplication::getWindow() const
 {
   return m_window;
+}
+
 }
