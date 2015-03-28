@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include <memory>
 
 #include "GLShaderProgram.h"
 #include "GLCamera.h"
@@ -94,15 +95,18 @@ void init()
 // SHADERS --------------------------------------------------------------------
 void setupShaders(GLShaderProgram& shaderProgram)
 {
-  GLShader vertexShader(GLShader::shaderType::VERTEX_SHADER);
-  vertexShader.loadSource("vertex_shader.glsl");
-  vertexShader.compile();
+  auto vertexShader =
+    std::make_shared<GLShader>(GLShader::shaderType::VERTEX_SHADER);
+  vertexShader->loadSource("vertex_shader.glsl");
+  vertexShader->compile();
 
-  GLShader fragmentShader(GLShader::shaderType::FRAGMENT_SHADER);
-  fragmentShader.loadSource("fragment_shader.glsl");
-  fragmentShader.compile();
+  auto fragmentShader =
+    std::make_shared<GLShader>(GLShader::shaderType::FRAGMENT_SHADER);
+  fragmentShader->loadSource("fragment_shader.glsl");
+  fragmentShader->compile();
 
   // Shader program
+  shaderProgram.create();
   shaderProgram.addShader(vertexShader);
   shaderProgram.addShader(fragmentShader);
   shaderProgram.link();
