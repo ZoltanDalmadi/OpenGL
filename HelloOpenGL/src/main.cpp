@@ -126,10 +126,8 @@ int main()
   EBO.bind();
   EBO.upload(indices.data(), sizeof(GLuint) * indices.size());
 
-  shaderProgram.setAttributeArray
-  (0, 2, offsetof(Vertex, position), sizeof(Vertex));
-  shaderProgram.setAttributeArray
-  (1, 3, offsetof(Vertex, color), sizeof(Vertex));
+  VAO.setAttributeArray(0, 2, sizeof(Vertex), offsetof(Vertex, position));
+  VAO.setAttributeArray(1, 3, sizeof(Vertex), offsetof(Vertex, color));
 
   VAO.unbind();
 

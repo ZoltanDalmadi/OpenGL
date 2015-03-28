@@ -245,17 +245,14 @@ int main()
   EBO.bind();
   EBO.upload(indices.data(), indices.size() * sizeof(GLuint));
 
-  shaderProgram.setAttributeArray(0, 3, offsetof(Vertex, position),
-                                  sizeof(Vertex));
-
-  shaderProgram.setAttributeArray(1, 3, offsetof(Vertex, normal),
-                                  sizeof(Vertex));
+  VAO.setAttributeArray(0, 3, sizeof(Vertex));
+  VAO.setAttributeArray(1, 3, sizeof(Vertex), offsetof(Vertex, normal));
 
   // --------------------------------------------------------------------
   lightVAO.bind();
   lightVBO.bind();
   lightVBO.upload(&lightPosition, sizeof(lightPosition));
-  lightShaderProgram.setAttributeArray(0, 3, 0, sizeof(lightPosition));
+  lightVAO.setAttributeArray(0, 3, sizeof(lightPosition));
   lightVAO.unbind();
 
   // --------------------------------------------------------------------
