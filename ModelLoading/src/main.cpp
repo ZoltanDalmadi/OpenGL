@@ -4,7 +4,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/rotate_vector.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -24,25 +23,20 @@ const GLuint HEIGHT = 720;
 GLFWwindow *window;
 
 glm::mat4 model;
-glm::mat4 view;
 glm::mat4 lightModel;
 glm::mat4 projection;
 
-glm::vec3 camPos;
-glm::vec3 camTarget;
-glm::vec3 camUp;
-
 glm::vec3 lightPosition(-1.0f, 1.0f, -2.0f);
+
+GLCamera camera(vec3(0.0f, 0.0f, -5.0f));
+
+double lastX = WIDTH / 2.0f, lastY = HEIGHT / 2.0f;
 
 struct Vertex
 {
   glm::vec3 position;
   glm::vec3 normal;
 };
-
-double lastX = WIDTH / 2.0f, lastY = HEIGHT / 2.0f;
-
-GLCamera camera(glm::vec3(0.0f, 0.0f, -5.0f));
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
@@ -51,56 +45,28 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     glfwSetWindowShouldClose(window, GL_TRUE);
 
   if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.dolly(-0.1f);
+    camera.movePosition(glm::vec3(0.0f, 0.0f, 0.1f));
 
   if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    camera.dolly(0.1f);
+    camera.movePosition(glm::vec3(0.0f, 0.0f, -0.1f));
 
   if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    //camera.pan(0.1f);
-  {
-    camPos += glm::vec3(0.1f, 0.0f, 0.0f);
-    view = glm::lookAt(camPos, camTarget, vec3(0.0f, 1.0f, 0.0f));
-  }
+    camera.movePosition(glm::vec3(0.1f, 0.0f, 0.0f));
 
   if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    //camera.pan(-0.1f);
-  {
-    camPos -= glm::vec3(0.1f, 0.0f, 0.0f);
-    view = glm::lookAt(camPos, camTarget, vec3(0.0f, 1.0f, 0.0f));
-  }
+    camera.movePosition(glm::vec3(-0.1f, 0.0f, 0.0f));
 
   if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    //camera.rotate(0.0f, 1.0f);
-  {
-    camPos = glm::rotateY(camPos, glm::radians(5.0f));
-    camUp = glm::rotateY(camUp, glm::radians(5.0f));
-    view = glm::lookAt(camPos, camTarget, camUp);
-  }
+    camera.moveTarget(glm::vec3(0.1f, 0.0f, 0.0f));
 
   if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    //camera.rotate(0.0f, -1.0f);
-  {
-    camPos = glm::rotateY(camPos, glm::radians(-5.0f));
-    camUp = glm::rotateY(camUp, glm::radians(-5.0f));
-    view = glm::lookAt(camPos, camTarget, camUp);
-  }
+    camera.moveTarget(glm::vec3(-0.1f, 0.0f, 0.0f));
 
   if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    //camera.rotate(-1.0f, 0.0f);
-  {
-    camPos = glm::rotateX(camPos, glm::radians(5.0f));
-    camUp = glm::rotateX(camUp, glm::radians(5.0f));
-    view = glm::lookAt(camPos, camTarget, camUp);
-  }
+    camera.moveTarget(glm::vec3(0.0f, 0.0f, 0.1f));
 
   if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    //camera.rotate(1.0f, 0.0f);
-  {
-    camPos = glm::rotateX(camPos, glm::radians(-5.0f));
-    camUp = glm::rotateX(camUp, glm::radians(-5.0f));
-    view = glm::lookAt(camPos, camTarget, camUp);
-  }
+    camera.moveTarget(glm::vec3(0.0f, 0.0f, -0.1f));
 
   if (key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
@@ -145,15 +111,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   }
 }
 
-void mouse_callback(GLFWwindow *window, double xpos, double ypos)
-{
-  double xoffset = xpos - lastX;
-  double yoffset = ypos - lastY;
-  lastX = xpos;
-  lastY = ypos;
-  camera.FPSMode(static_cast<float>(xoffset), static_cast<float>(yoffset));
-}
-
 void init()
 {
   glfwInit();
@@ -176,7 +133,6 @@ void init()
   glCullFace(GL_BACK);
   glPointSize(2);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 // SHADERS --------------------------------------------------------------------
@@ -302,9 +258,6 @@ int main()
 
   // --------------------------------------------------------------------
   projection = glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 100.0f);
-  camPos = vec3(0.0f, 0.0f, -10.0f);
-  camUp = vec3(0.0f, 1.0f, 0.0f);
-  view = glm::lookAt(camPos, camTarget, glm::vec3(0.0f, 1.0f, 0.0f));
 
   // Program loop -------------------------------------------------------------
   while (!glfwWindowShouldClose(window))
@@ -316,12 +269,12 @@ int main()
     // Render
     shaderProgram.use();
     shaderProgram.setUniformValue("model", model);
-    shaderProgram.setUniformValue("view", view);
+    shaderProgram.setUniformValue("view", camera.m_viewMatrix);
     shaderProgram.setUniformValue("projection", projection);
     shaderProgram.setUniformValue("objectColor", 1.0f, 0.5f, 0.3f);
     shaderProgram.setUniformValue("lightColor", 1.0f, 1.0f, 1.0f);
     shaderProgram.setUniformValue("lightPosition", lightPosition);
-    shaderProgram.setUniformValue("cameraPosition", camera.getPosition());
+    shaderProgram.setUniformValue("cameraPosition", camera.m_position);
 
     VAO.bind();
 
@@ -330,7 +283,7 @@ int main()
 
     lightShaderProgram.use();
     lightShaderProgram.setUniformValue("model", lightModel);
-    lightShaderProgram.setUniformValue("view", view);
+    lightShaderProgram.setUniformValue("view", camera.m_viewMatrix);
     lightShaderProgram.setUniformValue("projection", projection);
 
     lightVAO.bind();
