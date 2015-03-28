@@ -1,24 +1,18 @@
 #include "GLBufferObject.h"
 
 GLBufferObject::GLBufferObject()
-  : m_type(BufferType::VERTEX_BUFFER), m_usage(Usage::STATIC_DRAW)
+  : m_type(BufferType::VertexBuffer), m_usage(Usage::StaticDraw)
 {
-  setGLType();
-  setGLUsage();
 }
 
 GLBufferObject::GLBufferObject(BufferType type)
-  : m_type(type), m_usage(Usage::STATIC_DRAW)
+  : m_type(type), m_usage(Usage::StaticDraw)
 {
-  setGLType();
-  setGLUsage();
 }
 
 GLBufferObject::GLBufferObject(BufferType type, Usage usage)
   : m_type(type), m_usage(usage)
 {
-  setGLType();
-  setGLUsage();
 }
 
 GLBufferObject::~GLBufferObject()
@@ -28,12 +22,12 @@ GLBufferObject::~GLBufferObject()
 
 void GLBufferObject::bind()
 {
-  glBindBuffer(m_gltype, m_id);
+  glBindBuffer(static_cast<GLenum>(m_type), m_id);
 }
 
 void GLBufferObject::unbind()
 {
-  glBindBuffer(m_gltype, 0);
+  glBindBuffer(static_cast<GLenum>(m_type), 0);
 }
 
 void GLBufferObject::create()
@@ -48,38 +42,11 @@ void GLBufferObject::destroy()
 
 void GLBufferObject::upload(const void *data, size_t count)
 {
-  glBufferData(m_gltype, count, data, m_glusage);
+  glBufferData(static_cast<GLenum>(m_type), count, data,
+               static_cast<GLenum>(m_usage));
 }
 
 void GLBufferObject::write(size_t offset, const void *data, size_t count)
 {
-  glBufferSubData(m_gltype, offset, count, data);
-}
-
-void GLBufferObject::setGLType()
-{
-  switch (m_type)
-  {
-  case BufferType::VERTEX_BUFFER:
-    m_gltype = GL_ARRAY_BUFFER;
-    break;
-
-  case BufferType::INDEX_BUFFER:
-    m_gltype = GL_ELEMENT_ARRAY_BUFFER;
-    break;
-  }
-}
-
-void GLBufferObject::setGLUsage()
-{
-  switch (m_usage)
-  {
-  case Usage::STATIC_DRAW:
-    m_glusage = GL_STATIC_DRAW;
-    break;
-
-  case Usage::DYNAMIC_DRAW:
-    m_glusage = GL_DYNAMIC_DRAW;
-    break;
-  }
+  glBufferSubData(static_cast<GLenum>(m_type), offset, count, data);
 }

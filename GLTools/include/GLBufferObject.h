@@ -7,14 +7,14 @@ class GLBufferObject
 public:
   enum class BufferType
   {
-    VERTEX_BUFFER,
-    INDEX_BUFFER
+    VertexBuffer = 0x8892,
+    IndexBuffer = 0x8893
   };
 
   enum class Usage
   {
-    STATIC_DRAW,
-    DYNAMIC_DRAW
+    StaticDraw = 0x88E4,
+    DynamicDraw = 0x88E8
   };
 
   GLBufferObject();
@@ -40,11 +40,6 @@ private:
   GLuint m_id;
   BufferType m_type;
   Usage m_usage;
-  GLenum m_gltype;
-  GLenum m_glusage;
-
-  void setGLType();
-  void setGLUsage();
 };
 
 inline GLuint GLBufferObject::ID() const
