@@ -61,6 +61,26 @@ GLint GLTools::GLShaderProgram::uniformLocation(const std::string& name) const
   return uniformLocation(name.c_str());
 }
 
+void GLTools::GLShaderProgram::setUniformValue(GLint location, int i)
+{
+  glUniform1i(location, i);
+}
+
+void GLTools::GLShaderProgram::setUniformValue(const char *name, int i)
+{
+  setUniformValue(uniformLocation(name), i);
+}
+
+void GLTools::GLShaderProgram::setUniformValue(GLint location, float f)
+{
+  glUniform1f(location, f);
+}
+
+void GLTools::GLShaderProgram::setUniformValue(const char *name, float f)
+{
+  setUniformValue(uniformLocation(name), f);
+}
+
 void GLTools::GLShaderProgram::setUniformValue(GLint location, float x, float y)
 {
   glUniform2f(location, x, y);

@@ -25,6 +25,10 @@ public:
   GLint uniformLocation(const char *name) const;
   GLint uniformLocation(const std::string& name) const;
 
+  void setUniformValue(GLint location, int i);
+  void setUniformValue(const char *name, int i);
+  void setUniformValue(GLint location, float f);
+  void setUniformValue(const char *name, float f);
   void setUniformValue(GLint location, float x, float y);
   void setUniformValue(const char *name, float x, float y);
   void setUniformValue(GLint location, const glm::vec2& value);
