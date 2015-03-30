@@ -3,32 +3,41 @@
 in vec3 normal;
 in vec3 fragPosition;
 
-uniform vec3 objectColor;
-uniform vec3 lightColor;
-uniform vec3 lightPosition;
 uniform vec3 cameraPosition;
+
+struct Material
+{
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+  float shininess;
+};
+uniform Material material;
+
+struct Light
+{
+  vec3 position;
+  vec3 color;
+};
+uniform Light light;
 
 void main()
 {
-  float ambientAmount = 0.1f;
-  float diffuseAmount = 1.0f;
-  float specularAmount = 0.5f;
-
-  vec3 ambient = ambientAmount * lightColor;
+  vec3 ambient = material.ambient * light.color;
 
   vec3 norm = normalize(normal);
-  vec3 lightDirection = normalize(vec3(lightPosition - fragPosition));
+  vec3 lightDirection = normalize(light.position - fragPosition);
 
   float diff = max(dot(norm, lightDirection), 0.0f);
-  vec3 diffuse = diffuseAmount * diff * lightColor;
+  vec3 diffuse = light.color * (diff * material.diffuse);
 
   vec3 cameraDirection = normalize(cameraPosition - fragPosition);
   vec3 reflectDirection = reflect(-lightDirection, norm);
 
-  float spec = pow(max(dot(cameraDirection, reflectDirection), 0.0), 32);
-  vec3 specular = specularAmount * spec * lightColor;
+  float spec = pow(max(dot(cameraDirection, reflectDirection), 0.0), material.shininess);
+  vec3 specular = light.color * (spec * material.specular);
 
-  vec3 result = (ambient + diffuse + specular) * objectColor;
+  vec3 result = ambient + diffuse + specular;
 
   gl_FragColor = vec4(result, 1.0f);
 }
