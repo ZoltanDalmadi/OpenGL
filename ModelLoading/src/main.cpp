@@ -272,10 +272,11 @@ int main()
     shaderProgram.setUniformValue("projection", projection);
     shaderProgram.setUniformValue("material.ambient", 0.24725f, 0.1995f, 0.0745f);
     shaderProgram.setUniformValue("material.diffuse", 0.75164f, 0.60648f, 0.22648f);
-    shaderProgram.setUniformValue("material.specular", 0.628281f, 0.555802f,
-                                  0.366065f);
+    shaderProgram.setUniformValue("material.specular", 0.6282f, 0.5558f, 0.3660f);
     shaderProgram.setUniformValue("material.shininess", 51.2f);
-    shaderProgram.setUniformValue("light.color", 1.0f, 1.0f, 0.95f);
+    shaderProgram.setUniformValue("light.ambient", 0.2f, 0.2f, 0.2f);
+    shaderProgram.setUniformValue("light.diffuse", 0.75, 0.75f, 0.75f);
+    shaderProgram.setUniformValue("light.specular", 1.0f, 1.0f, 1.0f);
     shaderProgram.setUniformValue("light.position", lightPosition);
     shaderProgram.setUniformValue("cameraPosition", camera.m_position);
 
