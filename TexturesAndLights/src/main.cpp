@@ -13,6 +13,9 @@
 #include "GLBufferObject.h"
 #include "GLVertexArrayObject.h"
 #include "GLFPSCamera.h"
+#include "GLDirectionalLight.h"
+#include "GLPointLight.h"
+#include "GLSpotLight.h"
 
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
@@ -24,6 +27,14 @@ glm::mat3 normalMatrix;
 glm::mat4 projection;
 
 GLTools::GLFPSCamera camera(glm::vec3(0.0f, 0.5f, -1.0f));
+
+//GLTools::GLDirectionalLight light(glm::vec3(-1.2f, -0.8f, -2.5f),
+//                                  glm::vec3(0.2f, 0.2f, 0.2f),
+//                                  glm::vec3(0.8f, 0.8f, 0.8f),
+//                                  glm::vec3(1.0f, 1.0f, 1.0f),
+//                                  5.0f);
+//GLTools::GLPointLight light(glm::vec3(0.0f, 1.0f, 0.0f));
+GLTools::GLSpotLight light(glm::vec3(0.0f, 1.0f, 0.0f));
 
 glm::vec3 lightPosition(0.0f, 1.0f, 0.0f);
 glm::vec3 lightDirection(0.0f, -1.0f, 0.0f);
@@ -53,22 +64,28 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     glfwSetWindowShouldClose(window, GL_TRUE);
 
   if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    lightPosition += glm::vec3(0.1f, 0.0f, 0.0f);
+    light.m_position.second += glm::vec3(0.1f, 0.0f, 0.0f);
 
   if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    lightPosition -= glm::vec3(0.1f, 0.0f, 0.0f);
-
-  if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    lightPosition += glm::vec3(0.0f, 0.1f, 0.0f);
-
-  if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    lightPosition -= glm::vec3(0.0f, 0.1f, 0.0f);
+    light.m_position.second -= glm::vec3(0.1f, 0.0f, 0.0f);
 
   if (key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    lightPosition += glm::vec3(0.0f, 0.0f, 0.1f);
+    light.m_position.second += glm::vec3(0.0f, 0.1f, 0.0f);
 
   if (key == GLFW_KEY_K && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    lightPosition -= glm::vec3(0.0f, 0.0f, 0.1f);
+    light.m_position.second -= glm::vec3(0.0f, 0.1f, 0.0f);
+
+  if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    light.m_position.second += glm::vec3(0.0f, 0.0f, 0.1f);
+
+  if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    light.m_position.second -= glm::vec3(0.0f, 0.0f, 0.1f);
+
+  if (key == GLFW_KEY_O && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    light.m_energy.second += 0.1f;
+
+  if (key == GLFW_KEY_L && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    light.m_energy.second -= 0.1f;
 }
 
 void moveCamera()
@@ -130,6 +147,7 @@ void init()
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   camera.m_speed = 0.04f;
+  light.m_energy.second = 5.0f;
 }
 
 // SHADERS --------------------------------------------------------------------
@@ -249,6 +267,11 @@ int main()
   // --------------------------------------------------------------------
   projection = glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 100.0f);
 
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture1);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, texture2);
+
   // Program loop -------------------------------------------------------------
   while (!glfwWindowShouldClose(window))
   {
@@ -270,35 +293,8 @@ int main()
     shaderProgram.setUniformValue("material.diffuse2", 1);
     shaderProgram.setUniformValue("material.specular", 1.0f, 1.0f, 1.0f);
     shaderProgram.setUniformValue("material.shininess", 32.0f);
-    //shaderProgram.setUniformValue("dirLight.direction", -1.2f, -0.8f, -2.5f);
-    //shaderProgram.setUniformValue("dirLight.ambient", 0.2f, 0.2f, 0.2f);
-    //shaderProgram.setUniformValue("dirLight.diffuse", 0.8f, 0.8f, 0.8f);
-    //shaderProgram.setUniformValue("dirLight.specular", 1.0f, 1.0f, 0.9f);
 
-    //shaderProgram.setUniformValue("pointLight.position", lightPosition);
-    //shaderProgram.setUniformValue("pointLight.constant", 1.0f);
-    //shaderProgram.setUniformValue("pointLight.linear", 0.09f);
-    //shaderProgram.setUniformValue("pointLight.quadratic", 0.032f);
-    //shaderProgram.setUniformValue("pointLight.ambient", 0.2f, 0.2f, 0.2f);
-    //shaderProgram.setUniformValue("pointLight.diffuse", 0.8f, 0.8f, 0.8f);
-    //shaderProgram.setUniformValue("pointLight.specular", 1.0f, 1.0f, 0.9f);
-
-    shaderProgram.setUniformValue("spotLight.position", lightPosition);
-    shaderProgram.setUniformValue("spotLight.direction", lightDirection);
-    shaderProgram.setUniformValue("spotLight.cutOff", glm::cos(glm::radians(10.f)));
-    shaderProgram.setUniformValue("spotLight.outerCutOff",
-                                  glm::cos(glm::radians(20.0f)));
-    shaderProgram.setUniformValue("spotLight.constant", 1.0f);
-    shaderProgram.setUniformValue("spotLight.linear", 0.09f);
-    shaderProgram.setUniformValue("spotLight.quadratic", 0.032f);
-    shaderProgram.setUniformValue("spotLight.ambient", 0.2f, 0.2f, 0.2f);
-    shaderProgram.setUniformValue("spotLight.diffuse", 0.8f, 0.8f, 0.8f);
-    shaderProgram.setUniformValue("spotLight.specular", 1.0f, 1.0f, 0.9f);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texture2);
+    light.setShaderUniform(shaderProgram);
 
     VAO.bind();
 
