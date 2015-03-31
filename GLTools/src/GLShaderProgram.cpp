@@ -61,117 +61,118 @@ GLint GLTools::GLShaderProgram::uniformLocation(const std::string& name) const
   return uniformLocation(name.c_str());
 }
 
-void GLTools::GLShaderProgram::setUniformValue(GLint location, int i)
+void GLTools::GLShaderProgram::setUniformValue(GLint location, int i) const
 {
   glUniform1i(location, i);
 }
 
-void GLTools::GLShaderProgram::setUniformValue(const char *name, int i)
+void GLTools::GLShaderProgram::setUniformValue(const char *name, int i) const
 {
   setUniformValue(uniformLocation(name), i);
 }
 
-void GLTools::GLShaderProgram::setUniformValue(GLint location, float f)
+void GLTools::GLShaderProgram::setUniformValue(GLint location, float f) const
 {
   glUniform1f(location, f);
 }
 
-void GLTools::GLShaderProgram::setUniformValue(const char *name, float f)
+void GLTools::GLShaderProgram::setUniformValue(const char *name, float f) const
 {
   setUniformValue(uniformLocation(name), f);
 }
 
-void GLTools::GLShaderProgram::setUniformValue(GLint location, float x, float y)
+void GLTools::GLShaderProgram::setUniformValue(GLint location, float x,
+                                               float y) const
 {
   glUniform2f(location, x, y);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(const char *name, float x, float y)
+(const char *name, float x, float y) const
 {
   setUniformValue(uniformLocation(name), x, y);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(GLint location, const glm::vec2& value)
+(GLint location, const glm::vec2& value) const
 {
   setUniformValue(location, value.x, value.y);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(const char *name, const glm::vec2& value)
+(const char *name, const glm::vec2& value) const
 {
   setUniformValue(uniformLocation(name), value.x, value.y);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(GLint location, float x, float y, float z)
+(GLint location, float x, float y, float z) const
 {
   glUniform3f(location, x, y, z);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(const char *name, float x, float y, float z)
+(const char *name, float x, float y, float z) const
 {
   setUniformValue(uniformLocation(name), x, y, z);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(GLint location, const glm::vec3& value)
+(GLint location, const glm::vec3& value) const
 {
   setUniformValue(location, value.x, value.y, value.z);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(const char *name, const glm::vec3& value)
+(const char *name, const glm::vec3& value) const
 {
   setUniformValue(uniformLocation(name), value.x, value.y, value.z);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(GLint location, float x, float y, float z, float w)
+(GLint location, float x, float y, float z, float w) const
 {
   glUniform4f(location, x, y, z, w);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(const char *name, float x, float y, float z, float w)
+(const char *name, float x, float y, float z, float w) const
 {
   setUniformValue(uniformLocation(name), x, y, z, w);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(GLint location, const glm::vec4& value)
+(GLint location, const glm::vec4& value) const
 {
   setUniformValue(location, value.x, value.y, value.z, value.w);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(const char *name, const glm::vec4& value)
+(const char *name, const glm::vec4& value) const
 {
   setUniformValue(uniformLocation(name), value.x, value.y, value.z, value.w);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(GLint location, const glm::mat3& value, GLboolean transpose)
+(GLint location, const glm::mat3& value, GLboolean transpose) const
 {
   glUniformMatrix3fv(location, 1, transpose, glm::value_ptr(value));
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(const char *name, const glm::mat3& value, GLboolean transpose)
+(const char *name, const glm::mat3& value, GLboolean transpose) const
 {
   setUniformValue(uniformLocation(name), value, transpose);
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(GLint location, const glm::mat4& value, GLboolean transpose)
+(GLint location, const glm::mat4& value, GLboolean transpose) const
 {
   glUniformMatrix4fv(location, 1, transpose, glm::value_ptr(value));
 }
 
 void GLTools::GLShaderProgram::setUniformValue
-(const char *name, const glm::mat4& value, GLboolean transpose)
+(const char *name, const glm::mat4& value, GLboolean transpose) const
 {
   setUniformValue(uniformLocation(name), value, transpose);
 }

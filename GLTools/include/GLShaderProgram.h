@@ -25,31 +25,31 @@ public:
   GLint uniformLocation(const char *name) const;
   GLint uniformLocation(const std::string& name) const;
 
-  void setUniformValue(GLint location, int i);
-  void setUniformValue(const char *name, int i);
-  void setUniformValue(GLint location, float f);
-  void setUniformValue(const char *name, float f);
-  void setUniformValue(GLint location, float x, float y);
-  void setUniformValue(const char *name, float x, float y);
-  void setUniformValue(GLint location, const glm::vec2& value);
-  void setUniformValue(const char *name, const glm::vec2& value);
-  void setUniformValue(GLint location, float x, float y, float z);
-  void setUniformValue(const char *name, float x, float y, float z);
-  void setUniformValue(GLint location, const glm::vec3& value);
-  void setUniformValue(const char *name, const glm::vec3& value);
-  void setUniformValue(GLint location, float x, float y, float z, float w);
-  void setUniformValue(const char *name, float x, float y, float z, float w);
-  void setUniformValue(GLint location, const glm::vec4& value);
-  void setUniformValue(const char *name, const glm::vec4& value);
+  void setUniformValue(GLint, int) const;
+  void setUniformValue(const char *, int) const;
+  void setUniformValue(GLint, float) const;
+  void setUniformValue(const char *, float) const;
+  void setUniformValue(GLint, float, float) const;
+  void setUniformValue(const char *, float, float) const;
+  void setUniformValue(GLint, const glm::vec2&) const;
+  void setUniformValue(const char *, const glm::vec2&) const;
+  void setUniformValue(GLint, float, float, float) const;
+  void setUniformValue(const char *, float, float, float) const;
+  void setUniformValue(GLint, const glm::vec3&) const;
+  void setUniformValue(const char *, const glm::vec3&) const;
+  void setUniformValue(GLint, float, float, float, float) const;
+  void setUniformValue(const char *, float, float, float, float) const;
+  void setUniformValue(GLint, const glm::vec4&) const;
+  void setUniformValue(const char *, const glm::vec4&) const;
 
   void setUniformValue
-  (GLint location, const glm::mat3& value, GLboolean transpose = GL_FALSE);
+  (GLint, const glm::mat3&, GLboolean = GL_FALSE) const;
   void setUniformValue
-  (const char *name, const glm::mat3& value, GLboolean transpose = GL_FALSE);
+  (const char *, const glm::mat3&, GLboolean = GL_FALSE) const;
   void setUniformValue
-  (GLint location, const glm::mat4& value, GLboolean transpose = GL_FALSE);
+  (GLint, const glm::mat4&, GLboolean = GL_FALSE) const;
   void setUniformValue
-  (const char *name, const glm::mat4& value, GLboolean transpose = GL_FALSE);
+  (const char *, const glm::mat4&, GLboolean = GL_FALSE) const;
 
   bool isLinked() const;
   const std::string& log() const;
