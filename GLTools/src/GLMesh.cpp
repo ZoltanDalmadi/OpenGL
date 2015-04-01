@@ -2,14 +2,14 @@
 
 GLTools::GLMesh::GLMesh()
 {
+  m_EBO.setType(GLTools::GLBufferObject::BufferType::IndexBuffer);
 }
 
-GLTools::GLMesh::GLMesh
-(std::vector<Vertex>& v, std::vector<GLuint>& i, std::vector<Texture>& t)
-  : vertices(std::move(v)),
-    indices(std::move(i)),
-    textures(std::move(t))
+GLTools::GLMesh::GLMesh(std::vector<Vertex>& v, std::vector<GLuint>& i)
+  : m_vertices(std::move(v)),
+    m_indices(std::move(i))
 {
+  m_EBO.setType(GLTools::GLBufferObject::BufferType::IndexBuffer);
   initialize();
 }
 
@@ -18,20 +18,20 @@ GLTools::GLMesh::~GLMesh()
 
 void GLTools::GLMesh::initialize()
 {
-  VAO.create();
-  VBO.create();
-  EBO.create();
+  m_VAO.create();
+  m_VBO.create();
+  m_EBO.create();
 
-  VAO.bind();
+  m_VAO.bind();
 
-  VBO.bind();
-  VBO.upload(vertices.data(), vertices.size() * sizeof(Vertex));
-  EBO.bind();
-  EBO.upload(indices.data(), indices.size() * sizeof(GLuint));
+  m_VBO.bind();
+  m_VBO.upload(m_vertices.data(), m_vertices.size() * sizeof(Vertex));
+  m_EBO.bind();
+  m_EBO.upload(m_indices.data(), m_indices.size() * sizeof(GLuint));
 
-  VAO.setAttributeArray(0, 3, offsetof(Vertex, position), sizeof(Vertex));
-  VAO.setAttributeArray(1, 3, offsetof(Vertex, normal), sizeof(Vertex));
-  VAO.setAttributeArray(2, 3, offsetof(Vertex, texCoords), sizeof(Vertex));
+  m_VAO.setAttributeArray(0, 3, sizeof(Vertex));
+  m_VAO.setAttributeArray(1, 3, sizeof(Vertex), offsetof(Vertex, normal));
+  m_VAO.setAttributeArray(2, 2, sizeof(Vertex), offsetof(Vertex, texCoords));
 
-  VAO.unbind();
+  m_VAO.unbind();
 }

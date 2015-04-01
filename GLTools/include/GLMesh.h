@@ -19,36 +19,22 @@ struct Vertex
   glm::vec2 texCoords;
 };
 
-struct Texture
-{
-  GLint ID;
-  enum class TextureType
-  {
-    DIFFUSE,
-    SPECULAR,
-    BUMP,
-    NORMAL
-  };
-};
-
 class GLMesh
 {
 public:
-  std::vector<Vertex> vertices;
-  std::vector<GLuint> indices;
-  std::vector<Texture> textures;
+  std::vector<Vertex> m_vertices;
+  std::vector<GLuint> m_indices;
 
   GLMesh();
-  GLMesh(std::vector<Vertex>& v, std::vector<GLuint>& i, std::vector<Texture>& t);
+  GLMesh(std::vector<Vertex>& v, std::vector<GLuint>& i);
 
   virtual ~GLMesh();
 
   void initialize();
 
-private:
-  GLVertexArrayObject VAO;
-  GLBufferObject VBO;
-  GLBufferObject EBO;
+  GLVertexArrayObject m_VAO;
+  GLBufferObject m_VBO;
+  GLBufferObject m_EBO;
 };
 
 }
