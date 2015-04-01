@@ -44,6 +44,9 @@
     <ClInclude Include="include\GLSpotLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\GLCube.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GLShader.cpp">
@@ -77,6 +80,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\GLSpotLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GLCube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
