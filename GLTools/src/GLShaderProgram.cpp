@@ -71,12 +71,24 @@ void GLTools::GLShaderProgram::setUniformValue(const char *name, int i) const
   setUniformValue(uniformLocation(name), i);
 }
 
+void GLTools::GLShaderProgram::setUniformValue
+(const std::string& name, int i) const
+{
+  setUniformValue(uniformLocation(name), i);
+}
+
 void GLTools::GLShaderProgram::setUniformValue(GLint location, float f) const
 {
   glUniform1f(location, f);
 }
 
 void GLTools::GLShaderProgram::setUniformValue(const char *name, float f) const
+{
+  setUniformValue(uniformLocation(name), f);
+}
+
+void GLTools::GLShaderProgram::setUniformValue
+(const std::string& name, float f) const
 {
   setUniformValue(uniformLocation(name), f);
 }
@@ -94,6 +106,12 @@ void GLTools::GLShaderProgram::setUniformValue
 }
 
 void GLTools::GLShaderProgram::setUniformValue
+(const std::string& name, float x, float y) const
+{
+  setUniformValue(uniformLocation(name), x, y);
+}
+
+void GLTools::GLShaderProgram::setUniformValue
 (GLint location, const glm::vec2& value) const
 {
   setUniformValue(location, value.x, value.y);
@@ -101,6 +119,12 @@ void GLTools::GLShaderProgram::setUniformValue
 
 void GLTools::GLShaderProgram::setUniformValue
 (const char *name, const glm::vec2& value) const
+{
+  setUniformValue(uniformLocation(name), value.x, value.y);
+}
+
+void GLTools::GLShaderProgram::setUniformValue
+(const std::string& name, const glm::vec2& value) const
 {
   setUniformValue(uniformLocation(name), value.x, value.y);
 }
@@ -118,6 +142,12 @@ void GLTools::GLShaderProgram::setUniformValue
 }
 
 void GLTools::GLShaderProgram::setUniformValue
+(const std::string& name, float x, float y, float z) const
+{
+  setUniformValue(uniformLocation(name), x, y, z);
+}
+
+void GLTools::GLShaderProgram::setUniformValue
 (GLint location, const glm::vec3& value) const
 {
   setUniformValue(location, value.x, value.y, value.z);
@@ -125,6 +155,12 @@ void GLTools::GLShaderProgram::setUniformValue
 
 void GLTools::GLShaderProgram::setUniformValue
 (const char *name, const glm::vec3& value) const
+{
+  setUniformValue(uniformLocation(name), value.x, value.y, value.z);
+}
+
+void GLTools::GLShaderProgram::setUniformValue
+(const std::string& name, const glm::vec3& value) const
 {
   setUniformValue(uniformLocation(name), value.x, value.y, value.z);
 }
@@ -142,6 +178,12 @@ void GLTools::GLShaderProgram::setUniformValue
 }
 
 void GLTools::GLShaderProgram::setUniformValue
+(const std::string& name, float x, float y, float z, float w) const
+{
+  setUniformValue(uniformLocation(name), x, y, z, w);
+}
+
+void GLTools::GLShaderProgram::setUniformValue
 (GLint location, const glm::vec4& value) const
 {
   setUniformValue(location, value.x, value.y, value.z, value.w);
@@ -149,6 +191,12 @@ void GLTools::GLShaderProgram::setUniformValue
 
 void GLTools::GLShaderProgram::setUniformValue
 (const char *name, const glm::vec4& value) const
+{
+  setUniformValue(uniformLocation(name), value.x, value.y, value.z, value.w);
+}
+
+void GLTools::GLShaderProgram::setUniformValue
+(const std::string& name, const glm::vec4& value) const
 {
   setUniformValue(uniformLocation(name), value.x, value.y, value.z, value.w);
 }
@@ -166,6 +214,12 @@ void GLTools::GLShaderProgram::setUniformValue
 }
 
 void GLTools::GLShaderProgram::setUniformValue
+(const std::string& name, const glm::mat3& value, GLboolean transpose) const
+{
+  setUniformValue(uniformLocation(name), value, transpose);
+}
+
+void GLTools::GLShaderProgram::setUniformValue
 (GLint location, const glm::mat4& value, GLboolean transpose) const
 {
   glUniformMatrix4fv(location, 1, transpose, glm::value_ptr(value));
@@ -173,6 +227,12 @@ void GLTools::GLShaderProgram::setUniformValue
 
 void GLTools::GLShaderProgram::setUniformValue
 (const char *name, const glm::mat4& value, GLboolean transpose) const
+{
+  setUniformValue(uniformLocation(name), value, transpose);
+}
+
+void GLTools::GLShaderProgram::setUniformValue
+(const std::string& name, const glm::mat4& value, GLboolean transpose) const
 {
   setUniformValue(uniformLocation(name), value, transpose);
 }

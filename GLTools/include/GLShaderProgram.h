@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <string>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "GLShader.h"
@@ -27,29 +28,41 @@ public:
 
   void setUniformValue(GLint, int) const;
   void setUniformValue(const char *, int) const;
+  void setUniformValue(const std::string&, int) const;
   void setUniformValue(GLint, float) const;
   void setUniformValue(const char *, float) const;
+  void setUniformValue(const std::string&, float) const;
   void setUniformValue(GLint, float, float) const;
   void setUniformValue(const char *, float, float) const;
+  void setUniformValue(const std::string&, float, float) const;
   void setUniformValue(GLint, const glm::vec2&) const;
   void setUniformValue(const char *, const glm::vec2&) const;
+  void setUniformValue(const std::string&, const glm::vec2&) const;
   void setUniformValue(GLint, float, float, float) const;
   void setUniformValue(const char *, float, float, float) const;
+  void setUniformValue(const std::string&, float, float, float) const;
   void setUniformValue(GLint, const glm::vec3&) const;
   void setUniformValue(const char *, const glm::vec3&) const;
+  void setUniformValue(const std::string&, const glm::vec3&) const;
   void setUniformValue(GLint, float, float, float, float) const;
   void setUniformValue(const char *, float, float, float, float) const;
+  void setUniformValue(const std::string&, float, float, float, float) const;
   void setUniformValue(GLint, const glm::vec4&) const;
   void setUniformValue(const char *, const glm::vec4&) const;
+  void setUniformValue(const std::string&, const glm::vec4&) const;
 
   void setUniformValue
   (GLint, const glm::mat3&, GLboolean = GL_FALSE) const;
   void setUniformValue
   (const char *, const glm::mat3&, GLboolean = GL_FALSE) const;
   void setUniformValue
+  (const std::string&, const glm::mat3&, GLboolean = GL_FALSE) const;
+  void setUniformValue
   (GLint, const glm::mat4&, GLboolean = GL_FALSE) const;
   void setUniformValue
   (const char *, const glm::mat4&, GLboolean = GL_FALSE) const;
+  void setUniformValue
+  (const std::string&, const glm::mat4&, GLboolean = GL_FALSE) const;
 
   bool isLinked() const;
   const std::string& log() const;
