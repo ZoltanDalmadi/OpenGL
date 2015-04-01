@@ -18,13 +18,13 @@ GLTools::GLDirectionalLight::~GLDirectionalLight()
 void GLTools::GLDirectionalLight::setShaderUniform
 (const GLTools::GLShaderProgram& program)
 {
-  program.setUniformValue(m_direction_str.c_str(), m_direction.second);
+  program.setUniformValue(m_direction_str, m_direction.second);
 
-  program.setUniformValue(m_ambient_str.c_str(), m_ambient.second);
-  program.setUniformValue(m_diffuse_str.c_str(), m_diffuse.second);
-  program.setUniformValue(m_specular_str.c_str(), m_specular.second);
+  program.setUniformValue(m_ambient_str, m_ambient.second);
+  program.setUniformValue(m_diffuse_str, m_diffuse.second);
+  program.setUniformValue(m_specular_str, m_specular.second);
 
-  program.setUniformValue(m_energy_str.c_str(), m_energy.second);
+  program.setUniformValue(m_energy_str, m_energy.second);
 }
 
 void GLTools::GLDirectionalLight::buildShaderStrings()

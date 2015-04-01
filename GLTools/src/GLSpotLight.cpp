@@ -21,21 +21,21 @@ GLTools::GLSpotLight::~GLSpotLight()
 void GLTools::GLSpotLight::setShaderUniform
 (const GLTools::GLShaderProgram& program)
 {
-  program.setUniformValue(m_position_str.c_str(), m_position.second);
-  program.setUniformValue(m_direction_str.c_str(), m_direction.second);
+  program.setUniformValue(m_position_str, m_position.second);
+  program.setUniformValue(m_direction_str, m_direction.second);
 
-  program.setUniformValue(m_ambient_str.c_str(), m_ambient.second);
-  program.setUniformValue(m_diffuse_str.c_str(), m_diffuse.second);
-  program.setUniformValue(m_specular_str.c_str(), m_specular.second);
+  program.setUniformValue(m_ambient_str, m_ambient.second);
+  program.setUniformValue(m_diffuse_str, m_diffuse.second);
+  program.setUniformValue(m_specular_str, m_specular.second);
 
-  program.setUniformValue(m_constant_str.c_str(), m_constant.second);
-  program.setUniformValue(m_linear_str.c_str(), m_linear.second);
-  program.setUniformValue(m_quadratic_str.c_str(), m_quadratic.second);
+  program.setUniformValue(m_constant_str, m_constant.second);
+  program.setUniformValue(m_linear_str, m_linear.second);
+  program.setUniformValue(m_quadratic_str, m_quadratic.second);
 
-  program.setUniformValue(m_cutoff_str.c_str(), m_cutoff.second);
-  program.setUniformValue(m_outercutoff_str.c_str(), m_outercutoff.second);
+  program.setUniformValue(m_cutoff_str, m_cutoff.second);
+  program.setUniformValue(m_outercutoff_str, m_outercutoff.second);
 
-  program.setUniformValue(m_energy_str.c_str(), m_energy.second);
+  program.setUniformValue(m_energy_str, m_energy.second);
 }
 
 void GLTools::GLSpotLight::buildShaderStrings()
