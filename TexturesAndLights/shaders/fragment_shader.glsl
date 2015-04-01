@@ -40,7 +40,7 @@ struct PointLight
 
   float energy;
 };
-uniform PointLight pointLight;
+uniform PointLight pointLight[2];
 
 struct SpotLight
 {
@@ -59,21 +59,7 @@ struct SpotLight
 
   float energy;
 };
-uniform SpotLight spotLight;
-
-vec3 calcDirLight(DirectionalLight light, vec3 normal, vec3 camDir);
-vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 camDir);
-vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir);
-
-void main()
-{
-  vec3 norm = normalize(normalVec);
-  vec3 camDir = normalize(camPos - fragPos);
-  /* vec3 result = calcDirLight(dirLight, norm, camDir); */
-  vec3 result = calcPointLight(pointLight, norm, fragPos, camDir);
-  /* vec3 result = calcSpotLight(spotLight, norm, fragPos, camDir); */
-  gl_FragColor = vec4(result, 1.0f);
-}
+uniform SpotLight spotLight[4];
 
 vec3 calcDirLight(DirectionalLight light, vec3 normal, vec3 camDir)
 {
@@ -143,4 +129,21 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir)
   diffuse *= attenuation * intensity;
   specular *= attenuation * intensity;
   return (ambient + diffuse + specular) * light.energy;
+}
+
+void main()
+{
+  vec3 norm = normalize(normalVec);
+  vec3 camDir = normalize(camPos - fragPos);
+
+  vec3 result;
+  /* result += calcDirLight(dirLight, norm, camDir); */
+
+  for(int i = 0; i < 2; i++)
+    result += calcPointLight(pointLight[i], norm, fragPos, camDir);
+
+  for(int i = 0; i < 4; i++)
+    result += calcSpotLight(spotLight[i], norm, fragPos, camDir);
+
+  gl_FragColor = vec4(result, 1.0f);
 }

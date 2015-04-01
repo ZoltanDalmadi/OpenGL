@@ -33,8 +33,14 @@ GLTools::GLFPSCamera camera(glm::vec3(0.0f, 0.5f, -1.0f));
 //                                  glm::vec3(0.8f, 0.8f, 0.8f),
 //                                  glm::vec3(1.0f, 1.0f, 1.0f),
 //                                  5.0f);
-//GLTools::GLPointLight light(glm::vec3(0.0f, 1.0f, 0.0f));
-GLTools::GLSpotLight light(glm::vec3(0.0f, 1.0f, 0.0f));
+//GLTools::GLSpotLight light(glm::vec3(0.0f, 1.0f, 0.0f));
+
+GLTools::GLPointLight pointLight1(glm::vec3(5.0f, 1.0f, 0.0f));
+GLTools::GLPointLight pointLight2(glm::vec3(-5.0f, 1.0f, 0.0f));
+GLTools::GLSpotLight spotLight1(glm::vec3(-8.0f, 8.0f, 8.0f));
+GLTools::GLSpotLight spotLight2(glm::vec3(8.0f, 8.0f, 8.0f));
+GLTools::GLSpotLight spotLight3(glm::vec3(-8.0f, 8.0f, -8.0f));
+GLTools::GLSpotLight spotLight4(glm::vec3(8.0f, 8.0f, -8.0f));
 
 glm::vec3 lightPosition(0.0f, 1.0f, 0.0f);
 glm::vec3 lightDirection(0.0f, -1.0f, 0.0f);
@@ -63,29 +69,29 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
 
-  if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    light.m_position.second += glm::vec3(0.1f, 0.0f, 0.0f);
+  //if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  //  light.m_position.second += glm::vec3(0.1f, 0.0f, 0.0f);
 
-  if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    light.m_position.second -= glm::vec3(0.1f, 0.0f, 0.0f);
+  //if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  //  light.m_position.second -= glm::vec3(0.1f, 0.0f, 0.0f);
 
-  if (key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    light.m_position.second += glm::vec3(0.0f, 0.1f, 0.0f);
+  //if (key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  //  light.m_position.second += glm::vec3(0.0f, 0.1f, 0.0f);
 
-  if (key == GLFW_KEY_K && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    light.m_position.second -= glm::vec3(0.0f, 0.1f, 0.0f);
+  //if (key == GLFW_KEY_K && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  //  light.m_position.second -= glm::vec3(0.0f, 0.1f, 0.0f);
 
-  if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    light.m_position.second += glm::vec3(0.0f, 0.0f, 0.1f);
+  //if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  //  light.m_position.second += glm::vec3(0.0f, 0.0f, 0.1f);
 
-  if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    light.m_position.second -= glm::vec3(0.0f, 0.0f, 0.1f);
+  //if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  //  light.m_position.second -= glm::vec3(0.0f, 0.0f, 0.1f);
 
-  if (key == GLFW_KEY_O && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    light.m_energy.second += 0.1f;
+  //if (key == GLFW_KEY_O && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  //  light.m_energy.second += 0.1f;
 
-  if (key == GLFW_KEY_L && (action == GLFW_PRESS || action == GLFW_REPEAT))
-    light.m_energy.second -= 0.1f;
+  //if (key == GLFW_KEY_L && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  //  light.m_energy.second -= 0.1f;
 }
 
 void moveCamera()
@@ -147,7 +153,18 @@ void init()
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   camera.m_speed = 0.04f;
-  light.m_energy.second = 5.0f;
+  pointLight1.m_name = "pointLight[0]";
+  pointLight1.buildShaderStrings();
+  pointLight2.m_name = "pointLight[1]";
+  pointLight2.buildShaderStrings();
+  spotLight1.m_name = "spotLight[0]";
+  spotLight1.buildShaderStrings();
+  spotLight2.m_name = "spotLight[1]";
+  spotLight2.buildShaderStrings();
+  spotLight3.m_name = "spotLight[2]";
+  spotLight3.buildShaderStrings();
+  spotLight4.m_name = "spotLight[3]";
+  spotLight4.buildShaderStrings();
 }
 
 // SHADERS --------------------------------------------------------------------
@@ -294,7 +311,12 @@ int main()
     shaderProgram.setUniformValue("material.specular", 1.0f, 1.0f, 1.0f);
     shaderProgram.setUniformValue("material.shininess", 32.0f);
 
-    light.setShaderUniform(shaderProgram);
+    pointLight1.setShaderUniform(shaderProgram);
+    pointLight2.setShaderUniform(shaderProgram);
+    spotLight1.setShaderUniform(shaderProgram);
+    spotLight2.setShaderUniform(shaderProgram);
+    spotLight3.setShaderUniform(shaderProgram);
+    spotLight4.setShaderUniform(shaderProgram);
 
     VAO.bind();
 
