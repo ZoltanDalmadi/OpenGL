@@ -16,6 +16,7 @@
 #include "GLDirectionalLight.h"
 #include "GLPointLight.h"
 #include "GLSpotLight.h"
+#include "GLCube.h"
 
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
@@ -23,6 +24,7 @@ const GLuint HEIGHT = 720;
 GLFWwindow *window;
 
 glm::mat4 model;
+glm::mat4 cubeModel;
 glm::mat3 normalMatrix;
 glm::mat4 projection;
 
@@ -41,6 +43,8 @@ GLTools::GLSpotLight spotLight1(glm::vec3(-8.0f, 8.0f, 8.0f));
 GLTools::GLSpotLight spotLight2(glm::vec3(8.0f, 8.0f, 8.0f));
 GLTools::GLSpotLight spotLight3(glm::vec3(-8.0f, 8.0f, -8.0f));
 GLTools::GLSpotLight spotLight4(glm::vec3(8.0f, 8.0f, -8.0f));
+
+GLTools::GLCube cube(2.0f);
 
 glm::vec3 lightPosition(0.0f, 1.0f, 0.0f);
 glm::vec3 lightDirection(0.0f, -1.0f, 0.0f);
@@ -152,19 +156,22 @@ void init()
   glEnable(GL_CULL_FACE);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-  camera.m_speed = 0.04f;
+  //camera.m_speed = 0.04f;
   pointLight1.m_name = "pointLight[0]";
   pointLight1.buildShaderStrings();
   pointLight2.m_name = "pointLight[1]";
   pointLight2.buildShaderStrings();
   spotLight1.m_name = "spotLight[0]";
   spotLight1.buildShaderStrings();
+  spotLight2.m_energy.second = 3.0f;
   spotLight2.m_name = "spotLight[1]";
   spotLight2.buildShaderStrings();
   spotLight3.m_name = "spotLight[2]";
   spotLight3.buildShaderStrings();
   spotLight4.m_name = "spotLight[3]";
   spotLight4.buildShaderStrings();
+
+  cube.initialize();
 }
 
 // SHADERS --------------------------------------------------------------------
@@ -289,6 +296,8 @@ int main()
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, texture2);
 
+  cubeModel = glm::translate(cubeModel, glm::vec3(6.0f, 3.0f, 6.0f));
+
   // Program loop -------------------------------------------------------------
   while (!glfwWindowShouldClose(window))
   {
@@ -321,6 +330,12 @@ int main()
     VAO.bind();
 
     glDrawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(indices.size()),
+                   GL_UNSIGNED_INT, 0);
+
+    shaderProgram.setUniformValue("model", cubeModel);
+
+    cube.m_VAO.bind();
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(cube.m_indices.size()),
                    GL_UNSIGNED_INT, 0);
 
     // Swap the buffers
