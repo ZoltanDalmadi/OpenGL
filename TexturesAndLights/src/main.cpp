@@ -16,7 +16,7 @@
 #include "GLDirectionalLight.h"
 #include "GLPointLight.h"
 #include "GLSpotLight.h"
-#include "GLCube.h"
+#include "GLSphere.h"
 
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
@@ -26,6 +26,7 @@ GLFWwindow *window;
 glm::mat4 model;
 glm::mat4 cubeModel;
 glm::mat3 normalMatrix;
+glm::mat4 cubeNormalMatrix;
 glm::mat4 projection;
 
 GLTools::GLFPSCamera camera(glm::vec3(0.0f, 0.5f, -1.0f));
@@ -44,7 +45,7 @@ GLTools::GLSpotLight spotLight2(glm::vec3(8.0f, 8.0f, 8.0f));
 GLTools::GLSpotLight spotLight3(glm::vec3(-8.0f, 8.0f, -8.0f));
 GLTools::GLSpotLight spotLight4(glm::vec3(8.0f, 8.0f, -8.0f));
 
-GLTools::GLCube cube(2.0f);
+GLTools::GLSphere sphere(2.0f, 24, 24);
 
 glm::vec3 lightPosition(0.0f, 1.0f, 0.0f);
 glm::vec3 lightDirection(0.0f, -1.0f, 0.0f);
@@ -171,11 +172,12 @@ void init()
   spotLight4.m_name = "spotLight[3]";
   spotLight4.buildShaderStrings();
 
-  cube.initialize();
+  sphere.initialize();
 }
 
 // SHADERS --------------------------------------------------------------------
-void setupShaders(GLTools::GLShaderProgram& shaderProgram)
+void setupShaders(GLTools::GLShaderProgram& shaderProgram,
+                  GLTools::GLShaderProgram& sphereShaderProgram)
 {
   auto vertexShader =
     std::make_shared<GLTools::GLShader>
@@ -191,12 +193,25 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram)
   fragmentShader->compile();
   std::cout << fragmentShader->log() << std::endl;
 
+  auto sphereShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER);
+  sphereShader->loadSource("shaders/sphere_fragment_shader.glsl");
+  sphereShader->compile();
+  std::cout << sphereShader->log() << std::endl;
+
   // Shader program
   shaderProgram.create();
   shaderProgram.addShader(vertexShader);
   shaderProgram.addShader(fragmentShader);
   shaderProgram.link();
   std::cout << shaderProgram.log() << std::endl;
+
+  sphereShaderProgram.create();
+  sphereShaderProgram.addShader(vertexShader);
+  sphereShaderProgram.addShader(sphereShader);
+  sphereShaderProgram.link();
+  std::cout << sphereShaderProgram.log() << std::endl;
 }
 
 // The MAIN function
@@ -210,7 +225,8 @@ int main()
 
   // STUFF --------------------------------------------------------------------
   GLTools::GLShaderProgram shaderProgram;
-  setupShaders(shaderProgram);
+  GLTools::GLShaderProgram sphereShaderProgram;
+  setupShaders(shaderProgram, sphereShaderProgram);
 
   std::vector<Vertex> vertices;
   Vertex vert;
@@ -240,7 +256,7 @@ int main()
   GLuint texture1;
   glGenTextures(1, &texture1);
   glBindTexture(GL_TEXTURE_2D, texture1);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
   int width, height;
   unsigned char *image =
@@ -254,11 +270,23 @@ int main()
   GLuint texture2;
   glGenTextures(1, &texture2);
   glBindTexture(GL_TEXTURE_2D, texture2);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
   image =
-    SOIL_load_image("textures/awesomeface.png", &width, &height, 0,
-                    SOIL_LOAD_RGB);
+    SOIL_load_image("textures/awesomeface.png", &width, &height, 0, SOIL_LOAD_RGB);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, image);
+  glGenerateMipmap(GL_TEXTURE_2D);
+  SOIL_free_image_data(image);
+
+  GLuint texture3;
+  glGenTextures(1, &texture3);
+  glBindTexture(GL_TEXTURE_2D, texture3);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+  image =
+    SOIL_load_image("textures/earth.jpg", &width, &height, 0, SOIL_LOAD_RGB);
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
                GL_UNSIGNED_BYTE, image);
@@ -291,12 +319,10 @@ int main()
   // --------------------------------------------------------------------
   projection = glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 100.0f);
 
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, texture1);
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, texture2);
-
   cubeModel = glm::translate(cubeModel, glm::vec3(6.0f, 3.0f, 6.0f));
+  cubeModel = glm::rotate(cubeModel, glm::radians(90.0f), glm::vec3(1.0f, 0.0f,
+                          0.0f));
+  normalMatrix = glm::mat3(glm::transpose(glm::inverse(cubeModel)));
 
   // Program loop -------------------------------------------------------------
   while (!glfwWindowShouldClose(window))
@@ -307,13 +333,16 @@ int main()
 
     moveCamera();
 
-    // Render
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
     shaderProgram.use();
     shaderProgram.setUniformValue("model", model);
     shaderProgram.setUniformValue("view", camera.m_viewMatrix);
     shaderProgram.setUniformValue("projection", projection);
-    shaderProgram.setUniformValue("normalMatrix",
-                                  glm::mat3(glm::transpose(glm::inverse(model))));
+    shaderProgram.setUniformValue("normalMatrix", normalMatrix);
     shaderProgram.setUniformValue("camPos", camera.m_position);
     shaderProgram.setUniformValue("material.diffuse1", 0);
     shaderProgram.setUniformValue("material.diffuse2", 1);
@@ -332,10 +361,27 @@ int main()
     glDrawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(indices.size()),
                    GL_UNSIGNED_INT, 0);
 
-    shaderProgram.setUniformValue("model", cubeModel);
+    sphereShaderProgram.use();
+    sphereShaderProgram.setUniformValue("model", cubeModel);
+    sphereShaderProgram.setUniformValue("view", camera.m_viewMatrix);
+    sphereShaderProgram.setUniformValue("projection", projection);
+    sphereShaderProgram.setUniformValue("normalMatrix", cubeNormalMatrix);
+    sphereShaderProgram.setUniformValue("camPos", camera.m_position);
+    sphereShaderProgram.setUniformValue("material.diffuse", 0);
+    sphereShaderProgram.setUniformValue("material.specular", 1.0f, 1.0f, 1.0f);
+    sphereShaderProgram.setUniformValue("material.shininess", 32.0f);
 
-    cube.m_VAO.bind();
-    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(cube.m_indices.size()),
+    pointLight1.setShaderUniform(sphereShaderProgram);
+    pointLight2.setShaderUniform(sphereShaderProgram);
+    spotLight1.setShaderUniform(sphereShaderProgram);
+    spotLight2.setShaderUniform(sphereShaderProgram);
+    spotLight3.setShaderUniform(sphereShaderProgram);
+    spotLight4.setShaderUniform(sphereShaderProgram);
+
+    sphere.m_VAO.bind();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture3);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(sphere.m_indices.size()),
                    GL_UNSIGNED_INT, 0);
 
     // Swap the buffers
