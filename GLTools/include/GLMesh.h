@@ -30,7 +30,9 @@ public:
 
   virtual ~GLMesh();
 
-  void initialize();
+  virtual void initialize();
+
+  virtual void draw();
 
   GLVertexArrayObject m_VAO;
   GLBufferObject m_VBO;
