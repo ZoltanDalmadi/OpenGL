@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelLoading", "ModelLoadin
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TexturesAndLights", "TexturesAndLights\TexturesAndLights.vcxproj", "{382DBCFF-9D8C-417A-8648-5960032ED7B5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Homework1", "Homework1\Homework1.vcxproj", "{71BB1B1A-0853-467E-B22C-07C42B5854CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -82,6 +84,17 @@ Global
 		{382DBCFF-9D8C-417A-8648-5960032ED7B5}.Release|Win32.Build.0 = Release|Win32
 		{382DBCFF-9D8C-417A-8648-5960032ED7B5}.Release|x64.ActiveCfg = Release|x64
 		{382DBCFF-9D8C-417A-8648-5960032ED7B5}.Release|x64.Build.0 = Release|x64
+		{71BB1B1A-0853-467E-B22C-07C42B5854CA}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{71BB1B1A-0853-467E-B22C-07C42B5854CA}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{71BB1B1A-0853-467E-B22C-07C42B5854CA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{71BB1B1A-0853-467E-B22C-07C42B5854CA}.Debug|Win32.Build.0 = Debug|Win32
+		{71BB1B1A-0853-467E-B22C-07C42B5854CA}.Debug|x64.ActiveCfg = Debug|Win32
+		{71BB1B1A-0853-467E-B22C-07C42B5854CA}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{71BB1B1A-0853-467E-B22C-07C42B5854CA}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{71BB1B1A-0853-467E-B22C-07C42B5854CA}.Release|Win32.ActiveCfg = Release|Win32
+		{71BB1B1A-0853-467E-B22C-07C42B5854CA}.Release|Win32.Build.0 = Release|Win32
+		{71BB1B1A-0853-467E-B22C-07C42B5854CA}.Release|x64.ActiveCfg = Release|x64
+		{71BB1B1A-0853-467E-B22C-07C42B5854CA}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
