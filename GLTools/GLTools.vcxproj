@@ -150,6 +150,7 @@
     <ClInclude Include="include\GLPointLight.h" />
     <ClInclude Include="include\GLShader.h" />
     <ClInclude Include="include\GLShaderProgram.h" />
+    <ClInclude Include="include\GLSkyBox.h" />
     <ClInclude Include="include\GLSphere.h" />
     <ClInclude Include="include\GLSpotLight.h" />
     <ClInclude Include="include\GLVertexArrayObject.h" />
@@ -165,6 +166,7 @@
     <ClCompile Include="src\GLPointLight.cpp" />
     <ClCompile Include="src\GLShader.cpp" />
     <ClCompile Include="src\GLShaderProgram.cpp" />
+    <ClCompile Include="src\GLSkyBox.cpp" />
     <ClCompile Include="src\GLSphere.cpp" />
     <ClCompile Include="src\GLSpotLight.cpp" />
     <ClCompile Include="src\GLVertexArrayObject.cpp" />
