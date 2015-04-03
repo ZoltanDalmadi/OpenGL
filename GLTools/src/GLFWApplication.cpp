@@ -1,18 +1,24 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
+#include <functional>
 #include "GLFWApplication.h"
 
 GLTools::GLFWApplication::GLFWApplication(int major, int minor)
+  : m_majorVersion(major), m_minorVersion(minor)
 {
-  glfwInit();
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 }
 
 GLTools::GLFWApplication::~GLFWApplication()
 {
+}
+
+void GLTools::GLFWApplication::initGLFW()
+{
+  glfwInit();
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, m_majorVersion);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, m_minorVersion);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 }
 
 void GLTools::GLFWApplication::createWindow(int width, int height,
@@ -26,19 +32,4 @@ void GLTools::GLFWApplication::createWindow(int width, int height,
   glewInit();
 
   glViewport(0, 0, width, height);
-}
-
-int GLTools::GLFWApplication::exec()
-{
-  while (!glfwWindowShouldClose(m_window))
-  {
-    glfwPollEvents();
-
-    m_renderfunc();
-
-    glfwSwapBuffers(m_window);
-  }
-
-  glfwTerminate();
-  return 0;
 }
