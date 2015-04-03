@@ -43,6 +43,8 @@ public:
   void setShaderUniform(const GLTools::GLShaderProgram& program);
   void buildShaderStrings();
 
+  void setTarget(const glm::vec3& target);
+
 private:
   std::string m_position_str;
   std::string m_direction_str;

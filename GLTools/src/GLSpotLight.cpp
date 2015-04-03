@@ -56,3 +56,8 @@ void GLTools::GLSpotLight::buildShaderStrings()
 
   m_energy_str = m_name + '.' + m_energy.first;
 }
+
+void GLTools::GLSpotLight::setTarget(const glm::vec3& target)
+{
+  m_direction.second = glm::normalize(target - m_position.second);
+}
