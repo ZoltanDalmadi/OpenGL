@@ -1,37 +1,10 @@
-#include <glm/gtc/matrix_transform.hpp>
 #include "GLCamera.h"
 
-GLTools::GLCamera::GLCamera(const vec3& position)
-  : GLCamera(position, vec3(0.0f)) {}
+GLTools::GLCamera::GLCamera()
+{}
 
-GLTools::GLCamera::GLCamera(const vec3& position, const vec3& target)
-  : m_position(position),
-    m_target(target),
-    m_up(vec3(0.0f, 1.0f, 0.0f)),
-    m_viewMatrix(glm::lookAt(position, target, m_up)) {}
+GLTools::GLCamera::GLCamera(const glm::vec3& position)
+  : m_position(position) {}
 
-void GLTools::GLCamera::orbit(const vec3& target, float angle, float radius)
-{
-  this->m_target = target;
-  float cameraX = this->m_target.x + std::sin(angle) * radius;
-  float cameraZ = this->m_target.z + std::cos(angle) * radius;
-  this->m_position = vec3(cameraX, target.y, cameraZ);
-  this->update();
-}
-
-void GLTools::GLCamera::moveTarget(const vec3& delta)
-{
-  this->m_target += delta;
-  this->update();
-}
-
-void GLTools::GLCamera::movePosition(const vec3& delta)
-{
-  this->m_position += delta;
-  this->update();
-}
-
-void GLTools::GLCamera::update()
-{
-  this->m_viewMatrix = glm::lookAt(m_position, m_target, m_up);
-}
+GLTools::GLCamera::~GLCamera()
+{}
