@@ -1,12 +1,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "GLFPSCamera.h"
 
-GLTools::GLFPSCamera::GLFPSCamera(const vec3& position)
+GLTools::GLFPSCamera::GLFPSCamera(const glm::vec3& position)
   : m_pitch(0),
     m_yaw(-90.0f),
-    m_position(position),
-    m_front(vec3(0.0f, 0.0f, -1.0f))
+    m_front(glm::vec3(0.0f, 0.0f, -1.0f))
 {
+  m_position = position;
   this->update();
 }
 
@@ -72,7 +72,7 @@ void GLTools::GLFPSCamera::update()
   front.y = std::sin(glm::radians(m_pitch));
   front.z = std::sin(glm::radians(m_yaw)) * std::cos(glm::radians(m_pitch));
   m_front = glm::normalize(front);
-  m_right = glm::normalize(glm::cross(m_front, vec3(0.0f, 1.0f, 0.0f)));
+  m_right = glm::normalize(glm::cross(m_front, glm::vec3(0.0f, 1.0f, 0.0f)));
   m_up = glm::normalize(glm::cross(m_right, m_front));
   m_viewMatrix = glm::lookAt(m_position, m_position - m_front, m_up);
 }
