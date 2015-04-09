@@ -153,6 +153,7 @@
     <ClInclude Include="include\GLSkyBox.h" />
     <ClInclude Include="include\GLSphere.h" />
     <ClInclude Include="include\GLSpotLight.h" />
+    <ClInclude Include="include\GLTargetCamera.h" />
     <ClInclude Include="include\GLVertexArrayObject.h" />
   </ItemGroup>
   <ItemGroup>
@@ -169,6 +170,7 @@
     <ClCompile Include="src\GLSkyBox.cpp" />
     <ClCompile Include="src\GLSphere.cpp" />
     <ClCompile Include="src\GLSpotLight.cpp" />
+    <ClCompile Include="src\GLTargetCamera.cpp" />
     <ClCompile Include="src\GLVertexArrayObject.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
