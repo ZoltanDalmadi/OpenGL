@@ -10,6 +10,7 @@
 #include <memory>
 #include <random>
 #include <vector>
+#include <list>
 
 #include "GLFPSCamera.h"
 #include "GLPointLight.h"
@@ -41,9 +42,6 @@ std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_real_distribution<float> dis(-10, 10);
 
-glm::vec3 randpositions[NUM_PLANETS];
-bool destroyed[NUM_PLANETS];
-
 bool cameraInCorner = false;
 
 glm::vec3 sunPos;
@@ -51,10 +49,19 @@ glm::vec3 lastCamFront;
 
 std::vector<const char *> skyBoxFaces;
 
+struct Planet
+{
+  glm::vec3 pos;
+  float scale;
+  GLuint texture;
+};
+
+std::list<Planet> planets(NUM_PLANETS);
+
 void getRand()
 {
-  for (size_t i = 0; i < NUM_PLANETS; i++)
-    randpositions[i] = glm::vec3(dis(gen), dis(gen), dis(gen));
+  for (auto it = planets.begin(); it != planets.end(); ++it)
+    it->pos = glm::vec3(dis(gen), dis(gen), dis(gen));
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -306,32 +313,44 @@ int main()
   GLTools::GLSphere planet(1.0f, 24, 24);
   planet.initialize();
 
-  std::vector<GLuint> planetTextures;
-
   GLuint cubemapTexture = loadCubemap(skyBoxFaces);
 
-  float planetScales[NUM_PLANETS];
+  getRand();
 
-  planetScales[0] = 0.8f;
-  planetScales[1] = 0.9f;
-  planetScales[2] = 1.0f;
-  planetScales[3] = 0.85f;
-  planetScales[4] = 2.5f;
-  planetScales[5] = 2.0f;
-  planetScales[6] = 1.5;
-  planetScales[7] = 1.8f;
+  auto planetIter = planets.begin();
+
+  planetIter->scale = 0.8f;
+  planetIter->texture = loadTexture("textures/mercury.jpg");
+  planetIter++;
+
+  planetIter->scale = 0.9f;
+  planetIter->texture = loadTexture("textures/venus.jpg");
+  planetIter++;
+
+  planetIter->scale = 1.0f;
+  planetIter->texture = loadTexture("textures/earth.jpg");
+  planetIter++;
+
+  planetIter->scale = 0.85f;
+  planetIter->texture = loadTexture("textures/mars.jpg");
+  planetIter++;
+
+  planetIter->scale = 2.5f;
+  planetIter->texture = loadTexture("textures/jupiter.jpg");
+  planetIter++;
+
+  planetIter->scale = 2.0f;
+  planetIter->texture = loadTexture("textures/saturn.jpg");
+  planetIter++;
+
+  planetIter->scale = 1.5;
+  planetIter->texture = loadTexture("textures/uranus.jpg");
+  planetIter++;
+
+  planetIter->scale = 1.8f;
+  planetIter->texture = loadTexture("textures/neptune.jpg");
 
   GLuint sunTexture = loadTexture("textures/sun.jpg");
-  planetTextures.emplace_back(loadTexture("textures/mercury.jpg"));
-  planetTextures.emplace_back(loadTexture("textures/venus.jpg"));
-  planetTextures.emplace_back(loadTexture("textures/earth.jpg"));
-  planetTextures.emplace_back(loadTexture("textures/mars.jpg"));
-  planetTextures.emplace_back(loadTexture("textures/jupiter.jpg"));
-  planetTextures.emplace_back(loadTexture("textures/saturn.jpg"));
-  planetTextures.emplace_back(loadTexture("textures/uranus.jpg"));
-  planetTextures.emplace_back(loadTexture("textures/neptune.jpg"));
-
-  getRand();
 
   while (!glfwWindowShouldClose(window))
   {
@@ -359,25 +378,30 @@ int main()
     glBindTexture(GL_TEXTURE_2D, sunTexture);
     planet.draw();
 
-    for (size_t i = 0; i < NUM_PLANETS; i++)
+    for (auto it = planets.begin(); it != planets.end();)
     {
-      if (4.0f + planetScales[i] >= glm::distance(sunPos, randpositions[i]))
-        destroyed[i] = true;
+      if (4.0f + it->scale >= glm::distance(sunPos, it->pos))
+        it = planets.erase(it);
+      else
+        ++it;
     }
 
-    for (size_t i = 0; i < NUM_PLANETS; i++)
+    if (planets.empty())
     {
-      if (destroyed[i])
-        continue;
+      std::cout << "You have destroyed all the planets!" << std::endl;
+      glfwSetWindowShouldClose(window, GL_TRUE);
+    }
 
+    for (auto it = planets.cbegin(); it != planets.cend(); ++it)
+    {
       glm::mat4 model;
-      model = glm::translate(model, randpositions[i]);
+      model = glm::translate(model, it->pos);
       model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-      model = glm::scale(model, glm::vec3(planetScales[i]));
+      model = glm::scale(model, glm::vec3(it->scale));
       glm::mat3 planetNormalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
       sphereShaderProgram.setUniformValue("model", model);
       sphereShaderProgram.setUniformValue("normalMatrix", planetNormalMatrix);
-      glBindTexture(GL_TEXTURE_2D, planetTextures[i]);
+      glBindTexture(GL_TEXTURE_2D, it->texture);
       planet.draw();
     }
 
