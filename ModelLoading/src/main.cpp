@@ -15,7 +15,7 @@
 #include "GLShaderProgram.h"
 #include "GLBufferObject.h"
 #include "GLVertexArrayObject.h"
-#include "GLCamera.h"
+#include "GLTargetCamera.h"
 
 using namespace GLTools;
 
@@ -30,7 +30,7 @@ glm::mat4 projection;
 
 glm::vec3 lightPosition(-1.0f, 1.0f, -2.0f);
 
-GLCamera camera(glm::vec3(0.0f, 0.0f, -5.0f));
+GLTargetCamera camera(glm::vec3(0.0f, 0.0f, -5.0f));
 
 double lastX = WIDTH / 2.0f, lastY = HEIGHT / 2.0f;
 
