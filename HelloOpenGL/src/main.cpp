@@ -1,8 +1,10 @@
+#define GLEW_STATIC
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
 #include <memory>
 #include "GLShaderProgram.h"
-#include "GLFWApplication.h"
 #include "GLVertexArrayObject.h"
 #include "GLBufferObject.h"
 
@@ -48,11 +50,24 @@ void setupShaders(GLShaderProgram& shaderProgram)
 // The MAIN function
 int main()
 {
-  GLFWApplication app(4, 3);
-  app.createWindow(600, 600, "OpenGL");
+  glfwInit();
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
+  GLFWwindow *window = glfwCreateWindow(800, 600, "HelloOpenGL", nullptr,
+                                        nullptr);
+  glfwMakeContextCurrent(window);
+  glfwSwapInterval(1);
+
+  glewExperimental = GL_TRUE;
+  glewInit();
+
+  glViewport(0, 0, 800, 600);
 
   // Set the required callback functions
-  glfwSetKeyCallback(app.getWindow(), key_callback);
+  glfwSetKeyCallback(window, key_callback);
 
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
@@ -132,7 +147,7 @@ int main()
   VAO.unbind();
 
   // Program loop -------------------------------------------------------------
-  while (!glfwWindowShouldClose(app.getWindow()))
+  while (!glfwWindowShouldClose(window))
   {
     // Check and call events
     glfwPollEvents();
@@ -151,7 +166,7 @@ int main()
     VAO.unbind();
 
     // Swap the buffers
-    glfwSwapBuffers(app.getWindow());
+    glfwSwapBuffers(window);
   }
 
   glfwTerminate();
