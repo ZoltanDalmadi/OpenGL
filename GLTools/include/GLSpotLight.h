@@ -40,10 +40,12 @@ public:
 
   virtual ~GLSpotLight();
 
-  void setShaderUniform(const GLTools::GLShaderProgram& program);
+  void setShaderUniform(const GLTools::GLShaderProgram& program) const;
   void buildShaderStrings();
 
   void setTarget(const glm::vec3& target);
+
+  void setShaderName(const std::string& name);
 
 private:
   std::string m_position_str;

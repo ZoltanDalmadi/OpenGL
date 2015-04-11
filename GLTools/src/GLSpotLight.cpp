@@ -19,7 +19,7 @@ GLTools::GLSpotLight::~GLSpotLight()
 {}
 
 void GLTools::GLSpotLight::setShaderUniform
-(const GLTools::GLShaderProgram& program)
+(const GLTools::GLShaderProgram& program) const
 {
   program.setUniformValue(m_position_str, m_position.second);
   program.setUniformValue(m_direction_str, m_direction.second);
@@ -60,4 +60,10 @@ void GLTools::GLSpotLight::buildShaderStrings()
 void GLTools::GLSpotLight::setTarget(const glm::vec3& target)
 {
   m_direction.second = glm::normalize(target - m_position.second);
+}
+
+void GLTools::GLSpotLight::setShaderName(const std::string& name)
+{
+  m_name = name;
+  buildShaderStrings();
 }
