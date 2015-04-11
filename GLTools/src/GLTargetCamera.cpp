@@ -26,6 +26,12 @@ void GLTools::GLTargetCamera::orbit(const glm::vec3& target, float angle,
   this->update();
 }
 
+void GLTools::GLTargetCamera::setTarget(const glm::vec3& target)
+{
+  this->m_target = target;
+  this->update();
+}
+
 void GLTools::GLTargetCamera::moveTarget(const glm::vec3& delta)
 {
   this->m_target += delta;

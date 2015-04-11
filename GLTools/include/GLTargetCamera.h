@@ -15,6 +15,7 @@ public:
 
   void orbit(const glm::vec3& target, float angle, float radius);
 
+  void setTarget(const glm::vec3& target);
   void moveTarget(const glm::vec3& delta);
   void movePosition(const glm::vec3& delta);
 
