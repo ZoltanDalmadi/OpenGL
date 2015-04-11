@@ -8,7 +8,7 @@ namespace GLTools
 class GLCube : public GLMesh
 {
 public:
-  GLCube(float size);
+  GLCube(float size, bool insideOut = false);
   virtual ~GLCube();
 };
 
