@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/random.hpp>
+#include <glm/gtx/intersect.hpp>
 
 #include <SOIL/SOIL.h>
 
@@ -23,6 +24,9 @@
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
 
+const float ROOMSIZE = 24.0f;
+const float CUBESIZE = 2.0f;
+
 GLFWwindow *window;
 
 glm::mat3 normalMatrix;
@@ -35,6 +39,15 @@ std::vector<GLTools::GLSpotLight> spotLights;
 GLTools::GLPointLight pointLight;
 
 glm::vec3 cubePos;
+
+struct CollisionPlane
+{
+  glm::vec3 origin;
+  glm::vec3 normal;
+};
+
+std::vector<CollisionPlane> walls;
+std::vector<CollisionPlane> cubeFaces;
 
 glm::vec3 ballPos(2.0f, -2.0f, -2.0f);
 glm::vec3 ballDirection;
@@ -56,23 +69,30 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 
 void moveCube()
 {
+  glm::vec3 delta(0.0f);
+
   if (keys[GLFW_KEY_W])
-    cubePos -= glm::vec3(0.0f, 0.0f, 0.1f);
+    delta -= glm::vec3(0.0f, 0.0f, 0.1f);
 
   if (keys[GLFW_KEY_S])
-    cubePos += glm::vec3(0.0f, 0.0f, 0.1f);
+    delta += glm::vec3(0.0f, 0.0f, 0.1f);
 
   if (keys[GLFW_KEY_A])
-    cubePos -= glm::vec3(0.1f, 0.0f, 0.0f);
+    delta -= glm::vec3(0.1f, 0.0f, 0.0f);
 
   if (keys[GLFW_KEY_D])
-    cubePos += glm::vec3(0.1f, 0.0f, 0.0f);
+    delta += glm::vec3(0.1f, 0.0f, 0.0f);
 
   if (keys[GLFW_KEY_Q])
-    cubePos += glm::vec3(0.0f, 0.1f, 0.0f);
+    delta += glm::vec3(0.0f, 0.1f, 0.0f);
 
   if (keys[GLFW_KEY_E])
-    cubePos -= glm::vec3(0.0f, 0.1f, 0.0f);
+    delta -= glm::vec3(0.0f, 0.1f, 0.0f);
+
+  cubePos += delta;
+
+  for (auto& cubeFace : cubeFaces)
+    cubeFace.origin += delta;
 }
 
 // SHADERS --------------------------------------------------------------------
@@ -134,12 +154,32 @@ void setLightUniforms(const GLTools::GLShaderProgram& shaderProgram)
 
 void wallCollision()
 {
-  // TODO
+  float distance;
+
+  for (const auto& wall : walls)
+  {
+    glm::intersectRayPlane(ballPos, ballDirection,
+                           wall.origin, wall.normal, distance);
+
+    if (distance <= 1.2f)
+      ballDirection = glm::normalize(glm::reflect(ballDirection, wall.normal));
+  }
 }
 
 void cubeCollision()
 {
-  // TODO
+  // NOT WORKING CORRECTLY
+
+  //float distance;
+
+  //for (const auto& cubeFace : cubeFaces)
+  //{
+  //  glm::intersectRayPlane(ballPos, ballDirection,
+  //                         cubeFace.origin, cubeFace.normal, distance);
+
+  //  if (distance <= 1.2f)
+  //    ballDirection = glm::normalize(glm::reflect(ballDirection, cubeFace.normal));
+  //}
 }
 
 void init()
@@ -165,25 +205,75 @@ void init()
   glEnable(GL_CULL_FACE);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-  spotLights.emplace_back(glm::vec3(10.0f, 10.0f, 10.0f));
+  spotLights.emplace_back(glm::vec3(12.0f, 12.0f, 12.0f));
   spotLights.back().setShaderName("spotLight[0]");
   spotLights.back().m_energy.second = 10.0f;
 
-  spotLights.emplace_back(glm::vec3(-10.0f, 10.0f, 10.0f));
+  spotLights.emplace_back(glm::vec3(-12.0f, 12.0f, 12.0f));
   spotLights.back().setShaderName("spotLight[1]");
   spotLights.back().m_energy.second = 10.0f;
 
-  spotLights.emplace_back(glm::vec3(-10.0f, 10.0f, -10.0f));
+  spotLights.emplace_back(glm::vec3(-12.0f, 12.0f, -12.0f));
   spotLights.back().setShaderName("spotLight[2]");
   spotLights.back().m_energy.second = 10.0f;
 
-  spotLights.emplace_back(glm::vec3(10.0f, 10.0f, -10.0f));
+  spotLights.emplace_back(glm::vec3(12.0f, 12.0f, -12.0f));
   spotLights.back().setShaderName("spotLight[3]");
   spotLights.back().m_energy.second = 10.0f;
 
   projection = glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
 
   ballDirection = glm::normalize(glm::ballRand(5.0f));
+
+  CollisionPlane wall;
+  wall.origin = glm::vec3(ROOMSIZE / 2.0f, 0.0f, 0.0f);
+  wall.normal = glm::vec3(-1.0f, 0.0f, 0.0f);
+  walls.push_back(wall);
+
+  wall.origin = glm::vec3(-ROOMSIZE / 2.0f, 0.0f, 0.0f);
+  wall.normal = glm::vec3(1.0f, 0.0f, 0.0f);
+  walls.push_back(wall);
+
+  wall.origin = glm::vec3(0.0f, ROOMSIZE / 2.0f, 0.0f);
+  wall.normal = glm::vec3(0.0f, -1.0f, 0.0f);
+  walls.push_back(wall);
+
+  wall.origin = glm::vec3(0.0f, -ROOMSIZE / 2.0f, 0.0f);
+  wall.normal = glm::vec3(0.0f, 1.0f, 0.0f);
+  walls.push_back(wall);
+
+  wall.origin = glm::vec3(0.0f, 0.0f, ROOMSIZE / 2.0f);
+  wall.normal = glm::vec3(0.0f, 0.0f, -1.0f);
+  walls.push_back(wall);
+
+  wall.origin = glm::vec3(0.0f, 0.0f, -ROOMSIZE / 2.0f);
+  wall.normal = glm::vec3(0.0f, 0.0f, 1.0f);
+  walls.push_back(wall);
+
+  CollisionPlane cubeFace;
+  cubeFace.origin = glm::vec3(CUBESIZE / 2.0f, 0.0f, 0.0f);
+  cubeFace.normal = glm::vec3(1.0f, 0.0f, 0.0f);
+  cubeFaces.push_back(cubeFace);
+
+  cubeFace.origin = glm::vec3(-CUBESIZE / 2.0f, 0.0f, 0.0f);
+  cubeFace.normal = glm::vec3(-1.0f, 0.0f, 0.0f);
+  cubeFaces.push_back(cubeFace);
+
+  cubeFace.origin = glm::vec3(0.0f, CUBESIZE / 2.0f, 0.0f);
+  cubeFace.normal = glm::vec3(0.0f, 1.0f, 0.0f);
+  cubeFaces.push_back(cubeFace);
+
+  cubeFace.origin = glm::vec3(0.0f, -CUBESIZE / 2.0f, 0.0f);
+  cubeFace.normal = glm::vec3(0.0f, -1.0f, 0.0f);
+  cubeFaces.push_back(cubeFace);
+
+  cubeFace.origin = glm::vec3(0.0f, 0.0f, CUBESIZE / 2.0f);
+  cubeFace.normal = glm::vec3(0.0f, 0.0f, 1.0f);
+  cubeFaces.push_back(cubeFace);
+
+  cubeFace.origin = glm::vec3(0.0f, 0.0f, -CUBESIZE / 2.0f);
+  cubeFace.normal = glm::vec3(0.0f, 0.0f, -1.0f);
+  cubeFaces.push_back(cubeFace);
 }
 
 int main()
@@ -196,13 +286,11 @@ int main()
   GLTools::GLSphere ball(1.0f, 24, 24);
   ball.initialize();
 
-  GLTools::GLCube room(24.0f, true);
+  GLTools::GLCube room(ROOMSIZE, true);
   room.initialize();
 
-  GLTools::GLCube cube(2.0f);
+  GLTools::GLCube cube(CUBESIZE);
   cube.initialize();
-
-  setLightTargets(cubePos);
 
   GLuint ballTexture = loadTexture("textures/ball.png");
   GLuint ballSpecularTexture = loadTexture("textures/ball_specular.png");
@@ -267,7 +355,8 @@ int main()
 
     moveCube();
     setLightTargets(cubePos);
-
+    wallCollision();
+    cubeCollision();
     ballPos += ballDirection * ballSpeed;
     camera.setTarget(ballPos);
   }
