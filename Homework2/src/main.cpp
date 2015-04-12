@@ -167,12 +167,12 @@ void wallCollision()
   }
 }
 
-bool isOutSidePlane(const glm::vec3 point, const CollisionPlane& plane)
+bool isOutSidePlane(const glm::vec3& point, const CollisionPlane& plane)
 {
   return glm::dot(point - plane.origin, plane.normal) > BALLRADIUS;
 }
 
-bool ballIntersectsPlane(const glm::vec3 point, const CollisionPlane& plane)
+bool ballIntersectsPlane(const glm::vec3& point, const CollisionPlane& plane)
 {
   return glm::abs(glm::dot(point - plane.origin, plane.normal)) <= BALLRADIUS;
 }
