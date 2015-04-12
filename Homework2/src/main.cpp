@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <memory>
+#include <random>
 #include <vector>
 #include <list>
 
@@ -25,7 +26,8 @@ const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
 
 const float ROOMSIZE = 24.0f;
-const float CUBESIZE = 2.0f;
+const float CUBESIZE = 5.0f;
+const float BALLRADIUS = 1.0f;
 
 GLFWwindow *window;
 
@@ -49,9 +51,9 @@ struct CollisionPlane
 std::vector<CollisionPlane> walls;
 std::vector<CollisionPlane> cubeFaces;
 
-glm::vec3 ballPos(2.0f, -2.0f, -2.0f);
+glm::vec3 ballPos(5.0f, -5.0f, -5.0f);
 glm::vec3 ballDirection;
-float ballSpeed = 0.1f;
+float ballSpeed = 0.2f;
 
 bool keys[1024];
 
@@ -158,28 +160,73 @@ void wallCollision()
 
   for (const auto& wall : walls)
   {
-    glm::intersectRayPlane(ballPos, ballDirection,
-                           wall.origin, wall.normal, distance);
+    distance = glm::dot(ballPos - wall.origin, wall.normal);
 
-    if (distance <= 1.2f)
+    if (distance < BALLRADIUS)
       ballDirection = glm::normalize(glm::reflect(ballDirection, wall.normal));
   }
 }
 
+bool isOutSidePlane(const glm::vec3 point, const CollisionPlane& plane)
+{
+  return glm::dot(point - plane.origin, plane.normal) > BALLRADIUS;
+}
+
+bool ballIntersectsPlane(const glm::vec3 point, const CollisionPlane& plane)
+{
+  return glm::abs(glm::dot(point - plane.origin, plane.normal)) <= BALLRADIUS;
+}
+
 void cubeCollision()
 {
-  // NOT WORKING CORRECTLY
+  auto in_front = !isOutSidePlane(ballPos, cubeFaces[0]);
+  auto in_right = !isOutSidePlane(ballPos, cubeFaces[1]);
+  auto in_back = !isOutSidePlane(ballPos, cubeFaces[2]);
+  auto in_left = !isOutSidePlane(ballPos, cubeFaces[3]);
+  auto in_bottom = !isOutSidePlane(ballPos, cubeFaces[4]);
+  auto in_top = !isOutSidePlane(ballPos, cubeFaces[5]);
 
-  //float distance;
+  if (ballIntersectsPlane(ballPos, cubeFaces[0]) &&
+      in_top && in_bottom && in_left && in_right)
+  {
+    ballDirection =
+      glm::normalize(glm::reflect(ballDirection, cubeFaces[0].normal));
+  }
 
-  //for (const auto& cubeFace : cubeFaces)
-  //{
-  //  glm::intersectRayPlane(ballPos, ballDirection,
-  //                         cubeFace.origin, cubeFace.normal, distance);
+  if (ballIntersectsPlane(ballPos, cubeFaces[1]) &&
+      in_top && in_bottom && in_front && in_back)
+  {
+    ballDirection =
+      glm::normalize(glm::reflect(ballDirection, cubeFaces[1].normal));
+  }
 
-  //  if (distance <= 1.2f)
-  //    ballDirection = glm::normalize(glm::reflect(ballDirection, cubeFace.normal));
-  //}
+  if (ballIntersectsPlane(ballPos, cubeFaces[2]) &&
+      in_top && in_bottom && in_left && in_right)
+  {
+    ballDirection =
+      glm::normalize(glm::reflect(ballDirection, cubeFaces[2].normal));
+  }
+
+  if (ballIntersectsPlane(ballPos, cubeFaces[3]) &&
+      in_top && in_bottom && in_front && in_back)
+  {
+    ballDirection =
+      glm::normalize(glm::reflect(ballDirection, cubeFaces[3].normal));
+  }
+
+  if (ballIntersectsPlane(ballPos, cubeFaces[4]) &&
+      in_left && in_right && in_front && in_back)
+  {
+    ballDirection =
+      glm::normalize(glm::reflect(ballDirection, cubeFaces[4].normal));
+  }
+
+  if (ballIntersectsPlane(ballPos, cubeFaces[5]) &&
+      in_left && in_right && in_front && in_back)
+  {
+    ballDirection =
+      glm::normalize(glm::reflect(ballDirection, cubeFaces[5].normal));
+  }
 }
 
 void init()
@@ -223,57 +270,13 @@ void init()
 
   projection = glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
 
-  ballDirection = glm::normalize(glm::ballRand(5.0f));
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<float> dis(-2, 2);
 
-  CollisionPlane wall;
-  wall.origin = glm::vec3(ROOMSIZE / 2.0f, 0.0f, 0.0f);
-  wall.normal = glm::vec3(-1.0f, 0.0f, 0.0f);
-  walls.push_back(wall);
+  ballDirection = glm::normalize(glm::vec3(dis(gen), dis(gen), dis(gen)));
 
-  wall.origin = glm::vec3(-ROOMSIZE / 2.0f, 0.0f, 0.0f);
-  wall.normal = glm::vec3(1.0f, 0.0f, 0.0f);
-  walls.push_back(wall);
-
-  wall.origin = glm::vec3(0.0f, ROOMSIZE / 2.0f, 0.0f);
-  wall.normal = glm::vec3(0.0f, -1.0f, 0.0f);
-  walls.push_back(wall);
-
-  wall.origin = glm::vec3(0.0f, -ROOMSIZE / 2.0f, 0.0f);
-  wall.normal = glm::vec3(0.0f, 1.0f, 0.0f);
-  walls.push_back(wall);
-
-  wall.origin = glm::vec3(0.0f, 0.0f, ROOMSIZE / 2.0f);
-  wall.normal = glm::vec3(0.0f, 0.0f, -1.0f);
-  walls.push_back(wall);
-
-  wall.origin = glm::vec3(0.0f, 0.0f, -ROOMSIZE / 2.0f);
-  wall.normal = glm::vec3(0.0f, 0.0f, 1.0f);
-  walls.push_back(wall);
-
-  CollisionPlane cubeFace;
-  cubeFace.origin = glm::vec3(CUBESIZE / 2.0f, 0.0f, 0.0f);
-  cubeFace.normal = glm::vec3(1.0f, 0.0f, 0.0f);
-  cubeFaces.push_back(cubeFace);
-
-  cubeFace.origin = glm::vec3(-CUBESIZE / 2.0f, 0.0f, 0.0f);
-  cubeFace.normal = glm::vec3(-1.0f, 0.0f, 0.0f);
-  cubeFaces.push_back(cubeFace);
-
-  cubeFace.origin = glm::vec3(0.0f, CUBESIZE / 2.0f, 0.0f);
-  cubeFace.normal = glm::vec3(0.0f, 1.0f, 0.0f);
-  cubeFaces.push_back(cubeFace);
-
-  cubeFace.origin = glm::vec3(0.0f, -CUBESIZE / 2.0f, 0.0f);
-  cubeFace.normal = glm::vec3(0.0f, -1.0f, 0.0f);
-  cubeFaces.push_back(cubeFace);
-
-  cubeFace.origin = glm::vec3(0.0f, 0.0f, CUBESIZE / 2.0f);
-  cubeFace.normal = glm::vec3(0.0f, 0.0f, 1.0f);
-  cubeFaces.push_back(cubeFace);
-
-  cubeFace.origin = glm::vec3(0.0f, 0.0f, -CUBESIZE / 2.0f);
-  cubeFace.normal = glm::vec3(0.0f, 0.0f, -1.0f);
-  cubeFaces.push_back(cubeFace);
+  glPointSize(20.0f);
 }
 
 int main()
@@ -283,7 +286,7 @@ int main()
   GLTools::GLShaderProgram shaderProgram;
   setupShaders(shaderProgram);
 
-  GLTools::GLSphere ball(1.0f, 24, 24);
+  GLTools::GLSphere ball(BALLRADIUS, 24, 24);
   ball.initialize();
 
   GLTools::GLCube room(ROOMSIZE, true);
@@ -291,6 +294,22 @@ int main()
 
   GLTools::GLCube cube(CUBESIZE);
   cube.initialize();
+
+  CollisionPlane cp;
+
+  for (size_t i = 0; i < 24; i += 4)
+  {
+    cp.origin = room.m_vertices[i].position;
+    cp.normal = room.m_vertices[i].normal;
+    walls.push_back(cp);
+  }
+
+  for (size_t i = 0; i < 24; i += 4)
+  {
+    cp.origin = cube.m_vertices[i].position;
+    cp.normal = cube.m_vertices[i].normal;
+    cubeFaces.push_back(cp);
+  }
 
   GLuint ballTexture = loadTexture("textures/ball.png");
   GLuint ballSpecularTexture = loadTexture("textures/ball_specular.png");
