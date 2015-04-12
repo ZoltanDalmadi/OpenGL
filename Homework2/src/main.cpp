@@ -374,10 +374,10 @@ int main()
 
     moveCube();
     setLightTargets(cubePos);
-    wallCollision();
-    cubeCollision();
     ballPos += ballDirection * ballSpeed;
     camera.setTarget(ballPos);
+    wallCollision();
+    cubeCollision();
   }
 
   glfwTerminate();
