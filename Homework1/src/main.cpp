@@ -16,15 +16,14 @@
 #include "GLPointLight.h"
 #include "GLSkyBox.h"
 #include "GLSphere.h"
+#include "GLTexture.h"
 
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
-
 const size_t NUM_PLANETS = 8;
 
 GLFWwindow *window;
 
-glm::mat3 normalMatrix;
 glm::mat4 projection;
 
 GLTools::GLFPSCamera camera(glm::vec3(0.0f, 0.0f, -5.0f));
@@ -53,7 +52,7 @@ struct Planet
 {
   glm::vec3 pos;
   float scale;
-  GLuint texture;
+  std::unique_ptr<GLTools::GLTexture> texture;
 };
 
 std::list<Planet> planets(NUM_PLANETS);
@@ -170,94 +169,33 @@ void setupShaders(GLTools::GLShaderProgram& cubemapShaderProgram,
 {
   auto cubemapVertexShader =
     std::make_shared<GLTools::GLShader>
-    (GLTools::GLShader::shaderType::VERTEX_SHADER);
-  cubemapVertexShader->loadSource("shaders/cubemap_vertex_shader.glsl");
-  cubemapVertexShader->compile();
-  std::cout << cubemapVertexShader->log() << std::endl;
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/cubemap_vertex_shader.glsl");
 
   auto cubemapFragmentShader =
     std::make_shared<GLTools::GLShader>
-    (GLTools::GLShader::shaderType::FRAGMENT_SHADER);
-  cubemapFragmentShader->loadSource("shaders/cubemap_fragment_shader.glsl");
-  cubemapFragmentShader->compile();
-  std::cout << cubemapFragmentShader->log() << std::endl;
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/cubemap_fragment_shader.glsl");
 
   cubemapShaderProgram.create();
   cubemapShaderProgram.addShader(cubemapVertexShader);
   cubemapShaderProgram.addShader(cubemapFragmentShader);
   cubemapShaderProgram.link();
-  std::cout << cubemapShaderProgram.log() << std::endl;
 
   auto sphereVertexShader =
     std::make_shared<GLTools::GLShader>
-    (GLTools::GLShader::shaderType::VERTEX_SHADER);
-  sphereVertexShader->loadSource("shaders/sphere_vertex_shader.glsl");
-  sphereVertexShader->compile();
-  std::cout << sphereVertexShader->log() << std::endl;
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/sphere_vertex_shader.glsl");
 
   auto sphereFragmentShader =
     std::make_shared<GLTools::GLShader>
-    (GLTools::GLShader::shaderType::FRAGMENT_SHADER);
-  sphereFragmentShader->loadSource("shaders/sphere_fragment_shader.glsl");
-  sphereFragmentShader->compile();
-  std::cout << sphereFragmentShader->log() << std::endl;
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/sphere_fragment_shader.glsl");
 
   sphereShaderProgram.create();
   sphereShaderProgram.addShader(sphereVertexShader);
   sphereShaderProgram.addShader(sphereFragmentShader);
   sphereShaderProgram.link();
-  std::cout << sphereShaderProgram.log() << std::endl;
-}
-
-GLuint loadTexture(const char *path)
-{
-  GLuint textureID;
-  glGenTextures(1, &textureID);
-  int width, height;
-  unsigned char *image = SOIL_load_image(path, &width, &height, 0, SOIL_LOAD_RGB);
-
-  glBindTexture(GL_TEXTURE_2D, textureID);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
-               GL_UNSIGNED_BYTE, image);
-  glGenerateMipmap(GL_TEXTURE_2D);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  SOIL_free_image_data(image);
-  return textureID;
-}
-
-GLuint loadCubemap(std::vector<const char *> faces)
-{
-  GLuint textureID;
-  glGenTextures(1, &textureID);
-  glActiveTexture(GL_TEXTURE0);
-
-  int width, height;
-  unsigned char *image;
-
-  glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-  for (GLuint i = 0; i < faces.size(); i++)
-  {
-    image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
-    glTexImage2D(
-      GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
-      GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image
-    );
-  }
-
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
-  return textureID;
 }
 
 void init()
@@ -303,54 +241,62 @@ int main()
 {
   init();
 
-  GLTools::GLShaderProgram cubemapShaderProgram;
-  GLTools::GLShaderProgram sphereShaderProgram;
-  setupShaders(cubemapShaderProgram, sphereShaderProgram);
+  auto cubemapShaderProgram = std::make_unique<GLTools::GLShaderProgram>();
+  auto sphereShaderProgram = std::make_unique<GLTools::GLShaderProgram>();
+  setupShaders(*cubemapShaderProgram, *sphereShaderProgram);
 
-  GLTools::GLSkyBox skyBox;
-  skyBox.initialize();
+  auto skyBox = std::make_unique<GLTools::GLSkyBox>();
+  skyBox->initialize();
 
-  GLTools::GLSphere planet(1.0f, 24, 24);
-  planet.initialize();
+  auto planet = std::make_unique<GLTools::GLSphere>(1.0f, 24, 24);
+  planet->initialize();
 
-  GLuint cubemapTexture = loadCubemap(skyBoxFaces);
+  auto cubemapTexture = std::make_unique<GLTools::GLTexture>(skyBoxFaces.data());
 
   getRand();
 
   auto planetIter = planets.begin();
 
   planetIter->scale = 0.8f;
-  planetIter->texture = loadTexture("textures/mercury.jpg");
+  planetIter->texture =
+    std::make_unique<GLTools::GLTexture>("textures/mercury.jpg");
   planetIter++;
 
   planetIter->scale = 0.9f;
-  planetIter->texture = loadTexture("textures/venus.jpg");
+  planetIter->texture =
+    std::make_unique<GLTools::GLTexture>("textures/venus.jpg");
   planetIter++;
 
   planetIter->scale = 1.0f;
-  planetIter->texture = loadTexture("textures/earth.jpg");
+  planetIter->texture =
+    std::make_unique<GLTools::GLTexture>("textures/earth.jpg");
   planetIter++;
 
   planetIter->scale = 0.85f;
-  planetIter->texture = loadTexture("textures/mars.jpg");
+  planetIter->texture =
+    std::make_unique<GLTools::GLTexture>("textures/mars.jpg");
   planetIter++;
 
   planetIter->scale = 2.5f;
-  planetIter->texture = loadTexture("textures/jupiter.jpg");
+  planetIter->texture =
+    std::make_unique<GLTools::GLTexture>("textures/jupiter.jpg");
   planetIter++;
 
   planetIter->scale = 2.0f;
-  planetIter->texture = loadTexture("textures/saturn.jpg");
+  planetIter->texture =
+    std::make_unique<GLTools::GLTexture>("textures/saturn.jpg");
   planetIter++;
 
   planetIter->scale = 1.5;
-  planetIter->texture = loadTexture("textures/uranus.jpg");
+  planetIter->texture =
+    std::make_unique<GLTools::GLTexture>("textures/uranus.jpg");
   planetIter++;
 
   planetIter->scale = 1.8f;
-  planetIter->texture = loadTexture("textures/neptune.jpg");
+  planetIter->texture =
+    std::make_unique<GLTools::GLTexture>("textures/neptune.jpg");
 
-  GLuint sunTexture = loadTexture("textures/sun.jpg");
+  auto sunTexture = std::make_unique<GLTools::GLTexture>("textures/sun.jpg");
 
   while (!glfwWindowShouldClose(window))
   {
@@ -363,20 +309,20 @@ int main()
     else
       moveSun();
 
-    sphereShaderProgram.use();
+    sphereShaderProgram->use();
     glm::mat4 sunModel;
     sunModel = glm::translate(sunModel, sunPos);
     sunModel = glm::scale(sunModel, glm::vec3(5.0f));
     glm::mat3 sunNormalMatrix = glm::mat3(glm::transpose(glm::inverse(sunModel)));
-    sphereShaderProgram.setUniformValue("model", sunModel);
-    sphereShaderProgram.setUniformValue("view", camera.m_viewMatrix);
-    sphereShaderProgram.setUniformValue("projection", projection);
-    sphereShaderProgram.setUniformValue("normalMatrix", sunNormalMatrix);
+    sphereShaderProgram->setUniformValue("model", sunModel);
+    sphereShaderProgram->setUniformValue("view", camera.m_viewMatrix);
+    sphereShaderProgram->setUniformValue("projection", projection);
+    sphereShaderProgram->setUniformValue("normalMatrix", sunNormalMatrix);
 
-    sunLight.setShaderUniform(sphereShaderProgram);
+    sunLight.setShaderUniform(*sphereShaderProgram);
 
-    glBindTexture(GL_TEXTURE_2D, sunTexture);
-    planet.draw();
+    sunTexture->bind();
+    planet->draw();
 
     for (auto it = planets.begin(); it != planets.end();)
     {
@@ -399,19 +345,19 @@ int main()
       model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
       model = glm::scale(model, glm::vec3(it->scale));
       glm::mat3 planetNormalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-      sphereShaderProgram.setUniformValue("model", model);
-      sphereShaderProgram.setUniformValue("normalMatrix", planetNormalMatrix);
-      glBindTexture(GL_TEXTURE_2D, it->texture);
-      planet.draw();
+      sphereShaderProgram->setUniformValue("model", model);
+      sphereShaderProgram->setUniformValue("normalMatrix", planetNormalMatrix);
+      it->texture->bind();
+      planet->draw();
     }
 
     glDepthFunc(GL_LEQUAL);
-    cubemapShaderProgram.use();
+    cubemapShaderProgram->use();
     glm::mat4 skyBoxView = glm::mat4(glm::mat3(camera.m_viewMatrix));
-    cubemapShaderProgram.setUniformValue("view", skyBoxView);
-    cubemapShaderProgram.setUniformValue("projection", projection);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-    skyBox.draw();
+    cubemapShaderProgram->setUniformValue("view", skyBoxView);
+    cubemapShaderProgram->setUniformValue("projection", projection);
+    cubemapTexture->bind();
+    skyBox->draw();
     glDepthFunc(GL_LESS);
 
     glfwSwapBuffers(window);
