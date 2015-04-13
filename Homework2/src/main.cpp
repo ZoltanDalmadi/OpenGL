@@ -404,7 +404,6 @@ int main()
     setLightTargets(spotLights, cubePos);
     ballPos += ballDirection * BALLSPEED;
     ballRotationAngle > 360 ? ballRotationAngle = 0.0f : ballRotationAngle += 5.0f;
-    std::cout << ballRotationAngle << std::endl;
     camera.setTarget(ballPos);
     wallCollision();
     cubeCollision();
