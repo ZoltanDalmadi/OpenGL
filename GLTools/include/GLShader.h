@@ -18,6 +18,7 @@ public:
   };
 
   GLShader(shaderType type);
+  GLShader(shaderType type, const std::string& path);
   virtual ~GLShader();
 
   void addSource(const std::string& source);

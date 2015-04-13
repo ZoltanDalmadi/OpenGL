@@ -26,6 +26,13 @@ GLTools::GLShader::GLShader(shaderType type)
   m_id = glCreateShader(gl_type);
 }
 
+GLTools::GLShader::GLShader(shaderType type, const std::string& path)
+  : GLShader(type)
+{
+  if (loadSource(path))
+    compile();
+}
+
 GLTools::GLShader::~GLShader()
 {
   glDeleteShader(m_id);
