@@ -33,6 +33,7 @@ const float BALLRADIUS = 1.0f;
 const float BALLSPEED = 0.4f;
 const glm::vec3 CAMERAPOS = glm::vec3(10.0f, 10.0f, 10.0f);
 
+// This struct holds the neccessary information for calculating collisions
 struct CollisionPlane
 {
   glm::vec3 origin;
@@ -43,9 +44,11 @@ GLFWwindow *window;
 
 GLTools::GLTargetCamera camera(CAMERAPOS);
 
+// Lights container
 std::vector<GLTools::GLSpotLight> spotLights;
 GLTools::GLPointLight pointLight;
 
+// Vectors
 glm::vec3 cubePos;
 glm::vec3 ballPos(5.0f, -5.0f, -5.0f);
 glm::vec3 ballDirection;
@@ -132,6 +135,7 @@ void moveCube()
   {
     cubePos += delta;
 
+    // update all collision planes for cube
     for (auto& cubeFace : cubeFaces)
       cubeFace.origin += delta;
   }
@@ -185,11 +189,13 @@ void wallCollision()
   }
 }
 
+// Tells if ball lies outside area of the plane at cube face
 bool isOutSidePlane(const glm::vec3& point, const CollisionPlane& plane)
 {
   return glm::dot(point - plane.origin, plane.normal) > BALLRADIUS;
 }
 
+// Tells if ball is close enough to plane from either direction
 bool ballIntersectsPlane(const glm::vec3& point, const CollisionPlane& plane)
 {
   return glm::abs(glm::dot(point - plane.origin, plane.normal)) <= BALLRADIUS;
@@ -276,6 +282,7 @@ void init()
   glEnable(GL_CULL_FACE);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+  // setup spotlights
   spotLights.emplace_back(glm::vec3(12.0f, 12.0f, 12.0f));
   spotLights.back().setShaderName("spotLight[0]");
   spotLights.back().m_energy.second = 10.0f;
@@ -292,14 +299,13 @@ void init()
   spotLights.back().setShaderName("spotLight[3]");
   spotLights.back().m_energy.second = 10.0f;
 
+  // get random velocity vector for ball
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<float> dis(-2, 2);
 
   ballDirection = glm::normalize(glm::vec3(dis(gen), dis(gen), dis(gen)));
   ballRotationAxis = glm::cross(ballDirection, glm::vec3(0.0f, 1.0f, 0.0f));
-
-  glPointSize(20.0f);
 }
 
 int main()
@@ -318,6 +324,7 @@ int main()
   auto cube = std::make_unique<GLTools::GLCube>(CUBESIZE);
   cube->initialize();
 
+  // setup cube collision planes
   CollisionPlane cp;
 
   for (size_t i = 0; i < 24; i += 4)
@@ -334,6 +341,7 @@ int main()
     cubeFaces.push_back(cp);
   }
 
+  // setup textures
   auto ballTexture =
     std::make_unique<GLTools::GLTexture>("textures/ball.png");
   auto ballSpecularTexture =
@@ -352,12 +360,14 @@ int main()
   glm::mat4 projection
     = glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
 
+  // main loop
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // send info to shader
     shaderProgram->use();
     shaderProgram->setUniformValue("view", camera.m_viewMatrix);
     shaderProgram->setUniformValue("projection", projection);
@@ -370,6 +380,7 @@ int main()
     pointLight.setShaderUniform(*shaderProgram);
     setLightUniforms(*shaderProgram);
 
+    // draw room
     glm::mat4 roomModel;
     glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(roomModel)));
     shaderProgram->setUniformValue("model", roomModel);
@@ -378,6 +389,7 @@ int main()
     wallSpecularTexture->bind(1);
     room->draw();
 
+    // draw cube
     glm::mat4 cubeModel;
     cubeModel = glm::translate(cubeModel, cubePos);
     normalMatrix = glm::mat3(glm::transpose(glm::inverse(cubeModel)));
@@ -387,6 +399,7 @@ int main()
     cubeSpecularTexture->bind(1);
     cube->draw();
 
+    // draw ball
     glm::mat4 ballModel;
     ballModel = glm::translate(ballModel, ballPos);
     ballModel =
@@ -401,10 +414,18 @@ int main()
     glfwSwapBuffers(window);
 
     moveCube();
+
+    // spotlights look at cube
     setLightTargets(spotLights, cubePos);
+
+    // update ball position
     ballPos += ballDirection * BALLSPEED;
     ballRotationAngle > 360 ? ballRotationAngle = 0.0f : ballRotationAngle += 5.0f;
+
+    // look at ball
     camera.setTarget(ballPos);
+
+    // handle collisions
     wallCollision();
     cubeCollision();
   }

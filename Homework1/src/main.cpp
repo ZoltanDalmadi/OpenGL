@@ -18,6 +18,7 @@
 #include "GLSphere.h"
 #include "GLTexture.h"
 
+//constants
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
 const size_t NUM_PLANETS = 8;
@@ -32,11 +33,12 @@ GLTools::GLPointLight sunLight;
 
 bool keys[1024];
 
+// for mouse
 double lastX = WIDTH / 2.0f;
 double lastY = HEIGHT / 2.0f;
-
 bool firstMouse = true;
 
+// for random planet placement
 std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_real_distribution<float> dis(-10, 10);
@@ -223,6 +225,7 @@ void init()
   glEnable(GL_CULL_FACE);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+  //cubemap textures
   skyBoxFaces.push_back("textures/nebula_right.png");
   skyBoxFaces.push_back("textures/nebula_left.png");
   skyBoxFaces.push_back("textures/nebula_top.png");
@@ -230,8 +233,8 @@ void init()
   skyBoxFaces.push_back("textures/nebula_back.png");
   skyBoxFaces.push_back("textures/nebula_front.png");
 
+  // amplify sunlight intensity
   sunLight.m_energy.second = 5.0f;
-  sunLight.buildShaderStrings();
 
   projection = glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 5.0f, 100.0f);
 }
@@ -255,6 +258,7 @@ int main()
 
   getRand();
 
+  // setup planet textures and scales
   auto planetIter = planets.begin();
 
   planetIter->scale = 0.8f;
