@@ -23,6 +23,8 @@ public:
 
   void bind() const;
   void bind(GLint unit) const;
+  void createColorTexture(GLsizei width, GLsizei height);
+  void createDepthTexture(GLsizei width, GLsizei height);
   void unbind() const;
 
   void loadTexture2D(const char *path);
