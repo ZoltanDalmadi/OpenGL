@@ -62,6 +62,9 @@
     <ClInclude Include="include\GLFrameBufferObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\GLPlane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GLShader.cpp">
@@ -113,6 +116,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\GLFrameBufferObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GLPlane.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
