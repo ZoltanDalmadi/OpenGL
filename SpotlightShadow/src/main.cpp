@@ -11,15 +11,23 @@
 #include "GLFPSCamera.h"
 #include "GLTexture.h"
 #include "GLFrameBufferObject.h"
-#include "GLShaderProgram.h"
+#include "GLPlane.h"
+#include "GLSpotlight.h"
 
 //constants
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
 
+float cutoff = 10.0f;
+float outerCutoff = 12.0f;
+
 GLFWwindow *window;
 
 GLTools::GLFPSCamera camera(glm::vec3(0.0f, 0.0f, -5.0f));
+
+glm::vec3 lightPos(0.0f, 0.0f, -10.0f);
+
+GLTools::GLSpotLight spotLight(lightPos);
 
 bool keys[1024];
 
@@ -38,6 +46,43 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 
   if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
+
+  if (key == GLFW_KEY_UP && action == GLFW_PRESS)
+  {
+    cutoff += 1.0f;
+    spotLight.m_cutoff.second = glm::cos(glm::radians(cutoff));
+  }
+
+  if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
+  {
+    cutoff -= 1.0f;
+    spotLight.m_cutoff.second = glm::cos(glm::radians(cutoff));
+  }
+
+  if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
+  {
+    outerCutoff += 1.0f;
+    spotLight.m_outercutoff.second = glm::cos(glm::radians(outerCutoff));
+  }
+
+  if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
+  {
+    outerCutoff -= 1.0f;
+    spotLight.m_outercutoff.second = glm::cos(glm::radians(outerCutoff));
+  }
+
+  if (key == GLFW_KEY_I && action == GLFW_PRESS)
+  {
+    lightPos += glm::vec3(0.0f, 0.0f, 1.0f);
+    spotLight.m_position.second = lightPos;
+  }
+
+  if (key == GLFW_KEY_K && action == GLFW_PRESS)
+  {
+    lightPos -= glm::vec3(0.0f, 0.0f, 1.0f);
+    spotLight.m_position.second = lightPos;
+  }
+
 }
 
 void moveCamera()
@@ -130,8 +175,21 @@ int main()
   auto shaderProgram = std::make_unique<GLTools::GLShaderProgram>();
   setupShaders(*shaderProgram);
 
+  spotLight.setTarget(glm::vec3(0.0f));
+  spotLight.m_cutoff.second = glm::cos(glm::radians(cutoff));
+  spotLight.m_outercutoff.second = glm::cos(glm::radians(outerCutoff));
+  spotLight.m_energy.second = 2.0f;
+
+  auto plane = std::make_unique<GLTools::GLPlane>(20.0f, 20.0f);
+  plane->initialize();
+
+  auto wallTexture =
+    std::make_unique<GLTools::GLTexture>("textures/brick.jpg");
+  auto wallSpecularTexture =
+    std::make_unique<GLTools::GLTexture>("textures/brick_specular.jpg");
+
   glm::mat4 projection =
-    glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 5.0f, 100.0f);
+    glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
 
   while (!glfwWindowShouldClose(window))
   {
@@ -140,6 +198,26 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     moveCamera();
+
+    // send info to shader
+    shaderProgram->use();
+    shaderProgram->setUniformValue("viewProjection",
+                                   projection * camera.m_viewMatrix);
+    shaderProgram->setUniformValue("camPos", camera.m_position);
+
+    shaderProgram->setUniformValue("material.diffuse", 0);
+    shaderProgram->setUniformValue("material.specular", 1);
+    shaderProgram->setUniformValue("material.shininess", 32.0f);
+
+    spotLight.setShaderUniform(*shaderProgram);
+
+    glm::mat4 planeModel;
+    glm::mat3 normalMatrix = glm::mat3(planeModel);
+    shaderProgram->setUniformValue("model", planeModel);
+    shaderProgram->setUniformValue("normalMatrix", normalMatrix);
+    wallTexture->bind(0);
+    wallSpecularTexture->bind(1);
+    plane->draw();
 
     glfwSwapBuffers(window);
   }
