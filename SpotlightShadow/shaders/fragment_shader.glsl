@@ -8,8 +8,12 @@ uniform vec3 camPos;
 
 struct Material
 {
-  sampler2D diffuse;
-  sampler2D specular;
+  vec3 diffuse;
+  sampler2D diffuseTex;
+  float diffMix;
+  vec3 specular;
+  sampler2D specularTex;
+  float specMix;
   float shininess;
 };
 uniform Material material;
@@ -42,12 +46,13 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir)
   float diff = max(dot(normal, lightDir), 0.0);
 
   // Calculate reflection vector and specular intensity
-  vec3 halfwayDir = normalize(lightDir + camDir);  
+  vec3 halfwayDir = normalize(lightDir + camDir);
   float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess * 4.0f);
 
   // Calculate attenuation
   float dist = length(light.position - fragPos);
-  float attenuation = 1.0f / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
+  float attenuation = 1.0f /
+    (light.constant + light.linear * dist + light.quadratic * (dist * dist));
 
   // Spotlight intensity
   float theta = dot(lightDir, normalize(-light.direction));
@@ -55,12 +60,17 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir)
   float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
 
   // Calculate colors
-  vec3 ambient = light.ambient * vec3(texture(material.diffuse, texCoords));
-  vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, texCoords));
-  vec3 specular = light.specular * spec * vec3(texture(material.specular, texCoords));
+  vec3 diffuseMix = mix(material.diffuse,
+    vec3(texture(material.diffuseTex, texCoords)), material.diffMix);
+  vec3 specularMix = mix(material.specular,
+    vec3(texture(material.specularTex, texCoords)), material.specMix);
+
+  vec3 ambient = light.ambient * diffuseMix;
+  vec3 diffuse = light.diffuse * diff * diffuseMix;
+  vec3 specular = light.specular * spec * specularMix;
 
   // Apply attenuation
-  ambient *= attenuation; //* intensity;
+  ambient *= attenuation;
   diffuse *= attenuation * intensity;
   specular *= attenuation * intensity;
 
