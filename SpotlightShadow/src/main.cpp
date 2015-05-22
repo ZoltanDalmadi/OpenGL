@@ -3,14 +3,11 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
-#include <iostream>
 #include <memory>
 
 #include "GLFPSCamera.h"
 #include "GLTexture.h"
-#include "GLFrameBufferObject.h"
 #include "GLPlane.h"
 #include "GLSpotlight.h"
 
@@ -115,8 +112,8 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
     firstMouse = false;
   }
 
-  double xoffset = xpos - lastX;
-  double yoffset = ypos - lastY;
+  auto xoffset = xpos - lastX;
+  auto yoffset = ypos - lastY;
   lastX = xpos;
   lastY = ypos;
   camera.rotate(static_cast<float>(xoffset), static_cast<float>(yoffset));
@@ -183,12 +180,14 @@ int main()
   auto plane = std::make_unique<GLTools::GLPlane>(20.0f, 20.0f);
   plane->initialize();
 
+  auto model = std::make_unique<GLTools::GLMesh>("models/model.obj");
+
   auto wallTexture =
     std::make_unique<GLTools::GLTexture>("textures/brick.jpg");
   auto wallSpecularTexture =
     std::make_unique<GLTools::GLTexture>("textures/brick_specular.jpg");
 
-  glm::mat4 projection =
+  auto projection =
     glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
 
   while (!glfwWindowShouldClose(window))
@@ -205,19 +204,36 @@ int main()
                                    projection * camera.m_viewMatrix);
     shaderProgram->setUniformValue("camPos", camera.m_position);
 
-    shaderProgram->setUniformValue("material.diffuse", 0);
-    shaderProgram->setUniformValue("material.specular", 1);
+    shaderProgram->setUniformValue("material.diffuseTex", 0);
+    shaderProgram->setUniformValue("material.diffMix", 1.0f);
+    shaderProgram->setUniformValue("material.specularTex", 1);
+    shaderProgram->setUniformValue("material.specMix", 1.0f);
     shaderProgram->setUniformValue("material.shininess", 32.0f);
 
     spotLight.setShaderUniform(*shaderProgram);
 
     glm::mat4 planeModel;
-    glm::mat3 normalMatrix = glm::mat3(planeModel);
+    auto normalMatrix = glm::mat3(planeModel);
     shaderProgram->setUniformValue("model", planeModel);
     shaderProgram->setUniformValue("normalMatrix", normalMatrix);
     wallTexture->bind(0);
     wallSpecularTexture->bind(1);
     plane->draw();
+
+    wallTexture->unbind();
+    wallSpecularTexture->unbind();
+
+    glm::mat4 modelModel;
+    modelModel = translate(modelModel, glm::vec3(0.0f, 0.0f, -5.0f));
+    normalMatrix = glm::mat3(transpose(inverse(modelModel)));
+    shaderProgram->setUniformValue("model", modelModel);
+    shaderProgram->setUniformValue("normalMatrix", normalMatrix);
+
+    shaderProgram->setUniformValue("material.diffuse", glm::vec3(0.0f, 1.0f, 1.0f));
+    shaderProgram->setUniformValue("material.diffMix", 0.0f);
+    shaderProgram->setUniformValue("material.specular", glm::vec3(1.0f));
+    shaderProgram->setUniformValue("material.specMix", 0.0f);
+    model->draw();
 
     glfwSwapBuffers(window);
   }
