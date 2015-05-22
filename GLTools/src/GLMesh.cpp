@@ -1,16 +1,24 @@
 #include "GLMesh.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 GLTools::GLMesh::GLMesh()
 {
-  m_EBO.setType(GLTools::GLBufferObject::BufferType::IndexBuffer);
+  m_EBO.setType(GLBufferObject::BufferType::IndexBuffer);
+}
+
+GLTools::GLMesh::GLMesh(const std::string& path)
+{
+  m_EBO.setType(GLBufferObject::BufferType::IndexBuffer);
+  loadMesh(path);
 }
 
 GLTools::GLMesh::GLMesh(std::vector<Vertex>& v, std::vector<GLuint>& i)
-  : m_vertices(std::move(v)),
-    m_indices(std::move(i))
+  : m_vertices(move(v)),
+    m_indices(move(i))
 {
-  m_EBO.setType(GLTools::GLBufferObject::BufferType::IndexBuffer);
-  initialize();
+  m_EBO.setType(GLBufferObject::BufferType::IndexBuffer);
 }
 
 GLTools::GLMesh::~GLMesh()
@@ -36,11 +44,45 @@ void GLTools::GLMesh::initialize()
   m_VAO.unbind();
 }
 
+void GLTools::GLMesh::loadMesh(const std::string& path)
+{
+  Assimp::Importer importer;
+  auto scene
+    = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+
+  auto mesh = scene->mMeshes[0];
+
+  for (size_t i = 0; i < mesh->mNumVertices; i++)
+  {
+    Vertex vert;
+    glm::vec3 vector;
+    vector.x = mesh->mVertices[i].x;
+    vector.y = mesh->mVertices[i].y;
+    vector.z = mesh->mVertices[i].z;
+    vert.position = vector;
+    vector.x = mesh->mNormals[i].x;
+    vector.y = mesh->mNormals[i].y;
+    vector.z = mesh->mNormals[i].z;
+    vert.normal = vector;
+    m_vertices.push_back(vert);
+  }
+
+  for (size_t i = 0; i < mesh->mNumFaces; i++)
+  {
+    auto face = mesh->mFaces[i];
+
+    for (GLuint j = 0; j < face.mNumIndices; j++)
+      m_indices.push_back(face.mIndices[j]);
+  }
+
+  initialize();
+}
+
 void GLTools::GLMesh::draw()
 {
   m_VAO.bind();
   glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_indices.size()),
-                 GL_UNSIGNED_INT, 0);
+                 GL_UNSIGNED_INT, nullptr);
 
   m_VAO.unbind();
 }

@@ -26,11 +26,13 @@ public:
   std::vector<GLuint> m_indices;
 
   GLMesh();
+  explicit GLMesh(const std::string& path);
   GLMesh(std::vector<Vertex>& v, std::vector<GLuint>& i);
 
   virtual ~GLMesh();
 
   virtual void initialize();
+  void loadMesh(const std::string& path);
 
   virtual void draw();
 
