@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -193,11 +192,11 @@ int main()
   setupShaders(shaderProgram, lightShaderProgram);
 
   Assimp::Importer importer;
-  const aiScene *scene
+  auto scene
     = importer.ReadFile("model.obj",
                         aiProcess_Triangulate | aiProcess_GenSmoothNormals);
 
-  aiMesh *mesh = scene->mMeshes[0];
+  auto mesh = scene->mMeshes[0];
 
   std::vector<Vertex> vertices;
   std::vector<GLuint> indices;
@@ -219,7 +218,7 @@ int main()
 
   for (size_t i = 0; i < mesh->mNumFaces; i++)
   {
-    aiFace face = mesh->mFaces[i];
+    auto face = mesh->mFaces[i];
 
     for (GLuint j = 0; j < face.mNumIndices; j++)
       indices.push_back(face.mIndices[j]);
@@ -283,7 +282,7 @@ int main()
     VAO.bind();
 
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()),
-                   GL_UNSIGNED_INT, 0);
+                   GL_UNSIGNED_INT, nullptr);
 
     lightShaderProgram.use();
     lightShaderProgram.setUniformValue("model", lightModel);

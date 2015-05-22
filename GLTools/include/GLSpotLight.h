@@ -29,6 +29,7 @@ public:
 
   std::pair<std::string, float> m_energy;
 
+  explicit
   GLSpotLight(const glm::vec3& pos = glm::vec3(0.0f),
               const glm::vec3& dir = glm::vec3(0.0f, -1.0f, 0.0f),
               const glm::vec3& amb = glm::vec3(0.2f),

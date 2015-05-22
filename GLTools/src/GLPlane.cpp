@@ -2,8 +2,8 @@
 
 GLTools::GLPlane::GLPlane(float width, float height)
 {
-  float width2 = width / 2.0f;
-  float height2 = height / 2.0f;
+  auto width2 = width / 2.0f;
+  auto height2 = height / 2.0f;
   Vertex vert;
 
   vert.position = glm::vec3(-width2, -height2, 0);

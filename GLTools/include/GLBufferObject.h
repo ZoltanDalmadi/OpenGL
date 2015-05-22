@@ -21,7 +21,7 @@ public:
   };
 
   GLBufferObject();
-  GLBufferObject(BufferType type);
+  explicit GLBufferObject(BufferType type);
   GLBufferObject(BufferType type, Usage usage);
   virtual ~GLBufferObject();
 
