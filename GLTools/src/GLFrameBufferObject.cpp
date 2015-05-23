@@ -1,7 +1,9 @@
 #include "GLFrameBufferObject.h"
 
 GLTools::GLFrameBufferObject::GLFrameBufferObject()
-{}
+{
+  create();
+}
 
 GLTools::GLFrameBufferObject::~GLFrameBufferObject()
 {
@@ -36,6 +38,7 @@ void GLTools::GLFrameBufferObject::attachColorTexture(const GLTexture& texture)
 
 void GLTools::GLFrameBufferObject::attachDepthTexture(const GLTexture& texture)
 {
+  glBindFramebuffer(GL_FRAMEBUFFER, m_id);
   glFramebufferTexture2D(
     GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture.m_id, 0);
   glDrawBuffer(GL_NONE);
