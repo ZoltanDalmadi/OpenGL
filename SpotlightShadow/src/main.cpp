@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 
 #include <memory>
 
@@ -10,19 +11,24 @@
 #include "GLTexture.h"
 #include "GLPlane.h"
 #include "GLSpotlight.h"
+#include "GLFrameBufferObject.h"
+#include <iostream>
 
 //constants
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
+
+const GLuint SHADOWMAP_WIDTH = 2048;
+const GLuint SHADOWMAP_HEIGHT = 2048;
 
 float cutoff = 10.0f;
 float outerCutoff = 12.0f;
 
 GLFWwindow *window;
 
-GLTools::GLFPSCamera camera(glm::vec3(0.0f, 0.0f, -5.0f));
+GLTools::GLFPSCamera camera(glm::vec3(0.0f, 0.0f, -10.0f));
 
-glm::vec3 lightPos(0.0f, 0.0f, -10.0f);
+glm::vec3 lightPos(0.0f, 0.0f, -25.0f);
 
 GLTools::GLSpotLight spotLight(lightPos);
 
@@ -32,6 +38,9 @@ bool keys[1024];
 double lastX = WIDTH / 2.0f;
 double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
+
+std::unique_ptr<GLTools::GLPlane> plane;
+std::unique_ptr<GLTools::GLMesh> model;
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
@@ -126,16 +135,19 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram)
     std::make_shared<GLTools::GLShader>
     (GLTools::GLShader::shaderType::VERTEX_SHADER,
      "shaders/vertex_shader.glsl");
+  std::cout << vertexShader->log() << std::endl;
 
   auto fragmentShader =
     std::make_shared<GLTools::GLShader>
     (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
      "shaders/fragment_shader.glsl");
+  std::cout << fragmentShader->log() << std::endl;
 
   shaderProgram.create();
   shaderProgram.addShader(vertexShader);
   shaderProgram.addShader(fragmentShader);
   shaderProgram.link();
+  std::cout << shaderProgram.log() << std::endl;
 }
 
 void init()
@@ -164,6 +176,32 @@ void init()
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
+void renderScene(const GLTools::GLShaderProgram& shaderProgram)
+{
+  glm::mat4 planeModel;
+  auto normalMatrix = glm::mat3(planeModel);
+  shaderProgram.setUniformValue("model", planeModel);
+  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
+
+  shaderProgram.setUniformValue("material.diffMix", 1.0f);
+  shaderProgram.setUniformValue("material.specular", glm::vec3(0.0f));
+  shaderProgram.setUniformValue("material.specMix", 0.2f);
+  shaderProgram.setUniformValue("material.shininess", 32.0f);
+  plane->draw();
+
+  glm::mat4 modelModel;
+  modelModel = translate(modelModel, glm::vec3(0.0f, 0.0f, -5.0f));
+  normalMatrix = glm::mat3(transpose(inverse(modelModel)));
+  shaderProgram.setUniformValue("model", modelModel);
+  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
+
+  shaderProgram.setUniformValue("material.diffuse", glm::vec3(0.0f, 1.0f, 1.0f));
+  shaderProgram.setUniformValue("material.diffMix", 0.0f);
+  shaderProgram.setUniformValue("material.specular", glm::vec3(1.0f));
+  shaderProgram.setUniformValue("material.specMix", 0.0f);
+  model->draw();
+}
+
 // The MAIN function
 int main()
 {
@@ -171,24 +209,54 @@ int main()
 
   auto shaderProgram = std::make_unique<GLTools::GLShaderProgram>();
   setupShaders(*shaderProgram);
+  auto vertPass1 = glGetSubroutineIndex(shaderProgram->ID(), GL_VERTEX_SHADER,
+                                        "recordDepth");
+  auto vertPass2 = glGetSubroutineIndex(shaderProgram->ID(), GL_VERTEX_SHADER,
+                                        "normalRender");
+  auto fragPass1 = glGetSubroutineIndex(shaderProgram->ID(), GL_FRAGMENT_SHADER,
+                                        "recordDepth");
+  auto fragPass2 = glGetSubroutineIndex(shaderProgram->ID(), GL_FRAGMENT_SHADER,
+                                        "normalRender");
+
+  shaderProgram->use();
+  shaderProgram->setUniformValue("shadowMap", 0);
+  shaderProgram->setUniformValue("material.diffuseTex", 1);
+  shaderProgram->setUniformValue("material.specularTex", 2);
+  shaderProgram->setUniformValue("projectTex", 3);
 
   spotLight.setTarget(glm::vec3(0.0f));
   spotLight.m_cutoff.second = glm::cos(glm::radians(cutoff));
   spotLight.m_outercutoff.second = glm::cos(glm::radians(outerCutoff));
-  spotLight.m_energy.second = 2.0f;
+  spotLight.m_energy.second = 10.0f;
 
-  auto plane = std::make_unique<GLTools::GLPlane>(20.0f, 20.0f);
+  plane = std::make_unique<GLTools::GLPlane>(20.0f, 20.0f);
   plane->initialize();
 
-  auto model = std::make_unique<GLTools::GLMesh>("models/model.obj");
+  model = std::make_unique<GLTools::GLMesh>("models/model.obj");
 
   auto wallTexture =
     std::make_unique<GLTools::GLTexture>("textures/brick.jpg");
   auto wallSpecularTexture =
     std::make_unique<GLTools::GLTexture>("textures/brick_specular.jpg");
 
+  auto depthTexture = std::make_unique<GLTools::GLTexture>();
+  depthTexture->createDepthTexture(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
+
+  auto shadowFBO = std::make_unique<GLTools::GLFrameBufferObject>();
+  shadowFBO->attachDepthTexture(*depthTexture);
+
+  auto projectTexture =
+    std::make_unique<GLTools::GLTexture>();
+  projectTexture->loadTexture2DForProjection("textures/smile.jpg");
+
   auto projection =
     glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
+
+  auto lightProjection =
+    glm::perspective(45.0f,
+                     static_cast<GLfloat>(SHADOWMAP_WIDTH) /
+                     static_cast<GLfloat>(SHADOWMAP_HEIGHT),
+                     2.0f, 50.0f);
 
   while (!glfwWindowShouldClose(window))
   {
@@ -198,42 +266,44 @@ int main()
 
     moveCamera();
 
-    // send info to shader
-    shaderProgram->use();
+    // render shadow map
+    auto lightView = lookAt(spotLight.m_position.second, glm::vec3(0.0f),
+                            glm::vec3(0.0f, 1.0f, 0.0f));
+    auto lightSpaceMatrix = lightProjection * lightView;
+    //shaderProgram->use();
+    auto projScaleTrans = translate(glm::vec3(0.5f)) *
+                          scale(glm::vec3(2.0f));
+
+    shaderProgram->setUniformValue("projectorMatrix",
+                                   projScaleTrans * lightProjection * lightView);
+    shaderProgram->setUniformValue("lightSpaceMatrix", lightSpaceMatrix);
     shaderProgram->setUniformValue("viewProjection",
                                    projection * camera.m_viewMatrix);
     shaderProgram->setUniformValue("camPos", camera.m_position);
-
-    shaderProgram->setUniformValue("material.diffuseTex", 0);
-    shaderProgram->setUniformValue("material.diffMix", 1.0f);
-    shaderProgram->setUniformValue("material.specularTex", 1);
-    shaderProgram->setUniformValue("material.specMix", 1.0f);
-    shaderProgram->setUniformValue("material.shininess", 32.0f);
+    shaderProgram->setUniformValue("lightSpaceMatrix", lightSpaceMatrix);
 
     spotLight.setShaderUniform(*shaderProgram);
 
-    glm::mat4 planeModel;
-    auto normalMatrix = glm::mat3(planeModel);
-    shaderProgram->setUniformValue("model", planeModel);
-    shaderProgram->setUniformValue("normalMatrix", normalMatrix);
-    wallTexture->bind(0);
-    wallSpecularTexture->bind(1);
-    plane->draw();
+    glViewport(0, 0, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
+    glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &vertPass1);
+    glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &fragPass1);
+    glCullFace(GL_FRONT);
+    shadowFBO->bind();
+    glClear(GL_DEPTH_BUFFER_BIT);
+    depthTexture->bind(0);
+    renderScene(*shaderProgram);
+    shadowFBO->unbind();
+    glCullFace(GL_BACK);
 
-    wallTexture->unbind();
-    wallSpecularTexture->unbind();
-
-    glm::mat4 modelModel;
-    modelModel = translate(modelModel, glm::vec3(0.0f, 0.0f, -5.0f));
-    normalMatrix = glm::mat3(transpose(inverse(modelModel)));
-    shaderProgram->setUniformValue("model", modelModel);
-    shaderProgram->setUniformValue("normalMatrix", normalMatrix);
-
-    shaderProgram->setUniformValue("material.diffuse", glm::vec3(0.0f, 1.0f, 1.0f));
-    shaderProgram->setUniformValue("material.diffMix", 0.0f);
-    shaderProgram->setUniformValue("material.specular", glm::vec3(1.0f));
-    shaderProgram->setUniformValue("material.specMix", 0.0f);
-    model->draw();
+    // back to main framebuffer
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, WIDTH, HEIGHT);
+    glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &vertPass2);
+    glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &fragPass2);
+    wallTexture->bind(1);
+    wallSpecularTexture->bind(2);
+    projectTexture->bind(3);
+    renderScene(*shaderProgram);
 
     glfwSwapBuffers(window);
   }
