@@ -1,7 +1,7 @@
 #include "GLTexture.h"
 #include <SOIL/SOIL.h>
 
-GLTools::GLTexture::GLTexture(GLTexture::TextureType type)
+GLTools::GLTexture::GLTexture(TextureType type)
   : m_type(type)
 {}
 
@@ -24,8 +24,7 @@ GLTools::GLTexture::~GLTexture()
 
 void GLTools::GLTexture::createColorTexture(GLsizei width, GLsizei height)
 {
-  if (m_type != TextureType::Texture2D)
-    return;
+  m_type = TextureType::Texture2D;
 
   glGenTextures(1, &m_id);
   glBindTexture(GL_TEXTURE_2D, m_id);
@@ -39,16 +38,15 @@ void GLTools::GLTexture::createColorTexture(GLsizei width, GLsizei height)
 
 void GLTools::GLTexture::createDepthTexture(GLsizei width, GLsizei height)
 {
-  if (m_type != TextureType::Texture2D)
-    return;
+  m_type = TextureType::Texture2D;
 
   glGenTextures(1, &m_id);
   glBindTexture(GL_TEXTURE_2D, m_id);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0,
                GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
   GLfloat borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -84,7 +82,7 @@ void GLTools::GLTexture::loadTexture2D(const char *path)
 
   glGenTextures(1, &m_id);
   int width, height;
-  unsigned char *image = SOIL_load_image(path, &width, &height, 0, SOIL_LOAD_RGB);
+  auto image = SOIL_load_image(path, &width, &height, nullptr, SOIL_LOAD_RGB);
 
   glBindTexture(GL_TEXTURE_2D, m_id);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
@@ -94,6 +92,27 @@ void GLTools::GLTexture::loadTexture2D(const char *path)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  SOIL_free_image_data(image);
+}
+
+void GLTools::GLTexture::loadTexture2DForProjection(const char *path)
+{
+  if (m_type != TextureType::Texture2D)
+    return;
+
+  glGenTextures(1, &m_id);
+  int width, height;
+  auto image = SOIL_load_image(path, &width, &height, nullptr, SOIL_LOAD_RGB);
+
+  glBindTexture(GL_TEXTURE_2D, m_id);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, image);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glBindTexture(GL_TEXTURE_2D, 0);
   SOIL_free_image_data(image);

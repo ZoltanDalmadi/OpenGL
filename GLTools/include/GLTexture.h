@@ -14,9 +14,9 @@ public:
     CubeMap = 0x8513
   };
 
-  GLTexture(TextureType type = TextureType::Texture2D);
-  GLTexture(const char *path);
-  GLTexture(const char *faces[]);
+  explicit GLTexture(TextureType type = TextureType::Texture2D);
+  explicit GLTexture(const char *path);
+  explicit GLTexture(const char *faces[]);
   virtual ~GLTexture();
 
   void destroy();
@@ -28,6 +28,7 @@ public:
   void unbind() const;
 
   void loadTexture2D(const char *path);
+  void loadTexture2DForProjection(const char *path);
   void loadCubemap(const char *faces[]);
 
   GLuint m_id;
