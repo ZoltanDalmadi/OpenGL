@@ -1,6 +1,5 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <string>
 #include <utility>
 #include "GLShaderProgram.h"
@@ -41,7 +40,7 @@ public:
 
   virtual ~GLSpotLight();
 
-  void setShaderUniform(const GLTools::GLShaderProgram& program) const;
+  void setShaderUniform(const GLShaderProgram& program) const;
   void buildShaderStrings();
 
   void setTarget(const glm::vec3& target);
