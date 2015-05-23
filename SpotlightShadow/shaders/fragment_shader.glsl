@@ -41,6 +41,8 @@ struct SpotLight
 };
 uniform SpotLight spotLight;
 
+uniform bool rect;
+
 subroutine void renderPassType();
 subroutine uniform renderPassType renderPass;
 
@@ -83,6 +85,30 @@ float shadowCalculation()
   return shadow * 1.5;
 }
 
+void calcRectangleSpotlight(SpotLight light, out float xProj, out float yProj, out float tgA, out float tgB)
+{
+  tgA = tan(light.outerCutOff);
+  tgB = tan(light.cutOff);
+  vec3 up = vec3(0.0f, 1.0f, 0.0f);
+  vec3 xAxis = normalize(cross(up, light.direction));
+
+  // Calculate light direction
+  vec3 lightDir = normalize(light.position - fragPos);
+  vec3 k = cross(lightDir, light.direction);
+  vec3 m = normalize(cross(light.direction, k));
+
+  float gamma = acos(dot(lightDir, light.direction));
+  float l = tan(gamma);
+  vec3 mm = m * l;
+
+  xProj = dot(mm, xAxis);
+
+  if (xProj < 0)
+    xProj = cos(radians(180) - acos(xProj));
+
+  yProj = dot(mm, up);
+}
+
 vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir)
 {
   // Calculate light direction
@@ -101,9 +127,21 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir)
     (light.constant + light.linear * dist + light.quadratic * (dist * dist));
 
   // Spotlight intensity
-  float theta = dot(lightDir, normalize(-light.direction));
-  float epsilon = light.cutOff - light.outerCutOff;
-  float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+  float intensity;
+
+  if (rect)
+  {
+    float xProj, yProj, tgA, tgB;
+    float radius = 0.2;
+    calcRectangleSpotlight(light, xProj, yProj, tgA, tgB);
+    intensity = (abs(xProj) < tgA) && (abs(yProj) < tgB) ? 1.0 : 0.0;
+  }
+  else
+  {
+    float theta = dot(lightDir, normalize(-light.direction));
+    float epsilon = cos(light.cutOff) - cos(light.outerCutOff);
+    intensity = clamp((theta - cos(light.outerCutOff)) / epsilon, 0.0, 1.0);
+  }
 
   // Calculate colors
   vec3 diffuseMix = mix(material.diffuse,
@@ -128,13 +166,22 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir)
   return (ambient + (1.0 - shadow) * (diffuse + specular)) * light.energy;
 }
 
+layout(index = 1)
+subroutine (renderPassType)
+void recordDepth()
+{
+}
+
+layout(index = 2)
 subroutine (renderPassType)
 void normalRender()
 {
   vec3 norm = normalize(normal);
   vec3 camDir = normalize(camPos - fragPos);
 
-  vec3 result = calcSpotLight(spotLight, norm, fragPos, camDir);
+  vec3 result;
+
+  result = calcSpotLight(spotLight, norm, fragPos, camDir);
 
   vec4 projTexColor = vec4(0.0);
 
@@ -142,11 +189,6 @@ void normalRender()
     projTexColor = textureProj(projectTex, projTexCoords);
 
   gl_FragColor = vec4(result, 1.0) + projTexColor * 0.2;
-}
-
-subroutine (renderPassType)
-void recordDepth()
-{
 }
 
 void main()

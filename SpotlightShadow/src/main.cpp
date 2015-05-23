@@ -56,25 +56,25 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if (key == GLFW_KEY_UP && action == GLFW_PRESS)
   {
     cutoff += 1.0f;
-    spotLight.m_cutoff.second = glm::cos(glm::radians(cutoff));
+    spotLight.m_cutoff.second = glm::radians(cutoff);
   }
 
   if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
   {
     cutoff -= 1.0f;
-    spotLight.m_cutoff.second = glm::cos(glm::radians(cutoff));
+    spotLight.m_cutoff.second = glm::radians(cutoff);
   }
 
   if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
   {
     outerCutoff += 1.0f;
-    spotLight.m_outercutoff.second = glm::cos(glm::radians(outerCutoff));
+    spotLight.m_outercutoff.second = glm::radians(outerCutoff);
   }
 
   if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
   {
     outerCutoff -= 1.0f;
-    spotLight.m_outercutoff.second = glm::cos(glm::radians(outerCutoff));
+    spotLight.m_outercutoff.second = glm::radians(outerCutoff);
   }
 
   if (key == GLFW_KEY_I && action == GLFW_PRESS)
@@ -209,24 +209,20 @@ int main()
 
   auto shaderProgram = std::make_unique<GLTools::GLShaderProgram>();
   setupShaders(*shaderProgram);
-  auto vertPass1 = glGetSubroutineIndex(shaderProgram->ID(), GL_VERTEX_SHADER,
-                                        "recordDepth");
-  auto vertPass2 = glGetSubroutineIndex(shaderProgram->ID(), GL_VERTEX_SHADER,
-                                        "normalRender");
-  auto fragPass1 = glGetSubroutineIndex(shaderProgram->ID(), GL_FRAGMENT_SHADER,
-                                        "recordDepth");
-  auto fragPass2 = glGetSubroutineIndex(shaderProgram->ID(), GL_FRAGMENT_SHADER,
-                                        "normalRender");
+
+  unsigned const pass1 = 1;
+  unsigned const pass2 = 2;
 
   shaderProgram->use();
   shaderProgram->setUniformValue("shadowMap", 0);
   shaderProgram->setUniformValue("material.diffuseTex", 1);
   shaderProgram->setUniformValue("material.specularTex", 2);
   shaderProgram->setUniformValue("projectTex", 3);
+  shaderProgram->setUniformValue("rect", true);
 
   spotLight.setTarget(glm::vec3(0.0f));
-  spotLight.m_cutoff.second = glm::cos(glm::radians(cutoff));
-  spotLight.m_outercutoff.second = glm::cos(glm::radians(outerCutoff));
+  spotLight.m_cutoff.second = glm::radians(cutoff);
+  spotLight.m_outercutoff.second = glm::radians(outerCutoff);
   spotLight.m_energy.second = 10.0f;
 
   plane = std::make_unique<GLTools::GLPlane>(20.0f, 20.0f);
@@ -285,21 +281,24 @@ int main()
     spotLight.setShaderUniform(*shaderProgram);
 
     glViewport(0, 0, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
-    glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &vertPass1);
-    glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &fragPass1);
-    glCullFace(GL_FRONT);
+    glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &pass1);
+    glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass1);
     shadowFBO->bind();
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(-0.1f, -0.1f);
+    glCullFace(GL_FRONT);
     glClear(GL_DEPTH_BUFFER_BIT);
     depthTexture->bind(0);
     renderScene(*shaderProgram);
-    shadowFBO->unbind();
     glCullFace(GL_BACK);
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    shadowFBO->unbind();
 
     // back to main framebuffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, WIDTH, HEIGHT);
-    glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &vertPass2);
-    glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &fragPass2);
+    glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &pass2);
+    glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass2);
     wallTexture->bind(1);
     wallSpecularTexture->bind(2);
     projectTexture->bind(3);

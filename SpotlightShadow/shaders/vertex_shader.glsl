@@ -19,6 +19,14 @@ out vec4 fragPosinLightSpace;
 subroutine void renderPassType();
 subroutine uniform renderPassType renderPass;
 
+layout(index = 1)
+subroutine (renderPassType)
+void recordDepth()
+{
+  gl_Position = lightSpaceMatrix * model * vec4(vertex_position, 1.0f);
+}
+
+layout(index = 2)
 subroutine (renderPassType)
 void normalRender()
 {
@@ -27,13 +35,7 @@ void normalRender()
   fragPos = vec3(model * vec4(vertex_position, 1.0));
   texCoords = vertex_texCoords;
   fragPosinLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);
-  projTexCoords = projectorMatrix * vec4(fragPos.x, -fragPos.y, fragPos.z, 1.0);
-}
-
-subroutine (renderPassType)
-void recordDepth()
-{
-  gl_Position = lightSpaceMatrix * model * vec4(vertex_position, 1.0f);
+  projTexCoords = projectorMatrix * vec4(fragPos.x, -fragPos.y, 1.0, 1.0);
 }
 
 void main()
