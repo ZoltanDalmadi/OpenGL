@@ -8,6 +8,7 @@
 #include "GLShaderProgram.h"
 #include "GLBufferObject.h"
 #include "GLVertexArrayObject.h"
+#include "GLMaterial.h"
 
 namespace GLTools
 {
@@ -24,6 +25,7 @@ class GLMesh
 public:
   std::vector<Vertex> m_vertices;
   std::vector<GLuint> m_indices;
+  GLMaterial m_material;
 
   GLMesh();
   explicit GLMesh(const std::string& path);
@@ -33,7 +35,7 @@ public:
 
   virtual void initialize();
   void loadMesh(const std::string& path);
-
+  virtual void draw(const GLShaderProgram& shaderProgram);
   virtual void draw();
 
   GLVertexArrayObject m_VAO;

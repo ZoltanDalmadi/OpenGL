@@ -2,6 +2,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <iostream>
 
 GLTools::GLMesh::GLMesh()
 {
@@ -51,6 +52,7 @@ void GLTools::GLMesh::loadMesh(const std::string& path)
     = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
 
   auto mesh = scene->mMeshes[0];
+  auto mat = scene->mMaterials[mesh->mMaterialIndex];
 
   for (size_t i = 0; i < mesh->mNumVertices; i++)
   {
@@ -64,6 +66,15 @@ void GLTools::GLMesh::loadMesh(const std::string& path)
     vector.y = mesh->mNormals[i].y;
     vector.z = mesh->mNormals[i].z;
     vert.normal = vector;
+
+    if (mesh->HasTextureCoords(static_cast<unsigned>(i)))
+    {
+      glm::vec2 vector2;
+      vector2.x = mesh->mTextureCoords[0][i].x;
+      vector2.y = mesh->mTextureCoords[0][i].y;
+      vert.texCoords = vector2;
+    }
+
     m_vertices.push_back(vert);
   }
 
@@ -75,7 +86,50 @@ void GLTools::GLMesh::loadMesh(const std::string& path)
       m_indices.push_back(face.mIndices[j]);
   }
 
+  aiColor3D a_color;
+  float a_float;
+  aiString a_string;
+
+  mat->Get(AI_MATKEY_COLOR_DIFFUSE, a_color);
+  m_material.m_diffuse = glm::vec3(a_color.r, a_color.g, a_color.b);
+  mat->Get(AI_MATKEY_COLOR_SPECULAR, a_color);
+  m_material.m_specular = glm::vec3(a_color.r, a_color.g, a_color.b);
+  mat->Get(AI_MATKEY_SHININESS, a_float);
+  m_material.m_shininess = a_float;
+
+  if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+  {
+    mat->GetTexture(aiTextureType_DIFFUSE, 0, &a_string);
+    m_material.m_diffuseTex = std::make_unique<GLTexture>(a_string.C_Str());
+    m_material.m_diffMix = 1.0f;
+  }
+  else
+    m_material.m_diffMix = 0.0f;
+
+  if (mat->GetTextureCount(aiTextureType_SPECULAR) > 0)
+  {
+    mat->GetTexture(aiTextureType_SPECULAR, 0, &a_string);
+    std::cout << a_string.C_Str() << std::endl;
+    m_material.m_specularTex = std::make_unique<GLTexture>(a_string.C_Str());
+    m_material.m_specMix = 1.0f;
+  }
+  else
+    m_material.m_specMix = 0.0f;
+
   initialize();
+}
+
+void GLTools::GLMesh::draw(const GLShaderProgram& shaderProgram)
+{
+  if (m_material.m_diffuseTex)
+    m_material.m_diffuseTex->bind(m_material.m_diffuseTex_index);
+
+  if (m_material.m_specularTex)
+    m_material.m_specularTex->bind(m_material.m_specularTex_index);
+
+  m_material.setShaderUniform(shaderProgram);
+
+  draw();
 }
 
 void GLTools::GLMesh::draw()
