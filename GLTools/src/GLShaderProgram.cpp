@@ -1,4 +1,5 @@
 #include "GLShaderProgram.h"
+#include <glm/gtc/type_ptr.hpp>
 
 GLTools::GLShaderProgram::GLShaderProgram()
 {
