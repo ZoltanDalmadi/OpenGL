@@ -3,8 +3,12 @@
 in vec3 normal;
 in vec3 fragPos;
 in vec2 texCoords;
+in vec4 fragPosinLightSpace;
+in vec4 projTexCoords;
 
 uniform vec3 camPos;
+uniform sampler2D shadowMap;
+uniform sampler2D projectTex;
 
 struct Material
 {
@@ -36,6 +40,48 @@ struct SpotLight
   float energy;
 };
 uniform SpotLight spotLight;
+
+subroutine void renderPassType();
+subroutine uniform renderPassType renderPass;
+
+float shadowCalculation()
+{
+  // perform perspective divide
+  vec3 projCoords = fragPosinLightSpace.xyz / fragPosinLightSpace.w;
+
+  // Transform to [0, 1] range
+  projCoords = projCoords * 0.5 + 0.5;
+
+  // Get closest depth value from light's perspective
+  float closestDepth = texture(shadowMap, projCoords.xy).r;
+
+  // Get depth of current fragment from light's perspective
+  float currentDepth = projCoords.z;
+
+  // Calculate bias (based on depth map resolution and slope)
+  vec3 normal_l = normalize(normal);
+  vec3 lightDir = normalize(spotLight.position - fragPos);
+  float bias = max(0.05 * (1.0 - dot(normal_l, lightDir)), 0.005);
+
+  // PCF
+  float shadow = 0.0;
+  vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+
+  for(int x = -1; x <= 1; ++x) {
+    for(int y = -1; y <= 1; ++y) {
+      float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+      shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;
+    }
+  }
+
+  shadow /= 16.0;
+
+  // Keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+  if(projCoords.z > 1.0)
+      shadow = 0.0;
+
+  return shadow * 1.5;
+}
 
 vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir)
 {
@@ -74,16 +120,36 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir)
   diffuse *= attenuation * intensity;
   specular *= attenuation * intensity;
 
+  // Calculate shadow
+  float shadow = shadowCalculation();
+  //shadow = min(shadow, 0.75);
+
   // Assemble output vector
-  return (ambient + diffuse + specular) * light.energy;
+  return (ambient + (1.0 - shadow) * (diffuse + specular)) * light.energy;
 }
 
-void main()
+subroutine (renderPassType)
+void normalRender()
 {
   vec3 norm = normalize(normal);
   vec3 camDir = normalize(camPos - fragPos);
 
   vec3 result = calcSpotLight(spotLight, norm, fragPos, camDir);
 
-  gl_FragColor = vec4(result, 1.0f);
+  vec4 projTexColor = vec4(0.0);
+
+  if(projTexCoords.z > 0.0)
+    projTexColor = textureProj(projectTex, projTexCoords);
+
+  gl_FragColor = vec4(result, 1.0) + projTexColor * 0.2;
+}
+
+subroutine (renderPassType)
+void recordDepth()
+{
+}
+
+void main()
+{
+  renderPass();
 }
