@@ -13,6 +13,7 @@
 #include "GLSpotlight.h"
 #include "GLFrameBufferObject.h"
 #include <iostream>
+#include <GLModel.h>
 
 //constants
 const GLuint WIDTH = 1280;
@@ -40,7 +41,7 @@ double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
 
 std::unique_ptr<GLTools::GLPlane> plane;
-std::unique_ptr<GLTools::GLMesh> model;
+std::unique_ptr<GLTools::GLModel> model;
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
@@ -182,24 +183,14 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
   auto normalMatrix = glm::mat3(planeModel);
   shaderProgram.setUniformValue("model", planeModel);
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
-
-  shaderProgram.setUniformValue("material.diffMix", 1.0f);
-  shaderProgram.setUniformValue("material.specular", glm::vec3(0.0f));
-  shaderProgram.setUniformValue("material.specMix", 0.2f);
-  shaderProgram.setUniformValue("material.shininess", 32.0f);
-  plane->draw();
+  plane->draw(shaderProgram);
 
   glm::mat4 modelModel;
   modelModel = translate(modelModel, glm::vec3(0.0f, 0.0f, -5.0f));
   normalMatrix = glm::mat3(transpose(inverse(modelModel)));
   shaderProgram.setUniformValue("model", modelModel);
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
-
-  shaderProgram.setUniformValue("material.diffuse", glm::vec3(0.0f, 1.0f, 1.0f));
-  shaderProgram.setUniformValue("material.diffMix", 0.0f);
-  shaderProgram.setUniformValue("material.specular", glm::vec3(1.0f));
-  shaderProgram.setUniformValue("material.specMix", 0.0f);
-  model->draw();
+  model->draw(shaderProgram);
 }
 
 // The MAIN function
@@ -215,25 +206,37 @@ int main()
 
   shaderProgram->use();
   shaderProgram->setUniformValue("shadowMap", 0);
-  shaderProgram->setUniformValue("material.diffuseTex", 1);
-  shaderProgram->setUniformValue("material.specularTex", 2);
   shaderProgram->setUniformValue("projectTex", 3);
   shaderProgram->setUniformValue("rect", true);
+
+  auto wallTexture =
+    std::make_shared<GLTools::GLTexture>("textures/brick.jpg");
+  auto wallSpecularTexture =
+    std::make_shared<GLTools::GLTexture>("textures/brick_specular.jpg");
 
   spotLight.setTarget(glm::vec3(0.0f));
   spotLight.m_cutoff.second = glm::radians(cutoff);
   spotLight.m_outercutoff.second = glm::radians(outerCutoff);
   spotLight.m_energy.second = 10.0f;
 
+  model = std::make_unique<GLTools::GLModel>("models/model.obj");
+  //model->m_meshes.back().m_material->m_diffuseTex = wallTexture;
+  //model->m_meshes.back().m_material->m_specularTex = wallSpecularTexture;
+  //model->m_meshes.back().m_material->m_diffuseTex_index = 1;
+  //model->m_meshes.back().m_material->m_specularTex_index = 2;
+  //model->m_meshes.back().m_material->m_diffMix = 1.0f;
+  //model->m_meshes.back().m_material->m_specMix = 1.0f;
+
   plane = std::make_unique<GLTools::GLPlane>(20.0f, 20.0f);
   plane->initialize();
-
-  model = std::make_unique<GLTools::GLMesh>("models/model.obj");
-
-  auto wallTexture =
-    std::make_unique<GLTools::GLTexture>("textures/brick.jpg");
-  auto wallSpecularTexture =
-    std::make_unique<GLTools::GLTexture>("textures/brick_specular.jpg");
+  plane->m_material->m_diffuseTex = wallTexture;
+  plane->m_material->m_specularTex = wallSpecularTexture;
+  plane->m_material->m_diffuseTex_index = 1;
+  plane->m_material->m_specularTex_index = 2;
+  plane->m_material->m_diffMix = 1.0f;
+  plane->m_material->m_specular = glm::vec3(0.0f);
+  plane->m_material->m_specMix = 0.2f;
+  plane->m_material->m_shininess = 32.0f;
 
   auto depthTexture = std::make_unique<GLTools::GLTexture>();
   depthTexture->createDepthTexture(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
@@ -266,7 +269,6 @@ int main()
     auto lightView = lookAt(spotLight.m_position.second, glm::vec3(0.0f),
                             glm::vec3(0.0f, 1.0f, 0.0f));
     auto lightSpaceMatrix = lightProjection * lightView;
-    //shaderProgram->use();
     auto projScaleTrans = translate(glm::vec3(0.5f)) *
                           scale(glm::vec3(2.0f));
 
@@ -299,8 +301,6 @@ int main()
     glViewport(0, 0, WIDTH, HEIGHT);
     glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &pass2);
     glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass2);
-    wallTexture->bind(1);
-    wallSpecularTexture->bind(2);
     projectTexture->bind(3);
     renderScene(*shaderProgram);
 
