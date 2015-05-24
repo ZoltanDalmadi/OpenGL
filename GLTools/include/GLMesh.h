@@ -25,18 +25,18 @@ class GLMesh
 public:
   std::vector<Vertex> m_vertices;
   std::vector<GLuint> m_indices;
-  GLMaterial m_material;
+  std::shared_ptr<GLMaterial> m_material;
 
   GLMesh();
-  explicit GLMesh(const std::string& path);
   GLMesh(std::vector<Vertex>& v, std::vector<GLuint>& i);
 
   virtual ~GLMesh();
 
   virtual void initialize();
-  void loadMesh(const std::string& path);
   virtual void draw(const GLShaderProgram& shaderProgram);
   virtual void draw();
+
+  void setMaterialTextureIndices(int diffuseIndex, int specularIndex);
 
   GLVertexArrayObject m_VAO;
   GLBufferObject m_VBO;
