@@ -15,7 +15,9 @@ public:
     LEFT,
     RIGHT,
     UP,
-    DOWN
+    DOWN,
+    FORWARD_FLOOR,
+    BACKWARD_FLOOR
   };
 
   glm::vec3 m_front;
@@ -25,14 +27,14 @@ public:
   float m_speed = 0.1f;
   float m_sensivity = 0.1f;
 
-  GLFPSCamera(const glm::vec3& position);
+  explicit GLFPSCamera(const glm::vec3& position);
   virtual ~GLFPSCamera();
 
   void move(Direction dir);
   void rotate(float xoffset, float yoffset, bool constrain = true);
 
 private:
-  virtual void update();
+  virtual void update() override;
 };
 
 }
