@@ -149,6 +149,7 @@
     <ClInclude Include="include\GLFWApplication.h" />
     <ClInclude Include="include\GLMaterial.h" />
     <ClInclude Include="include\GLMesh.h" />
+    <ClInclude Include="include\GLModel.h" />
     <ClInclude Include="include\GLPlane.h" />
     <ClInclude Include="include\GLPointLight.h" />
     <ClInclude Include="include\GLShader.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="src\GLFWApplication.cpp" />
     <ClCompile Include="src\GLMaterial.cpp" />
     <ClCompile Include="src\GLMesh.cpp" />
+    <ClCompile Include="src\GLModel.cpp" />
     <ClCompile Include="src\GLPlane.cpp" />
     <ClCompile Include="src\GLPointLight.cpp" />
     <ClCompile Include="src\GLShader.cpp" />

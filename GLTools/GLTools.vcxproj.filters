@@ -68,6 +68,9 @@
     <ClInclude Include="include\GLMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\GLModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GLShader.cpp">
@@ -125,6 +128,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\GLMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GLModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
