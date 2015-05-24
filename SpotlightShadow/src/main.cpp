@@ -22,17 +22,21 @@ const GLuint HEIGHT = 720;
 const GLuint SHADOWMAP_WIDTH = 2048;
 const GLuint SHADOWMAP_HEIGHT = 2048;
 
-float cutoff = 20.0f;
-float outerCutoff = 22.0f;
+float cutoff = 19.0f;
+float outerCutoff = 19.0f;
 
 GLFWwindow *window;
 
 GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, 0.0f));
 
 glm::vec3 lightPos(0.0f, 1.0f, 0.0f);
-glm::vec3 lightTarget(0.0f, 2.0f, 5.0f);
+glm::vec3 lightTarget(0.0f, 1.5f, 5.0f);
+glm::vec3 bunnyPos(0.0f, 1.0f, 2.0f);
 
 GLTools::GLSpotLight spotLight(lightPos);
+
+std::vector<GLTools::GLTexture> slides;
+std::vector<GLTools::GLTexture>::iterator activeSlide;
 
 bool keys[1024];
 
@@ -42,6 +46,7 @@ double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
 
 std::unique_ptr<GLTools::GLModel> model;
+std::unique_ptr<GLTools::GLModel> bunny;
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
@@ -54,42 +59,13 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
 
-  if (key == GLFW_KEY_UP && action == GLFW_PRESS)
-  {
-    cutoff += 1.0f;
-    spotLight.m_cutoff.second = glm::radians(cutoff);
-  }
+  if (key == GLFW_KEY_F && action == GLFW_PRESS)
+    if (activeSlide != slides.end())
+      ++activeSlide;
 
-  if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
-  {
-    cutoff -= 1.0f;
-    spotLight.m_cutoff.second = glm::radians(cutoff);
-  }
-
-  if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
-  {
-    outerCutoff += 1.0f;
-    spotLight.m_outercutoff.second = glm::radians(outerCutoff);
-  }
-
-  if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
-  {
-    outerCutoff -= 1.0f;
-    spotLight.m_outercutoff.second = glm::radians(outerCutoff);
-  }
-
-  if (key == GLFW_KEY_I && action == GLFW_PRESS)
-  {
-    lightPos += glm::vec3(0.0f, 0.0f, 1.0f);
-    spotLight.m_position.second = lightPos;
-  }
-
-  if (key == GLFW_KEY_K && action == GLFW_PRESS)
-  {
-    lightPos -= glm::vec3(0.0f, 0.0f, 1.0f);
-    spotLight.m_position.second = lightPos;
-  }
-
+  if (key == GLFW_KEY_R && action == GLFW_PRESS)
+    if (activeSlide != slides.begin())
+      --activeSlide;
 }
 
 void moveCamera()
@@ -105,6 +81,52 @@ void moveCamera()
 
   if (keys[GLFW_KEY_D])
     camera.move(GLTools::GLFPSCamera::Direction::RIGHT);
+
+  if (keys[GLFW_KEY_I])
+  {
+    lightTarget += glm::vec3(0.0f, 0.02f, 0.0f);
+    spotLight.setTarget(lightTarget);
+  }
+
+  if (keys[GLFW_KEY_K])
+  {
+    lightTarget -= glm::vec3(0.0f, 0.02f, 0.0f);
+    spotLight.setTarget(lightTarget);
+  }
+
+  if (keys[GLFW_KEY_J])
+  {
+    lightTarget += glm::vec3(0.02f, 0.0f, 0.0f);
+    spotLight.setTarget(lightTarget);
+  }
+
+  if (keys[GLFW_KEY_L])
+  {
+    lightTarget -= glm::vec3(0.02f, 0.0f, 0.0f);
+    spotLight.setTarget(lightTarget);
+  }
+
+}
+
+void moveBunny()
+{
+  if (keys[GLFW_KEY_UP])
+    bunnyPos += glm::vec3(0.0f, 0.02f, 0.0f);
+
+  if (keys[GLFW_KEY_DOWN])
+    bunnyPos -= glm::vec3(0.0f, 0.02f, 0.0f);
+
+  if (keys[GLFW_KEY_LEFT])
+    bunnyPos += glm::vec3(0.02f, 0.0f, 0.0f);
+
+  if (keys[GLFW_KEY_RIGHT])
+    bunnyPos -= glm::vec3(0.02f, 0.0f, 0.0f);
+
+  if (keys[GLFW_KEY_PAGE_UP])
+    bunnyPos += glm::vec3(0.0f, 0.0f, 0.02f);
+
+  if (keys[GLFW_KEY_PAGE_DOWN])
+    bunnyPos -= glm::vec3(0.0f, 0.0f, 0.02f);
 }
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
@@ -171,6 +193,7 @@ void init()
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
+
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
   glm::mat4 modelModel;
@@ -178,6 +201,13 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
   shaderProgram.setUniformValue("model", modelModel);
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   model->draw(shaderProgram);
+
+  glm::mat4 bunnyModel;
+  bunnyModel = translate(bunnyModel, bunnyPos);
+  normalMatrix = glm::mat3(transpose(inverse(bunnyModel)));
+  shaderProgram.setUniformValue("model", bunnyModel);
+  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
+  bunny->draw(shaderProgram);
 }
 
 // The MAIN function
@@ -199,18 +229,25 @@ int main()
   spotLight.setTarget(lightTarget);
   spotLight.m_cutoff.second = glm::radians(cutoff);
   spotLight.m_outercutoff.second = glm::radians(outerCutoff);
-  spotLight.m_ambient.second = glm::vec3(0.3f, 0.3f, 0.3f);
+  spotLight.m_ambient.second = glm::vec3(0.5f, 0.5f, 0.5f);
 
   model = std::make_unique<GLTools::GLModel>("models/model.obj");
+  bunny = std::make_unique<GLTools::GLModel>("models/bunny.obj");
+
   auto depthTexture = std::make_unique<GLTools::GLTexture>();
   depthTexture->createDepthTexture(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
 
   auto shadowFBO = std::make_unique<GLTools::GLFrameBufferObject>();
   shadowFBO->attachDepthTexture(*depthTexture);
 
-  auto projectTexture =
-    std::make_unique<GLTools::GLTexture>();
-  projectTexture->loadTexture2DForProjection("textures/smile.jpg");
+  for (size_t i = 1; i < 58; i++)
+  {
+    auto path = "textures/dia/" + std::to_string(i) + ".jpg";
+    slides.emplace_back();
+    slides.back().loadTexture2DForProjection(path.c_str());
+  }
+
+  activeSlide = slides.begin();
 
   auto projection =
     glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
@@ -228,12 +265,13 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     moveCamera();
+    moveBunny();
 
     // render shadow map
     auto lightView = lookAt(lightPos, lightTarget,
                             glm::vec3(0.0f, 1.0f, 0.0f));
     auto lightSpaceMatrix = lightProjection * lightView;
-    auto projScaleTrans = translate(glm::vec3(0.5f)) * scale(glm::vec3(0.6f));
+    auto projScaleTrans = translate(glm::vec3(0.5f)) * scale(glm::vec3(0.8f));
 
     shaderProgram->setUniformValue("projectorMatrix",
                                    projScaleTrans * lightProjection * lightView);
@@ -264,7 +302,7 @@ int main()
     glViewport(0, 0, WIDTH, HEIGHT);
     glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &pass2);
     glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass2);
-    projectTexture->bind(3);
+    activeSlide->bind(3);
     renderScene(*shaderProgram);
 
     glfwSwapBuffers(window);
