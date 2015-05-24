@@ -61,7 +61,7 @@ GLTools::GLMesh GLTools::GLModel::loadMesh(const aiMesh *mesh)
     {
       glm::vec2 vector2;
       vector2.x = mesh->mTextureCoords[0][i].x;
-      vector2.y = mesh->mTextureCoords[0][i].y;
+      vector2.y = 1.0f - mesh->mTextureCoords[0][i].y;
       vert.texCoords = vector2;
     }
 
@@ -99,16 +99,22 @@ GLTools::GLMaterial GLTools::GLModel::loadMaterial(const aiMaterial *mat)
 
     for (const auto& material : m_materials)
     {
-      if (material.m_diffuseTex->m_loadedTexturePath == a_string.C_Str())
+      if (material.m_diffuseTex)
       {
-        result.m_diffuseTex = material.m_diffuseTex;
-        break;
+        if (material.m_diffuseTex->m_loadedTexturePath == a_string.C_Str())
+        {
+          result.m_diffuseTex = material.m_diffuseTex;
+          break;
+        }
       }
 
-      if (material.m_specularTex->m_loadedTexturePath == a_string.C_Str())
+      if (material.m_specularTex)
       {
-        result.m_diffuseTex = material.m_specularTex;
-        break;
+        if (material.m_specularTex->m_loadedTexturePath == a_string.C_Str())
+        {
+          result.m_diffuseTex = material.m_specularTex;
+          break;
+        }
       }
     }
 
@@ -126,16 +132,22 @@ GLTools::GLMaterial GLTools::GLModel::loadMaterial(const aiMaterial *mat)
 
     for (const auto& material : m_materials)
     {
-      if (material.m_diffuseTex->m_loadedTexturePath == a_string.C_Str())
+      if (material.m_diffuseTex)
       {
-        result.m_specularTex = material.m_diffuseTex;
-        break;
+        if (material.m_diffuseTex->m_loadedTexturePath == a_string.C_Str())
+        {
+          result.m_specularTex = material.m_diffuseTex;
+          break;
+        }
       }
 
-      if (material.m_specularTex->m_loadedTexturePath == a_string.C_Str())
+      if (material.m_specularTex)
       {
-        result.m_specularTex = material.m_specularTex;
-        break;
+        if (material.m_specularTex->m_loadedTexturePath == a_string.C_Str())
+        {
+          result.m_specularTex = material.m_specularTex;
+          break;
+        }
       }
     }
 
