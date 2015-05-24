@@ -95,6 +95,7 @@ void GLTools::GLTexture::loadTexture2D(const char *path)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glBindTexture(GL_TEXTURE_2D, 0);
   SOIL_free_image_data(image);
+  m_loadedTexturePath = path;
 }
 
 void GLTools::GLTexture::loadTexture2DForProjection(const char *path)

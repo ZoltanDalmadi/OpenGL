@@ -1,6 +1,7 @@
 #pragma once
 #define GLEW_STATIC
 #include <GL/glew.h>
+#include <string>
 
 namespace GLTools
 {
@@ -33,6 +34,7 @@ public:
 
   GLuint m_id;
   TextureType m_type;
+  std::string m_loadedTexturePath;
 };
 
 }
