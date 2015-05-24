@@ -17,7 +17,6 @@ GLTools::GLBufferObject::GLBufferObject(BufferType type, Usage usage)
 
 GLTools::GLBufferObject::~GLBufferObject()
 {
-  destroy();
 }
 
 void GLTools::GLBufferObject::bind()

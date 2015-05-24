@@ -2,7 +2,6 @@
 
 GLTools::GLVertexArrayObject::~GLVertexArrayObject()
 {
-  destroy();
 }
 
 void GLTools::GLVertexArrayObject::create()

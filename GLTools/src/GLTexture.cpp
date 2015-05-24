@@ -19,7 +19,6 @@ GLTools::GLTexture::GLTexture(const char *faces[])
 
 GLTools::GLTexture::~GLTexture()
 {
-  destroy();
 }
 
 void GLTools::GLTexture::createColorTexture(GLsizei width, GLsizei height)
