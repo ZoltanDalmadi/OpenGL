@@ -27,6 +27,8 @@ GLTools::GLPlane::GLPlane(float width, float height)
   m_vertices.push_back(vert);
 
   m_indices = { 0, 2, 1, 0, 3, 2 };
+
+  m_material = std::make_shared<GLMaterial>();
 }
 
 GLTools::GLPlane::~GLPlane()
