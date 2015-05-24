@@ -131,10 +131,12 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir)
 
   if (rect)
   {
-    float xProj, yProj, tgA, tgB;
-    float radius = 0.2;
-    calcRectangleSpotlight(light, xProj, yProj, tgA, tgB);
-    intensity = (abs(xProj) < tgA) && (abs(yProj) < tgB) ? 1.0 : 0.0;
+    if(projTexCoords.z > 0.0)
+    {
+      float xProj, yProj, tgA, tgB;
+      calcRectangleSpotlight(light, xProj, yProj, tgA, tgB);
+      intensity = (abs(xProj) < tgA) && (abs(yProj) < tgB) ? 1.0 : 0.0;
+    }
   }
   else
   {
@@ -188,7 +190,7 @@ void normalRender()
   if(projTexCoords.z > 0.0)
     projTexColor = textureProj(projectTex, projTexCoords);
 
-  gl_FragColor = vec4(result, 1.0) + projTexColor * 0.2;
+  gl_FragColor = vec4(result, 1.0) + projTexColor * 0.5;
 }
 
 void main()

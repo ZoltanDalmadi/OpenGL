@@ -35,7 +35,7 @@ void normalRender()
   fragPos = vec3(model * vec4(vertex_position, 1.0));
   texCoords = vertex_texCoords;
   fragPosinLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);
-  projTexCoords = projectorMatrix * vec4(fragPos.x, -fragPos.y, 1.0, 1.0);
+  projTexCoords = projectorMatrix * vec4(fragPos, 1.0);
 }
 
 void main()
