@@ -22,14 +22,15 @@ const GLuint HEIGHT = 720;
 const GLuint SHADOWMAP_WIDTH = 2048;
 const GLuint SHADOWMAP_HEIGHT = 2048;
 
-float cutoff = 10.0f;
-float outerCutoff = 12.0f;
+float cutoff = 20.0f;
+float outerCutoff = 22.0f;
 
 GLFWwindow *window;
 
-GLTools::GLFPSCamera camera(glm::vec3(0.0f, 0.0f, -10.0f));
+GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, 0.0f));
 
-glm::vec3 lightPos(0.0f, 0.0f, -25.0f);
+glm::vec3 lightPos(0.0f, 1.0f, 0.0f);
+glm::vec3 lightTarget(0.0f, 2.0f, 5.0f);
 
 GLTools::GLSpotLight spotLight(lightPos);
 
@@ -40,7 +41,6 @@ double lastX = WIDTH / 2.0f;
 double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
 
-std::unique_ptr<GLTools::GLPlane> plane;
 std::unique_ptr<GLTools::GLModel> model;
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -95,22 +95,16 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 void moveCamera()
 {
   if (keys[GLFW_KEY_W])
-    camera.move(GLTools::GLFPSCamera::Direction::FORWARD);
+    camera.move(GLTools::GLFPSCamera::Direction::FORWARD_FLOOR);
 
   if (keys[GLFW_KEY_S])
-    camera.move(GLTools::GLFPSCamera::Direction::BACKWARD);
+    camera.move(GLTools::GLFPSCamera::Direction::BACKWARD_FLOOR);
 
   if (keys[GLFW_KEY_A])
     camera.move(GLTools::GLFPSCamera::Direction::LEFT);
 
   if (keys[GLFW_KEY_D])
     camera.move(GLTools::GLFPSCamera::Direction::RIGHT);
-
-  if (keys[GLFW_KEY_SPACE])
-    camera.move(GLTools::GLFPSCamera::Direction::UP);
-
-  if (keys[GLFW_KEY_LEFT_CONTROL])
-    camera.move(GLTools::GLFPSCamera::Direction::DOWN);
 }
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
@@ -179,15 +173,8 @@ void init()
 
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
-  glm::mat4 planeModel;
-  auto normalMatrix = glm::mat3(planeModel);
-  shaderProgram.setUniformValue("model", planeModel);
-  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
-  plane->draw(shaderProgram);
-
   glm::mat4 modelModel;
-  modelModel = translate(modelModel, glm::vec3(0.0f, 0.0f, -5.0f));
-  normalMatrix = glm::mat3(transpose(inverse(modelModel)));
+  auto normalMatrix = glm::mat3(modelModel);
   shaderProgram.setUniformValue("model", modelModel);
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   model->draw(shaderProgram);
@@ -209,35 +196,12 @@ int main()
   shaderProgram->setUniformValue("projectTex", 3);
   shaderProgram->setUniformValue("rect", true);
 
-  auto wallTexture =
-    std::make_shared<GLTools::GLTexture>("textures/brick.jpg");
-  auto wallSpecularTexture =
-    std::make_shared<GLTools::GLTexture>("textures/brick_specular.jpg");
-
-  spotLight.setTarget(glm::vec3(0.0f));
+  spotLight.setTarget(lightTarget);
   spotLight.m_cutoff.second = glm::radians(cutoff);
   spotLight.m_outercutoff.second = glm::radians(outerCutoff);
-  spotLight.m_energy.second = 10.0f;
+  spotLight.m_ambient.second = glm::vec3(0.3f, 0.3f, 0.3f);
 
   model = std::make_unique<GLTools::GLModel>("models/model.obj");
-  //model->m_meshes.back().m_material->m_diffuseTex = wallTexture;
-  //model->m_meshes.back().m_material->m_specularTex = wallSpecularTexture;
-  //model->m_meshes.back().m_material->m_diffuseTex_index = 1;
-  //model->m_meshes.back().m_material->m_specularTex_index = 2;
-  //model->m_meshes.back().m_material->m_diffMix = 1.0f;
-  //model->m_meshes.back().m_material->m_specMix = 1.0f;
-
-  plane = std::make_unique<GLTools::GLPlane>(20.0f, 20.0f);
-  plane->initialize();
-  plane->m_material->m_diffuseTex = wallTexture;
-  plane->m_material->m_specularTex = wallSpecularTexture;
-  plane->m_material->m_diffuseTex_index = 1;
-  plane->m_material->m_specularTex_index = 2;
-  plane->m_material->m_diffMix = 1.0f;
-  plane->m_material->m_specular = glm::vec3(0.0f);
-  plane->m_material->m_specMix = 0.2f;
-  plane->m_material->m_shininess = 32.0f;
-
   auto depthTexture = std::make_unique<GLTools::GLTexture>();
   depthTexture->createDepthTexture(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
 
@@ -255,7 +219,7 @@ int main()
     glm::perspective(45.0f,
                      static_cast<GLfloat>(SHADOWMAP_WIDTH) /
                      static_cast<GLfloat>(SHADOWMAP_HEIGHT),
-                     2.0f, 50.0f);
+                     0.2f, 1000.0f);
 
   while (!glfwWindowShouldClose(window))
   {
@@ -266,11 +230,10 @@ int main()
     moveCamera();
 
     // render shadow map
-    auto lightView = lookAt(spotLight.m_position.second, glm::vec3(0.0f),
+    auto lightView = lookAt(lightPos, lightTarget,
                             glm::vec3(0.0f, 1.0f, 0.0f));
     auto lightSpaceMatrix = lightProjection * lightView;
-    auto projScaleTrans = translate(glm::vec3(0.5f)) *
-                          scale(glm::vec3(2.0f));
+    auto projScaleTrans = translate(glm::vec3(0.5f)) * scale(glm::vec3(0.6f));
 
     shaderProgram->setUniformValue("projectorMatrix",
                                    projScaleTrans * lightProjection * lightView);
