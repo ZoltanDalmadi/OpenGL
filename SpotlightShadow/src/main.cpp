@@ -81,7 +81,10 @@ void moveCamera()
 
   if (keys[GLFW_KEY_D])
     camera.move(GLTools::GLFPSCamera::Direction::RIGHT);
+}
 
+void moveLightTarget()
+{
   if (keys[GLFW_KEY_I])
   {
     lightTarget += glm::vec3(0.0f, 0.02f, 0.0f);
@@ -105,7 +108,6 @@ void moveCamera()
     lightTarget -= glm::vec3(0.02f, 0.0f, 0.0f);
     spotLight.setTarget(lightTarget);
   }
-
 }
 
 void moveBunny()
@@ -265,6 +267,7 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     moveCamera();
+    moveLightTarget();
     moveBunny();
 
     // render shadow map
