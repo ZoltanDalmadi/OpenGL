@@ -291,7 +291,7 @@ int main()
     glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass1);
     shadowFBO->bind();
     glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(-0.1f, -0.1f);
+    glPolygonOffset(-1.0f, -1.0f);
     glCullFace(GL_FRONT);
     glClear(GL_DEPTH_BUFFER_BIT);
     depthTexture->bind(0);

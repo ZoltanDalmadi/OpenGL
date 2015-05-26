@@ -6,6 +6,8 @@ in vec2 texCoords;
 in vec4 fragPosinLightSpace;
 in vec4 projTexCoords;
 
+out vec4 fragColor;
+
 uniform vec3 camPos;
 uniform sampler2D shadowMap;
 uniform sampler2D projectTex;
@@ -46,7 +48,7 @@ uniform bool rect;
 subroutine void renderPassType();
 subroutine uniform renderPassType renderPass;
 
-float shadowCalculation()
+float shadowCalculation(out float closestDepth, out float currentDepth)
 {
   // perform perspective divide
   vec3 projCoords = fragPosinLightSpace.xyz / fragPosinLightSpace.w;
@@ -55,10 +57,10 @@ float shadowCalculation()
   projCoords = projCoords * 0.5 + 0.5;
 
   // Get closest depth value from light's perspective
-  float closestDepth = texture(shadowMap, projCoords.xy).r;
+  closestDepth = texture(shadowMap, projCoords.xy).r;
 
   // Get depth of current fragment from light's perspective
-  float currentDepth = projCoords.z;
+  currentDepth = projCoords.z;
 
   // Calculate bias (based on depth map resolution and slope)
   vec3 normal_l = normalize(normal);
@@ -76,13 +78,13 @@ float shadowCalculation()
     }
   }
 
-  shadow /= 16.0;
+  shadow /= 9.0;
 
   // Keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
   if(projCoords.z > 1.0)
       shadow = 0.0;
 
-  return shadow * 1.5;
+  return shadow;
 }
 
 void calcRectangleSpotlight(SpotLight light, out float xProj, out float yProj, out float tgA, out float tgB)
@@ -109,7 +111,7 @@ void calcRectangleSpotlight(SpotLight light, out float xProj, out float yProj, o
   yProj = dot(mm, up);
 }
 
-vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir)
+vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir, float shadow)
 {
   // Calculate light direction
   vec3 lightDir = normalize(light.position - fragPos);
@@ -160,10 +162,6 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir)
   diffuse *= attenuation * intensity;
   specular *= attenuation * intensity;
 
-  // Calculate shadow
-  float shadow = shadowCalculation();
-  //shadow = min(shadow, 0.75);
-
   // Assemble output vector
   return (ambient + (1.0 - shadow) * (diffuse + specular)) * light.energy;
 }
@@ -183,14 +181,18 @@ void normalRender()
 
   vec3 result;
 
-  result = calcSpotLight(spotLight, norm, fragPos, camDir);
+  float closestDepth;
+  float currentDepth;
+  float shadow = shadowCalculation(closestDepth, currentDepth);
+
+  result = calcSpotLight(spotLight, norm, fragPos, camDir, shadow);
 
   vec4 projTexColor = vec4(0.0);
 
-  if(projTexCoords.z > 0.0)
-    projTexColor = textureProj(projectTex, projTexCoords);
+  if(projTexCoords.z > 0.0 && currentDepth < closestDepth)
+    projTexColor = textureProj(projectTex, projTexCoords) * 0.5;
 
-  gl_FragColor = vec4(result, 1.0) + projTexColor * 0.5;
+  fragColor = vec4(result, 1.0) + projTexColor * (1.0 - shadow);
 }
 
 void main()
