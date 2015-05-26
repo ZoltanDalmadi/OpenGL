@@ -29,7 +29,8 @@ GLFWwindow *window;
 
 GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, 0.0f));
 
-glm::vec3 lightPos(0.0f, 1.0f, 0.0f);
+glm::vec3 lightPos(0.0f, 0.7f, 0.6f);
+glm::vec3 projPos(0.0f, 0.67f, 0.5f);
 glm::vec3 lightTarget(0.0f, 1.5f, 5.0f);
 glm::vec3 bunnyPos(0.0f, 1.0f, 2.0f);
 
@@ -47,6 +48,7 @@ bool firstMouse = true;
 
 std::unique_ptr<GLTools::GLModel> model;
 std::unique_ptr<GLTools::GLModel> bunny;
+std::unique_ptr<GLTools::GLModel> projector;
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
@@ -204,6 +206,13 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   model->draw(shaderProgram);
 
+  glm::mat4 projectorModel;
+  projectorModel = translate(projectorModel, projPos);
+  normalMatrix = glm::mat3(transpose(inverse(projectorModel)));
+  shaderProgram.setUniformValue("model", projectorModel);
+  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
+  projector->draw(shaderProgram);
+
   glm::mat4 bunnyModel;
   bunnyModel = translate(bunnyModel, bunnyPos);
   normalMatrix = glm::mat3(transpose(inverse(bunnyModel)));
@@ -235,6 +244,7 @@ int main()
 
   model = std::make_unique<GLTools::GLModel>("models/model.obj");
   bunny = std::make_unique<GLTools::GLModel>("models/bunny.obj");
+  projector = std::make_unique<GLTools::GLModel>("models/vetito.obj");
 
   auto depthTexture = std::make_unique<GLTools::GLTexture>();
   depthTexture->createDepthTexture(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
