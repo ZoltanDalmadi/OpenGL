@@ -18,7 +18,12 @@ void GLTools::GLModel::loadModel(const std::string& path)
 {
   Assimp::Importer importer;
   auto scene
-    = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+    = importer.ReadFile(path,
+                        aiProcess_Triangulate |
+                        aiProcess_GenSmoothNormals |
+                        aiProcess_FlipUVs |
+                        aiProcess_OptimizeMeshes |
+                        aiProcess_OptimizeGraph);
 
   for (size_t i = 0; i < scene->mNumMaterials; i++)
     m_materials.emplace_back(loadMaterial(scene->mMaterials[i]));
@@ -61,7 +66,7 @@ GLTools::GLMesh GLTools::GLModel::loadMesh(const aiMesh *mesh)
     {
       glm::vec2 vector2;
       vector2.x = mesh->mTextureCoords[0][i].x;
-      vector2.y = 1.0f - mesh->mTextureCoords[0][i].y;
+      vector2.y = mesh->mTextureCoords[0][i].y;
       vert.texCoords = vector2;
     }
 
