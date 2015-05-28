@@ -111,13 +111,13 @@ void calcRectangleSpotlight(SpotLight light, out float xProj, out float yProj, o
   yProj = dot(mm, up);
 }
 
-vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir, float shadow)
+vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir, float shadow, out float diff)
 {
   // Calculate light direction
   vec3 lightDir = normalize(light.position - fragPos);
 
   // Calculate diffuse intensity
-  float diff = max(dot(normal, lightDir), 0.0);
+  diff = max(dot(normal, lightDir), 0.0);
 
   // Calculate reflection vector and specular intensity
   vec3 halfwayDir = normalize(lightDir + camDir);
@@ -181,12 +181,13 @@ void normalRender()
 
   float closestDepth;
   float currentDepth;
+  float diff;
   float shadow = shadowCalculation(closestDepth, currentDepth);
 
-  vec4 result = vec4(calcSpotLight(spotLight, norm, fragPos, camDir, shadow), 1.0);
+  vec4 result = vec4(calcSpotLight(spotLight, norm, fragPos, camDir, shadow, diff), 1.0);
 
   if(projTexCoords.z > 0.0 && currentDepth < closestDepth)
-    result += textureProj(projectTex, projTexCoords) * 0.5;
+    result += textureProj(projectTex, projTexCoords) * diff * 0.5;
 
   fragColor = result;
 }

@@ -27,7 +27,7 @@ float outerCutoff = 19.0f;
 
 GLFWwindow *window;
 
-GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, 0.0f));
+GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, -1.5f));
 
 glm::vec3 lightPos(0.0f, 0.7f, 0.6f);
 glm::vec3 projPos(0.0f, 0.67f, 0.5f);
@@ -40,9 +40,6 @@ std::vector<GLTools::GLTexture> slides;
 std::vector<GLTools::GLTexture>::iterator activeSlide;
 
 bool keys[1024];
-
-GLfloat polyFactor = 0.0f;
-GLfloat polyUnits = -2.0f;
 
 // for mouse
 double lastX = WIDTH / 2.0f;
@@ -71,30 +68,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if (key == GLFW_KEY_R && action == GLFW_PRESS)
     if (activeSlide != slides.begin())
       --activeSlide;
-
-  if (key == GLFW_KEY_INSERT && action == GLFW_PRESS)
-  {
-    polyFactor += 0.1f;
-    std::cout << polyFactor << std::endl;
-  }
-
-  if (key == GLFW_KEY_DELETE && action == GLFW_PRESS)
-  {
-    polyFactor -= 0.1f;
-    std::cout << polyFactor << std::endl;
-  }
-
-  if (key == GLFW_KEY_HOME && action == GLFW_PRESS)
-  {
-    polyUnits += 0.1f;
-    std::cout << polyUnits << std::endl;
-  }
-
-  if (key == GLFW_KEY_END && action == GLFW_PRESS)
-  {
-    polyUnits -= 0.1f;
-    std::cout << polyUnits << std::endl;
-  }
 }
 
 void moveCamera()
@@ -327,14 +300,11 @@ int main()
     glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &pass1);
     glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass1);
     shadowFBO->bind();
-    glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(polyUnits, polyFactor);
     glCullFace(GL_FRONT);
     glClear(GL_DEPTH_BUFFER_BIT);
     depthTexture->bind(0);
     renderScene(*shaderProgram);
     glCullFace(GL_BACK);
-    glDisable(GL_POLYGON_OFFSET_FILL);
     shadowFBO->unbind();
 
     // back to main framebuffer
