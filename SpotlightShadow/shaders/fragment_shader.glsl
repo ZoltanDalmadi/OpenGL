@@ -179,20 +179,16 @@ void normalRender()
   vec3 norm = normalize(normal);
   vec3 camDir = normalize(camPos - fragPos);
 
-  vec3 result;
-
   float closestDepth;
   float currentDepth;
   float shadow = shadowCalculation(closestDepth, currentDepth);
 
-  result = calcSpotLight(spotLight, norm, fragPos, camDir, shadow);
-
-  vec4 projTexColor = vec4(0.0);
+  vec4 result = vec4(calcSpotLight(spotLight, norm, fragPos, camDir, shadow), 1.0);
 
   if(projTexCoords.z > 0.0 && currentDepth < closestDepth)
-    projTexColor = textureProj(projectTex, projTexCoords) * 0.5;
+    result += textureProj(projectTex, projTexCoords) * 0.5;
 
-  fragColor = vec4(result, 1.0) + projTexColor * (1.0 - shadow);
+  fragColor = result;
 }
 
 void main()
