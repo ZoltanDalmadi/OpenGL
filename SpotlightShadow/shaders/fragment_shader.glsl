@@ -111,7 +111,8 @@ void calcRectangleSpotlight(SpotLight light, out float xProj, out float yProj, o
   yProj = dot(mm, up);
 }
 
-vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir, float shadow, out float diff)
+vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir,
+  float shadow, out float diff, out float intensity)
 {
   // Calculate light direction
   vec3 lightDir = normalize(light.position - fragPos);
@@ -129,15 +130,15 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 camDir, floa
     (light.constant + light.linear * dist + light.quadratic * (dist * dist));
 
   // Spotlight intensity
-  float intensity;
-
   if (rect)
   {
     if(projTexCoords.z > 0.0)
     {
       float xProj, yProj, tgA, tgB;
+      float radius = 0.02;
       calcRectangleSpotlight(light, xProj, yProj, tgA, tgB);
-      intensity = (abs(xProj) < tgA) && (abs(yProj) < tgB) ? 1.0 : 0.0;
+      intensity = min(clamp((tgA - abs(xProj)) / radius, 0.0, 1.0),
+                      clamp((tgB - abs(yProj)) / radius, 0.0, 1.0));
     }
   }
   else
@@ -179,15 +180,13 @@ void normalRender()
   vec3 norm = normalize(normal);
   vec3 camDir = normalize(camPos - fragPos);
 
-  float closestDepth;
-  float currentDepth;
-  float diff;
+  float closestDepth, currentDepth, diff, intensity;
   float shadow = shadowCalculation(closestDepth, currentDepth);
 
-  vec4 result = vec4(calcSpotLight(spotLight, norm, fragPos, camDir, shadow, diff), 1.0);
+  vec4 result = vec4(calcSpotLight(spotLight, norm, fragPos, camDir, shadow, diff, intensity), 1.0);
 
   if(projTexCoords.z > 0.0 && currentDepth < closestDepth)
-    result += textureProj(projectTex, projTexCoords) * diff * 0.5;
+    result += textureProj(projectTex, projTexCoords) * diff * intensity * 0.5;
 
   fragColor = result;
 }
