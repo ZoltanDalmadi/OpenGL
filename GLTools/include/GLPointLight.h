@@ -1,29 +1,14 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <string>
-#include <utility>
-#include "GLShaderProgram.h"
+#include "GLLight.h"
 
 namespace GLTools
 {
 
-class GLPointLight
+class GLPointLight : public GLLight
 {
 public:
-  std::string m_name;
-
-  std::pair<std::string, glm::vec3> m_position;
-  std::pair<std::string, glm::vec3> m_ambient;
-  std::pair<std::string, glm::vec3> m_diffuse;
-  std::pair<std::string, glm::vec3> m_specular;
-
-  std::pair<std::string, float> m_constant;
-  std::pair<std::string, float> m_linear;
-  std::pair<std::string, float> m_quadratic;
-
-  std::pair<std::string, float> m_energy;
-
+  explicit
   GLPointLight(const glm::vec3& pos = glm::vec3(0.0f),
                const glm::vec3& amb = glm::vec3(0.2f),
                const glm::vec3& diff = glm::vec3(0.8f),
@@ -32,21 +17,34 @@ public:
                float quad = 0.032f, float energy = 1.0f);
 
   virtual ~GLPointLight();
+  virtual void setShaderUniform(const GLShaderProgram& program) const override;
 
-  void setShaderUniform(const GLTools::GLShaderProgram& program);
-  void buildShaderStrings();
+  const glm::vec3& getPosition() const;
+  void setPosition(const glm::vec3& vec);
 
-private:
+  const float& getConstant() const;
+  void setConstant(const float& value);
+
+  const float& getLinear() const;
+  void setLinear(const float& value);
+
+  const float& getQuadratic() const;
+  void setQuadratic(const float& value);
+
+protected:
+  virtual void buildShaderStrings() override;
+
+  std::pair<std::string, glm::vec3> m_position;
+
+  std::pair<std::string, float> m_constant;
+  std::pair<std::string, float> m_linear;
+  std::pair<std::string, float> m_quadratic;
+
   std::string m_position_str;
-  std::string m_ambient_str;
-  std::string m_diffuse_str;
-  std::string m_specular_str;
 
   std::string m_constant_str;
   std::string m_linear_str;
   std::string m_quadratic_str;
-
-  std::string m_energy_str;
 };
 
 }
