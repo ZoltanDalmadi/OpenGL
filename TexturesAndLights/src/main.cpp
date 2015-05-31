@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <SOIL/SOIL.h>
 
 #include <iostream>
@@ -158,19 +157,13 @@ void init()
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   //camera.m_speed = 0.04f;
-  pointLight1.m_name = "pointLight[0]";
-  pointLight1.buildShaderStrings();
-  pointLight2.m_name = "pointLight[1]";
-  pointLight2.buildShaderStrings();
-  spotLight1.m_name = "spotLight[0]";
-  spotLight1.buildShaderStrings();
-  spotLight2.m_energy.second = 3.0f;
-  spotLight2.m_name = "spotLight[1]";
-  spotLight2.buildShaderStrings();
-  spotLight3.m_name = "spotLight[2]";
-  spotLight3.buildShaderStrings();
-  spotLight4.m_name = "spotLight[3]";
-  spotLight4.buildShaderStrings();
+  pointLight1.setShaderName("pointLight[0]");
+  pointLight2.setShaderName("pointLight[1]");
+  spotLight1.setShaderName("spotLight[0]");
+  spotLight2.setShaderName("spotLight[1]");
+  spotLight2.setEnergy(3.0f);
+  spotLight3.setShaderName("spotLight[2]");
+  spotLight4.setShaderName("spotLight[3]");
 
   sphere.initialize();
 }

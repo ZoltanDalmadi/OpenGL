@@ -238,9 +238,12 @@ int main()
   shaderProgram->setUniformValue("rect", true);
 
   spotLight.setTarget(lightTarget);
-  spotLight.m_cutoff.second = glm::radians(cutoff);
-  spotLight.m_outercutoff.second = glm::radians(outerCutoff);
-  spotLight.m_ambient.second = glm::vec3(0.5f, 0.5f, 0.5f);
+  spotLight.setCutoff(glm::radians(cutoff));
+  spotLight.setOutercutoff(glm::radians(outerCutoff));
+  spotLight.setAmbient(glm::vec3(0.5f, 0.5f, 0.5f));
+  //spotLight.m_cutoff.second = glm::radians(cutoff);
+  //spotLight.m_outercutoff.second = glm::radians(outerCutoff);
+  //spotLight.m_ambient.second = glm::vec3(0.5f, 0.5f, 0.5f);
 
   model = std::make_unique<GLTools::GLModel>("models/model.obj");
   bunny = std::make_unique<GLTools::GLModel>("models/bunny.obj");

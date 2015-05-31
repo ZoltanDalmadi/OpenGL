@@ -3,8 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <SOIL/SOIL.h>
 
 #include <iostream>
 #include <memory>
@@ -85,7 +83,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
       camera.m_position = sunPos;
       camera.m_front = lastCamFront;
       camera.m_viewMatrix =
-        glm::lookAt(camera.m_position, camera.m_position - camera.m_front, camera.m_up);
+        lookAt(camera.m_position, camera.m_position - camera.m_front, camera.m_up);
     }
     else
     {
@@ -94,7 +92,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
       camera.m_position = glm::vec3(20.0f, 20.0f, 20.0f);
       camera.m_front = glm::normalize(camera.m_position);
       camera.m_viewMatrix =
-        glm::lookAt(camera.m_position, camera.m_position - camera.m_front, camera.m_up);
+        lookAt(camera.m_position, camera.m_position - camera.m_front, camera.m_up);
     }
   }
 }
@@ -120,7 +118,7 @@ void moveCamera()
     camera.move(GLTools::GLFPSCamera::Direction::DOWN);
 
   sunPos = camera.m_position;
-  sunLight.m_position.second = sunPos;
+  sunLight.setPosition(sunPos);
 }
 
 void moveSun()
@@ -143,7 +141,7 @@ void moveSun()
   if (keys[GLFW_KEY_LEFT_CONTROL])
     sunPos -= glm::vec3(0.0f, 0.1f, 0.0f);
 
-  sunLight.m_position.second = sunPos;
+  sunLight.setPosition(sunPos);
 }
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
@@ -157,8 +155,8 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 
   if (!cameraInCorner)
   {
-    double xoffset = xpos - lastX;
-    double yoffset = ypos - lastY;
+    auto xoffset = xpos - lastX;
+    auto yoffset = ypos - lastY;
     lastX = xpos;
     lastY = ypos;
     camera.rotate(static_cast<float>(xoffset), static_cast<float>(yoffset));
@@ -234,7 +232,7 @@ void init()
   skyBoxFaces.push_back("textures/nebula_front.png");
 
   // amplify sunlight intensity
-  sunLight.m_energy.second = 5.0f;
+  sunLight.setEnergy(5.0f);
 
   projection = glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 5.0f, 100.0f);
 }
@@ -264,37 +262,37 @@ int main()
   planetIter->scale = 0.8f;
   planetIter->texture =
     std::make_unique<GLTools::GLTexture>("textures/mercury.jpg");
-  planetIter++;
+  ++planetIter;
 
   planetIter->scale = 0.9f;
   planetIter->texture =
     std::make_unique<GLTools::GLTexture>("textures/venus.jpg");
-  planetIter++;
+  ++planetIter;
 
   planetIter->scale = 1.0f;
   planetIter->texture =
     std::make_unique<GLTools::GLTexture>("textures/earth.jpg");
-  planetIter++;
+  ++planetIter;
 
   planetIter->scale = 0.85f;
   planetIter->texture =
     std::make_unique<GLTools::GLTexture>("textures/mars.jpg");
-  planetIter++;
+  ++planetIter;
 
   planetIter->scale = 2.5f;
   planetIter->texture =
     std::make_unique<GLTools::GLTexture>("textures/jupiter.jpg");
-  planetIter++;
+  ++planetIter;
 
   planetIter->scale = 2.0f;
   planetIter->texture =
     std::make_unique<GLTools::GLTexture>("textures/saturn.jpg");
-  planetIter++;
+  ++planetIter;
 
   planetIter->scale = 1.5;
   planetIter->texture =
     std::make_unique<GLTools::GLTexture>("textures/uranus.jpg");
-  planetIter++;
+  ++planetIter;
 
   planetIter->scale = 1.8f;
   planetIter->texture =
@@ -315,9 +313,9 @@ int main()
 
     sphereShaderProgram->use();
     glm::mat4 sunModel;
-    sunModel = glm::translate(sunModel, sunPos);
-    sunModel = glm::scale(sunModel, glm::vec3(5.0f));
-    glm::mat3 sunNormalMatrix = glm::mat3(glm::transpose(glm::inverse(sunModel)));
+    sunModel = translate(sunModel, sunPos);
+    sunModel = scale(sunModel, glm::vec3(5.0f));
+    glm::mat3 sunNormalMatrix = glm::mat3(transpose(inverse(sunModel)));
     sphereShaderProgram->setUniformValue("model", sunModel);
     sphereShaderProgram->setUniformValue("view", camera.m_viewMatrix);
     sphereShaderProgram->setUniformValue("projection", projection);
@@ -330,7 +328,7 @@ int main()
 
     for (auto it = planets.begin(); it != planets.end();)
     {
-      if (4.0f + it->scale >= glm::distance(sunPos, it->pos))
+      if (4.0f + it->scale >= distance(sunPos, it->pos))
         it = planets.erase(it);
       else
         ++it;
@@ -345,10 +343,10 @@ int main()
     for (auto it = planets.cbegin(); it != planets.cend(); ++it)
     {
       glm::mat4 model;
-      model = glm::translate(model, it->pos);
-      model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-      model = glm::scale(model, glm::vec3(it->scale));
-      glm::mat3 planetNormalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+      model = translate(model, it->pos);
+      model = rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+      model = scale(model, glm::vec3(it->scale));
+      auto planetNormalMatrix = glm::mat3(transpose(inverse(model)));
       sphereShaderProgram->setUniformValue("model", model);
       sphereShaderProgram->setUniformValue("normalMatrix", planetNormalMatrix);
       it->texture->bind();
@@ -357,7 +355,7 @@ int main()
 
     glDepthFunc(GL_LEQUAL);
     cubemapShaderProgram->use();
-    glm::mat4 skyBoxView = glm::mat4(glm::mat3(camera.m_viewMatrix));
+    auto skyBoxView = glm::mat4(glm::mat3(camera.m_viewMatrix));
     cubemapShaderProgram->setUniformValue("view", skyBoxView);
     cubemapShaderProgram->setUniformValue("projection", projection);
     cubemapTexture->bind();

@@ -4,17 +4,10 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/random.hpp>
-#include <glm/gtx/intersect.hpp>
 
-#include <SOIL/SOIL.h>
-
-#include <iostream>
 #include <memory>
 #include <random>
 #include <vector>
-#include <list>
 
 #include "GLTargetCamera.h"
 #include "GLPointLight.h"
@@ -179,12 +172,12 @@ void wallCollision()
 
   for (const auto& wall : walls)
   {
-    distance = glm::dot(ballPos - wall.origin, wall.normal);
+    distance = dot(ballPos - wall.origin, wall.normal);
 
     if (distance < BALLRADIUS)
     {
-      ballDirection = glm::normalize(glm::reflect(ballDirection, wall.normal));
-      ballRotationAxis = glm::cross(ballDirection, wall.normal);
+      ballDirection = normalize(reflect(ballDirection, wall.normal));
+      ballRotationAxis = cross(ballDirection, wall.normal);
     }
   }
 }
@@ -192,13 +185,13 @@ void wallCollision()
 // Tells if ball lies outside area of the plane at cube face
 bool isOutSidePlane(const glm::vec3& point, const CollisionPlane& plane)
 {
-  return glm::dot(point - plane.origin, plane.normal) > BALLRADIUS;
+  return dot(point - plane.origin, plane.normal) > BALLRADIUS;
 }
 
 // Tells if ball is close enough to plane from either direction
 bool ballIntersectsPlane(const glm::vec3& point, const CollisionPlane& plane)
 {
-  return glm::abs(glm::dot(point - plane.origin, plane.normal)) <= BALLRADIUS;
+  return glm::abs(dot(point - plane.origin, plane.normal)) <= BALLRADIUS;
 }
 
 void cubeCollision()
@@ -214,48 +207,48 @@ void cubeCollision()
       in_top && in_bottom && in_left && in_right)
   {
     ballDirection =
-      glm::normalize(glm::reflect(ballDirection, cubeFaces[0].normal));
-    ballRotationAxis = glm::cross(ballDirection, cubeFaces[0].normal);
+      normalize(reflect(ballDirection, cubeFaces[0].normal));
+    ballRotationAxis = cross(ballDirection, cubeFaces[0].normal);
   }
 
   if (ballIntersectsPlane(ballPos, cubeFaces[1]) &&
       in_top && in_bottom && in_front && in_back)
   {
     ballDirection =
-      glm::normalize(glm::reflect(ballDirection, cubeFaces[1].normal));
-    ballRotationAxis = glm::cross(ballDirection, cubeFaces[1].normal);
+      normalize(reflect(ballDirection, cubeFaces[1].normal));
+    ballRotationAxis = cross(ballDirection, cubeFaces[1].normal);
   }
 
   if (ballIntersectsPlane(ballPos, cubeFaces[2]) &&
       in_top && in_bottom && in_left && in_right)
   {
     ballDirection =
-      glm::normalize(glm::reflect(ballDirection, cubeFaces[2].normal));
-    ballRotationAxis = glm::cross(ballDirection, cubeFaces[2].normal);
+      normalize(reflect(ballDirection, cubeFaces[2].normal));
+    ballRotationAxis = cross(ballDirection, cubeFaces[2].normal);
   }
 
   if (ballIntersectsPlane(ballPos, cubeFaces[3]) &&
       in_top && in_bottom && in_front && in_back)
   {
     ballDirection =
-      glm::normalize(glm::reflect(ballDirection, cubeFaces[3].normal));
-    ballRotationAxis = glm::cross(ballDirection, cubeFaces[3].normal);
+      normalize(reflect(ballDirection, cubeFaces[3].normal));
+    ballRotationAxis = cross(ballDirection, cubeFaces[3].normal);
   }
 
   if (ballIntersectsPlane(ballPos, cubeFaces[4]) &&
       in_left && in_right && in_front && in_back)
   {
     ballDirection =
-      glm::normalize(glm::reflect(ballDirection, cubeFaces[4].normal));
-    ballRotationAxis = glm::cross(ballDirection, cubeFaces[4].normal);
+      normalize(reflect(ballDirection, cubeFaces[4].normal));
+    ballRotationAxis = cross(ballDirection, cubeFaces[4].normal);
   }
 
   if (ballIntersectsPlane(ballPos, cubeFaces[5]) &&
       in_left && in_right && in_front && in_back)
   {
     ballDirection =
-      glm::normalize(glm::reflect(ballDirection, cubeFaces[5].normal));
-    ballRotationAxis = glm::cross(ballDirection, cubeFaces[5].normal);
+      normalize(reflect(ballDirection, cubeFaces[5].normal));
+    ballRotationAxis = cross(ballDirection, cubeFaces[5].normal);
   }
 }
 
@@ -285,19 +278,19 @@ void init()
   // setup spotlights
   spotLights.emplace_back(glm::vec3(12.0f, 12.0f, 12.0f));
   spotLights.back().setShaderName("spotLight[0]");
-  spotLights.back().m_energy.second = 10.0f;
+  spotLights.back().setEnergy(10.0f);
 
   spotLights.emplace_back(glm::vec3(-12.0f, 12.0f, 12.0f));
   spotLights.back().setShaderName("spotLight[1]");
-  spotLights.back().m_energy.second = 10.0f;
+  spotLights.back().setEnergy(10.0f);
 
   spotLights.emplace_back(glm::vec3(-12.0f, 12.0f, -12.0f));
   spotLights.back().setShaderName("spotLight[2]");
-  spotLights.back().m_energy.second = 10.0f;
+  spotLights.back().setEnergy(10.0f);
 
   spotLights.emplace_back(glm::vec3(12.0f, 12.0f, -12.0f));
   spotLights.back().setShaderName("spotLight[3]");
-  spotLights.back().m_energy.second = 10.0f;
+  spotLights.back().setEnergy(10.0f);
 
   // get random velocity vector for ball
   std::random_device rd;
@@ -357,7 +350,7 @@ int main()
   auto cubeSpecularTexture =
     std::make_unique<GLTools::GLTexture>("textures/crate_specular.jpg");
 
-  glm::mat4 projection
+  auto projection
     = glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
 
   // main loop
@@ -382,7 +375,7 @@ int main()
 
     // draw room
     glm::mat4 roomModel;
-    glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(roomModel)));
+    auto normalMatrix = glm::mat3(transpose(inverse(roomModel)));
     shaderProgram->setUniformValue("model", roomModel);
     shaderProgram->setUniformValue("normalMatrix", normalMatrix);
     wallTexture->bind(0);
@@ -391,8 +384,8 @@ int main()
 
     // draw cube
     glm::mat4 cubeModel;
-    cubeModel = glm::translate(cubeModel, cubePos);
-    normalMatrix = glm::mat3(glm::transpose(glm::inverse(cubeModel)));
+    cubeModel = translate(cubeModel, cubePos);
+    normalMatrix = glm::mat3(transpose(inverse(cubeModel)));
     shaderProgram->setUniformValue("model", cubeModel);
     shaderProgram->setUniformValue("normalMatrix", normalMatrix);
     cubeTexture->bind(0);
@@ -401,10 +394,10 @@ int main()
 
     // draw ball
     glm::mat4 ballModel;
-    ballModel = glm::translate(ballModel, ballPos);
+    ballModel = translate(ballModel, ballPos);
     ballModel =
-      glm::rotate(ballModel, glm::radians(ballRotationAngle), ballRotationAxis);
-    normalMatrix = glm::mat3(glm::transpose(glm::inverse(ballModel)));
+      rotate(ballModel, glm::radians(ballRotationAngle), ballRotationAxis);
+    normalMatrix = glm::mat3(transpose(inverse(ballModel)));
     shaderProgram->setUniformValue("model", ballModel);
     shaderProgram->setUniformValue("normalMatrix", normalMatrix);
     ballTexture->bind(0);
