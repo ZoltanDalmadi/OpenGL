@@ -147,6 +147,7 @@
     <ClInclude Include="include\GLFPSCamera.h" />
     <ClInclude Include="include\GLFrameBufferObject.h" />
     <ClInclude Include="include\GLFWApplication.h" />
+    <ClInclude Include="include\GLLight.h" />
     <ClInclude Include="include\GLMaterial.h" />
     <ClInclude Include="include\GLMesh.h" />
     <ClInclude Include="include\GLModel.h" />
@@ -169,6 +170,7 @@
     <ClCompile Include="src\GLFPSCamera.cpp" />
     <ClCompile Include="src\GLFrameBufferObject.cpp" />
     <ClCompile Include="src\GLFWApplication.cpp" />
+    <ClCompile Include="src\GLLight.cpp" />
     <ClCompile Include="src\GLMaterial.cpp" />
     <ClCompile Include="src\GLMesh.cpp" />
     <ClCompile Include="src\GLModel.cpp" />

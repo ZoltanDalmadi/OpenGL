@@ -1,33 +1,13 @@
 #pragma once
 
-#include <string>
-#include <utility>
-#include "GLShaderProgram.h"
+#include "GLLight.h"
 
 namespace GLTools
 {
 
-class GLSpotLight
+class GLSpotLight : public GLLight
 {
 public:
-  std::string m_name;
-
-  std::pair<std::string, glm::vec3> m_position;
-  std::pair<std::string, glm::vec3> m_direction;
-
-  std::pair<std::string, glm::vec3> m_ambient;
-  std::pair<std::string, glm::vec3> m_diffuse;
-  std::pair<std::string, glm::vec3> m_specular;
-
-  std::pair<std::string, float> m_constant;
-  std::pair<std::string, float> m_linear;
-  std::pair<std::string, float> m_quadratic;
-
-  std::pair<std::string, float> m_cutoff;
-  std::pair<std::string, float> m_outercutoff;
-
-  std::pair<std::string, float> m_energy;
-
   explicit
   GLSpotLight(const glm::vec3& pos = glm::vec3(0.0f),
               const glm::vec3& dir = glm::vec3(0.0f, -1.0f, 0.0f),
@@ -40,19 +20,45 @@ public:
 
   virtual ~GLSpotLight();
 
-  void setShaderUniform(const GLShaderProgram& program) const;
-  void buildShaderStrings();
-
   void setTarget(const glm::vec3& target);
+  virtual void setShaderUniform(const GLShaderProgram& program) const override;
 
-  void setShaderName(const std::string& name);
+  const glm::vec3& getPosition() const;
+  void setPosition(const glm::vec3& vec);
 
-private:
+  const glm::vec3& getDirection() const;
+  void setDirection(const glm::vec3& vec);
+
+  const float& getConstant() const;
+  void setConstant(const float& value);
+
+  const float& getLinear() const;
+  void setLinear(const float& value);
+
+  const float& getQuadratic() const;
+  void setQuadratic(const float& value);
+
+  const float& getCutoff() const;
+  void setCutoff(const float& value);
+
+  const float& getOutercutoff() const;
+  void setOutercutoff(const float& value);
+
+protected:
+  virtual void buildShaderStrings() override;
+
+  std::pair<std::string, glm::vec3> m_position;
+  std::pair<std::string, glm::vec3> m_direction;
+
+  std::pair<std::string, float> m_constant;
+  std::pair<std::string, float> m_linear;
+  std::pair<std::string, float> m_quadratic;
+
+  std::pair<std::string, float> m_cutoff;
+  std::pair<std::string, float> m_outercutoff;
+
   std::string m_position_str;
   std::string m_direction_str;
-  std::string m_ambient_str;
-  std::string m_diffuse_str;
-  std::string m_specular_str;
 
   std::string m_constant_str;
   std::string m_linear_str;
@@ -60,8 +66,6 @@ private:
 
   std::string m_cutoff_str;
   std::string m_outercutoff_str;
-
-  std::string m_energy_str;
 };
 
 }

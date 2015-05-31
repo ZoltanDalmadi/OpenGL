@@ -5,65 +5,119 @@ GLTools::GLSpotLight::GLSpotLight
  const glm::vec3& diff, const glm::vec3& spec,
  float constant, float linear, float quad, float cutoff,
  float outerCutoff, float energy)
-  : m_name("spotLight"), m_position("position", pos),
-    m_direction("direction", dir), m_ambient("ambient", amb),
-    m_diffuse("diffuse", diff), m_specular("specular", spec),
-    m_constant("constant", constant), m_linear("linear", linear),
-    m_quadratic("quadratic", quad), m_cutoff("cutOff", cutoff),
-    m_outercutoff("outerCutOff", outerCutoff), m_energy("energy", energy)
+  : GLLight("spotLight", amb, diff, spec, energy),
+    m_position("position", pos),
+    m_direction("direction", dir),
+    m_constant("constant", constant),
+    m_linear("linear", linear),
+    m_quadratic("quadratic", quad),
+    m_cutoff("cutOff", cutoff),
+    m_outercutoff("outerCutOff", outerCutoff)
 {
-  buildShaderStrings();
+  init();
 }
 
 GLTools::GLSpotLight::~GLSpotLight()
 {}
 
+void GLTools::GLSpotLight::setTarget(const glm::vec3& target)
+{
+  this->m_direction.second = normalize(target - this->m_position.second);
+}
+
 void GLTools::GLSpotLight::setShaderUniform
 (const GLShaderProgram& program) const
 {
-  program.setUniformValue(m_position_str, m_position.second);
-  program.setUniformValue(m_direction_str, m_direction.second);
+  GLLight::setShaderUniform(program);
+  program.setUniformValue(this->m_position_str, this->m_position.second);
+  program.setUniformValue(this->m_direction_str, this->m_direction.second);
+  program.setUniformValue(this->m_constant_str, this->m_constant.second);
+  program.setUniformValue(this->m_linear_str, this->m_linear.second);
+  program.setUniformValue(this->m_quadratic_str, this->m_quadratic.second);
 
-  program.setUniformValue(m_ambient_str, m_ambient.second);
-  program.setUniformValue(m_diffuse_str, m_diffuse.second);
-  program.setUniformValue(m_specular_str, m_specular.second);
+  program.setUniformValue(this->m_cutoff_str, this->m_cutoff.second);
+  program.setUniformValue(this->m_outercutoff_str, this->m_outercutoff.second);
+}
 
-  program.setUniformValue(m_constant_str, m_constant.second);
-  program.setUniformValue(m_linear_str, m_linear.second);
-  program.setUniformValue(m_quadratic_str, m_quadratic.second);
+const glm::vec3& GLTools::GLSpotLight::getPosition() const
+{
+  return this->m_position.second;
+}
 
-  program.setUniformValue(m_cutoff_str, m_cutoff.second);
-  program.setUniformValue(m_outercutoff_str, m_outercutoff.second);
+void GLTools::GLSpotLight::setPosition(const glm::vec3& vec)
+{
+  this->m_position.second = vec;
+}
 
-  program.setUniformValue(m_energy_str, m_energy.second);
+const glm::vec3& GLTools::GLSpotLight::getDirection() const
+{
+  return this->m_direction.second;
+}
+
+void GLTools::GLSpotLight::setDirection(const glm::vec3& vec)
+{
+  this->m_direction.second = vec;
+}
+
+const float& GLTools::GLSpotLight::getConstant() const
+{
+  return this->m_constant.second;
+}
+
+void GLTools::GLSpotLight::setConstant(const float& value)
+{
+  this->m_constant.second = value;
+}
+
+const float& GLTools::GLSpotLight::getLinear() const
+{
+  return this->m_linear.second;
+}
+
+void GLTools::GLSpotLight::setLinear(const float& value)
+{
+  this->m_linear.second = value;
+}
+
+const float& GLTools::GLSpotLight::getQuadratic() const
+{
+  return this->m_quadratic.second;
+}
+
+void GLTools::GLSpotLight::setQuadratic(const float& value)
+{
+  this->m_quadratic.second = value;
+}
+
+const float& GLTools::GLSpotLight::getCutoff() const
+{
+  return this->m_cutoff.second;
+}
+
+void GLTools::GLSpotLight::setCutoff(const float& value)
+{
+  this->m_cutoff.second = value;
+}
+
+const float& GLTools::GLSpotLight::getOutercutoff() const
+{
+  return this->m_outercutoff.second;
+}
+
+void GLTools::GLSpotLight::setOutercutoff(const float& value)
+{
+  this->m_outercutoff.second = value;
 }
 
 void GLTools::GLSpotLight::buildShaderStrings()
 {
-  m_position_str = m_name + '.' + m_position.first;
-  m_direction_str = m_name + '.' + m_direction.first;
+  GLLight::buildShaderStrings();
+  this->m_position_str = this->m_name + '.' + this->m_position.first;
+  this->m_direction_str = this->m_name + '.' + this->m_direction.first;
+  this->m_constant_str = this->m_name + '.' + this->m_constant.first;
+  this->m_linear_str = this->m_name + '.' + this->m_linear.first;
+  this->m_quadratic_str = this->m_name + '.' + this->m_quadratic.first;
 
-  m_ambient_str = m_name + '.' + m_ambient.first;
-  m_diffuse_str = m_name + '.' + m_diffuse.first;
-  m_specular_str = m_name + '.' + m_specular.first;
-
-  m_constant_str = m_name + '.' + m_constant.first;
-  m_linear_str = m_name + '.' + m_linear.first;
-  m_quadratic_str = m_name + '.' + m_quadratic.first;
-
-  m_cutoff_str = m_name + '.' + m_cutoff.first;
-  m_outercutoff_str = m_name + '.' + m_outercutoff.first;
-
-  m_energy_str = m_name + '.' + m_energy.first;
-}
-
-void GLTools::GLSpotLight::setTarget(const glm::vec3& target)
-{
-  m_direction.second = normalize(target - m_position.second);
-}
-
-void GLTools::GLSpotLight::setShaderName(const std::string& name)
-{
-  m_name = name;
-  buildShaderStrings();
+  this->m_cutoff_str = this->m_name + '.' + this->m_cutoff.first;
+  this->m_outercutoff_str = this->m_name + '.' + this->m_outercutoff.first;
 }
