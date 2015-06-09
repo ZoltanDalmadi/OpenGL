@@ -22,6 +22,7 @@ const GLuint HEIGHT = 720;
 
 GLFWwindow *window;
 
+// Model
 glm::mat4 model;
 glm::mat4 cubeModel;
 glm::mat3 normalMatrix;
