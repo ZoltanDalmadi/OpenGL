@@ -1,15 +1,5 @@
 #include "GLBufferObject.h"
 
-GLTools::GLBufferObject::GLBufferObject()
-  : m_type(BufferType::VertexBuffer), m_usage(Usage::StaticDraw)
-{
-}
-
-GLTools::GLBufferObject::GLBufferObject(BufferType type)
-  : m_type(type), m_usage(Usage::StaticDraw)
-{
-}
-
 GLTools::GLBufferObject::GLBufferObject(BufferType type, Usage usage)
   : m_type(type), m_usage(usage)
 {

@@ -20,9 +20,8 @@ public:
     DynamicDraw = 0x88E8
   };
 
-  GLBufferObject();
-  explicit GLBufferObject(BufferType type);
-  GLBufferObject(BufferType type, Usage usage);
+  explicit GLBufferObject(BufferType type = BufferType::VertexBuffer,
+                          Usage usage = Usage::StaticDraw);
   virtual ~GLBufferObject();
 
   GLuint ID() const;
