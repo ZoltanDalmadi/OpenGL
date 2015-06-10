@@ -112,6 +112,7 @@ void moveLightTarget()
   }
 }
 
+//komment
 void moveBunny()
 {
   if (keys[GLFW_KEY_UP])
