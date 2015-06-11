@@ -149,7 +149,8 @@ Global
 		{E24D6840-C8AA-44EB-A4AD-2D36CCE376FA}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{E24D6840-C8AA-44EB-A4AD-2D36CCE376FA}.Release|Win32.ActiveCfg = Release|Win32
 		{E24D6840-C8AA-44EB-A4AD-2D36CCE376FA}.Release|Win32.Build.0 = Release|Win32
-		{E24D6840-C8AA-44EB-A4AD-2D36CCE376FA}.Release|x64.ActiveCfg = Release|Win32
+		{E24D6840-C8AA-44EB-A4AD-2D36CCE376FA}.Release|x64.ActiveCfg = Release|x64
+		{E24D6840-C8AA-44EB-A4AD-2D36CCE376FA}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
