@@ -1,2 +1,2 @@
-//A görbe kipróbálása, illettve tárgyak görbe mentén lévõ mozgatásának kipróbálására készült project
+//A gÃ¶rbe kiprÃ³bÃ¡lÃ¡sa, illettve tÃ¡rgyak gÃ¶rbe mentÃ©n lÃ©vÅ‘ tÃ¡rgyak mozgatÃ¡sÃ¡nak kiprÃ³bÃ¡lÃ¡sÃ¡ra kÃ©szÃ¼lt project
 
