@@ -21,6 +21,11 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GLTools\GLTools.vcxproj">
+      <Project>{b9fc47a5-a9d5-44c0-9555-32d67c9751b2}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E24D6840-C8AA-44EB-A4AD-2D36CCE376FA}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
