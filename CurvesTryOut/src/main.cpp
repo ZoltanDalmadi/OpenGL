@@ -2,11 +2,13 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-//A görbe kipróbálása, illettve tárgyak görbe mentén lévõ mozgatásának kipróbálására készült project
-
+#include <iostream>
 
 #include "GLShaderProgram.h"
 
+//A görbe kipróbálása, illettve tárgyak görbe mentén lévõ mozgatásának kipróbálására készült project
+
+using namespace GLTools;
 
 // CONSTANTS --------------------------------------------------------------
 const GLuint WIDTH = 1280;
@@ -37,12 +39,27 @@ void init()
   glEnable(GL_CULL_FACE);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-
 }
 
-void setupShaders(GLTools::GLShaderProgram& lightShader)
+void setupShaders(GLShaderProgram& shaderProgram)
 {
+  auto vertexShader = std::make_shared<GLShader>
+                      (GLShader::shaderType::VERTEX_SHADER);
+  vertexShader->loadSource("vertex_shader.glsl");
+  vertexShader->compile();
+  std::cout << vertexShader->log() << std::endl;
 
+  auto fragmentShader = std::make_shared<GLShader>
+                        (GLShader::shaderType::FRAGMENT_SHADER);
+  fragmentShader->loadSource("fragment_shader.glsl");
+  fragmentShader->compile();
+  std::cout << fragmentShader->log() << std::endl;
+
+  shaderProgram.create();
+  shaderProgram.addShader(vertexShader);
+  shaderProgram.addShader(fragmentShader);
+  shaderProgram.link();
+  std::cout << shaderProgram.log() << std::endl;
 }
 
 int main()
@@ -54,6 +71,7 @@ int main()
   {
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
 
     glfwSwapBuffers(window);
