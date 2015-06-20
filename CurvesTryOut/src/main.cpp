@@ -55,9 +55,16 @@ void setupShaders(GLShaderProgram& shaderProgram)
   fragmentShader->compile();
   std::cout << fragmentShader->log() << std::endl;
 
+  auto geometryShader = std::make_shared<GLShader>
+                        (GLShader::shaderType::GEOMETRY_SHADER);
+  geometryShader->loadSource("shaders/geometry_shader.glsl");
+  geometryShader->compile();
+  std::cout << geometryShader->log() << std::endl;
+
   shaderProgram.create();
   shaderProgram.addShader(vertexShader);
   shaderProgram.addShader(fragmentShader);
+  shaderProgram.addShader(geometryShader);
   shaderProgram.link();
   std::cout << shaderProgram.log() << std::endl;
 }
@@ -71,6 +78,8 @@ int main()
   setupShaders(*shaderProgram);
 
   shaderProgram->use();
+
+  shaderProgram
 
   while (!glfwWindowShouldClose(window))
   {
