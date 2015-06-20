@@ -11,6 +11,7 @@
 #include "GLPointLight.h"
 #include "Tower.h"
 #include "GLSphere.h"
+#include "GLPlane.h"
 
 //constants
 const GLuint WIDTH = 1280;
@@ -32,6 +33,7 @@ bool firstMouse = true;
 
 std::unique_ptr<Tower> tower;
 std::unique_ptr<GLTools::GLSphere> targetSphere;
+std::unique_ptr<GLTools::GLPlane> floorPlane;
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
@@ -54,16 +56,22 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 void moveCamera()
 {
   if (keys[GLFW_KEY_W])
-    camera.move(GLTools::GLFPSCamera::Direction::FORWARD_FLOOR);
+    camera.move(GLTools::GLFPSCamera::Direction::FORWARD);
 
   if (keys[GLFW_KEY_S])
-    camera.move(GLTools::GLFPSCamera::Direction::BACKWARD_FLOOR);
+    camera.move(GLTools::GLFPSCamera::Direction::BACKWARD);
 
   if (keys[GLFW_KEY_A])
     camera.move(GLTools::GLFPSCamera::Direction::LEFT);
 
   if (keys[GLFW_KEY_D])
     camera.move(GLTools::GLFPSCamera::Direction::RIGHT);
+
+  if (keys[GLFW_KEY_SPACE])
+    camera.move(GLTools::GLFPSCamera::Direction::UP);
+
+  if (keys[GLFW_KEY_LEFT_CONTROL])
+    camera.move(GLTools::GLFPSCamera::Direction::DOWN);
 }
 
 void moveTarget()
@@ -160,6 +168,13 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   targetSphere->draw();
 
+  modelModel = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
+                           0.0f, 0.0f));
+  normalMatrix = glm::mat3(transpose(inverse(modelModel)));
+  shaderProgram.setUniformValue("model", modelModel);
+  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
+  floorPlane->draw();
+
   tower->update();
   tower->draw(shaderProgram);
 }
@@ -176,15 +191,17 @@ int main()
   shaderProgram->setUniformValue("projectTex", 3);
   shaderProgram->setUniformValue("rect", true);
 
-  auto model = std::make_unique<GLTools::GLModel>("models/turret_base.obj");
+  auto base = std::make_unique<GLTools::GLModel>("models/turret_base.obj");
+  auto cannon = std::make_unique<GLTools::GLModel>("models/turret_cannon.obj");
 
   targetSphere = std::make_unique<GLTools::GLSphere>(1.0f, 24, 24);
   targetSphere->initialize();
-  //targetSphere->m_material->m_diffuse = glm::vec3(1.0f);
-  //targetSphere->m_material->m_specular = glm::vec3(1.0f);
 
-  tower = std::make_unique<Tower>(model.get());
-  tower->setTarget(&target);
+  floorPlane = std::make_unique<GLTools::GLPlane>(100.0f, 100.0f);
+  floorPlane->initialize();
+
+  tower = std::make_unique<Tower>(base.get(), cannon.get());
+  //tower->setPosition(glm::vec3(10.0f, 0.0f, 1.0f));
 
   auto projection =
     glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
