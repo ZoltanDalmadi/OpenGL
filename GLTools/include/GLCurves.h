@@ -11,7 +11,7 @@ class GLCurves
 {
 public:
   GLCurves();
-  GLCurves(const GLCurves, std::array<glm::vec3, 2>);
+  GLCurves(GLCurves, std::array<glm::vec3, 2>);
   GLCurves(std::array<glm::vec3, 4>);
   void setControlPoints(std::array<glm::vec3, 4>);
   std::array<glm::vec3, 4> getControlPoints();
@@ -44,7 +44,7 @@ public:
 
 private:
   double t;
-  std::array<glm::vec3, 4> controlPoints;
+  std::array<glm::vec3, 4> m_controlPoints;
   glm::vec3 evaluateBezierPosition(float);
   glm::vec3 evaluateBezierTangent(float);
 

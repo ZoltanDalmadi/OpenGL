@@ -1,7 +1,9 @@
 #version 430 core
 
 uniform int Detail;
-uniform vec3 ControlPoints[];
+
+
+
 uniform mat4 modelViewProjectionMatrix;
 
 vec3 evaluateBezierPosition( vec3 v[4], float t )
