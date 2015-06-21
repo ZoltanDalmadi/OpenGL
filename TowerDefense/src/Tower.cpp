@@ -59,13 +59,15 @@ void Tower::clearTarget()
 
 void Tower::draw(const GLTools::GLShaderProgram& shaderProgram)
 {
+  this->update();
+
   shaderProgram.setUniformValue("model", m_modelMatrix);
-  auto normalMatrix = glm::mat3(transpose(inverse(m_modelMatrix)));
+  auto normalMatrix = glm::mat3(m_modelMatrix);
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   m_base->draw(shaderProgram);
 
   shaderProgram.setUniformValue("model", m_cannonMatrix);
-  normalMatrix = glm::mat3(transpose(inverse(m_cannonMatrix)));
+  normalMatrix = glm::mat3(m_cannonMatrix);
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   m_cannon->draw(shaderProgram);
 }
@@ -82,7 +84,8 @@ void Tower::update()
   m_modelMatrix = rotate(m_modelMatrix, m_baseAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
   auto u = glm::vec3(glm::vec4(v - m_offset, 1.0f) * m_modelMatrix);
-  m_cannonAngle = glm::atan(u.y, u.x);
+  m_cannonAngle = glm::clamp(glm::atan(u.y, u.x), glm::radians(-5.0f),
+                             glm::radians(49.0f));
 
   m_cannonMatrix = translate(m_modelMatrix, m_offset);
   m_cannonMatrix = rotate(m_cannonMatrix, m_cannonAngle, glm::vec3(0.0f, 0.0f,
