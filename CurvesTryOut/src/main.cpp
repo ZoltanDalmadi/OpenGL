@@ -1,7 +1,6 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-
 #include <iostream>
 
 #include "GLShaderProgram.h"
@@ -13,7 +12,6 @@ using namespace GLTools;
 // CONSTANTS --------------------------------------------------------------
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
-
 
 // GLOBAL VARIABLES -------------------------------------------------------
 GLFWwindow *window;
@@ -38,7 +36,6 @@ void init()
   //glEnable(GL_DEPTH_TEST);
   //glEnable(GL_CULL_FACE);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
 }
 
 void setupShaders(GLShaderProgram& shaderProgram)
@@ -71,15 +68,12 @@ void setupShaders(GLShaderProgram& shaderProgram)
 
 int main()
 {
-
   init();
 
   auto shaderProgram = std::make_unique<GLShaderProgram>();
   setupShaders(*shaderProgram);
 
   shaderProgram->use();
-
-  shaderProgram
 
   while (!glfwWindowShouldClose(window))
   {
