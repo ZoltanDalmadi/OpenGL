@@ -156,11 +156,9 @@ copy $(SolutionDir)..\lib\$(PlatformShortName)\assimp.dll $(OutDir)</Command>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Tower.cpp" />
-    <ClCompile Include="src\TowerDefenseApplication.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Tower.h" />
-    <ClInclude Include="include\TowerDefenseApplication.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
