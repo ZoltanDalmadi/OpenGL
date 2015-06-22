@@ -25,7 +25,7 @@ class GLMesh
 public:
   std::vector<Vertex> m_vertices;
   std::vector<GLuint> m_indices;
-  std::shared_ptr<GLMaterial> m_material;
+  GLMaterial *m_material;
 
   GLMesh();
   GLMesh(std::vector<Vertex>& v, std::vector<GLuint>& i);
