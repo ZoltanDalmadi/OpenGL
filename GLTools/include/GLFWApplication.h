@@ -8,26 +8,25 @@ namespace GLTools
 class GLFWApplication
 {
 public:
+  GLFWApplication();
   GLFWApplication(int major, int minor);
   virtual ~GLFWApplication();
 
-  virtual void initGLFW();
-
+  void initGLFW();
   void createWindow(int width, int height, const std::string& title);
 
   GLFWwindow *getWindow() const;
-  virtual int exec() = 0;
-  virtual int keyBoardFunc() = 0;
+  int getMajorVersion() const;
+  int getMinorVersion() const;
 
-private:
+  virtual int exec() = 0;
+  virtual void init() = 0;
+  virtual void render() = 0;
+
+protected:
   GLFWwindow *m_window;
   int m_majorVersion;
   int m_minorVersion;
 };
-
-inline GLFWwindow *GLFWApplication::getWindow() const
-{
-  return m_window;
-}
 
 }
