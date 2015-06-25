@@ -1,12 +1,10 @@
 #version 430 core
 
 uniform int Detail;
-
-
-
+in vec3 ControlPoints[];
 uniform mat4 modelViewProjectionMatrix;
 
-vec3 evaluateBezierPosition( vec3 v[4], float t )
+vec3 evaluateBezierPosition( float t )
 {
     vec3 p;
     float OneMinusT = 1.0 - t;
@@ -14,16 +12,16 @@ vec3 evaluateBezierPosition( vec3 v[4], float t )
     float b1 = 3.0*t*OneMinusT*OneMinusT;
     float b2 = 3.0*t*t*OneMinusT;
     float b3 = t*t*t;
-    return b0*v[0] + b1*v[1] + b2*v[2] + b3*v[3];
+    return b0*ControlPoints[0] + b1*ControlPoints[1] + b2*ControlPoints[2] + b3*ControlPoints[3];
 }
 
 void main()
 {
-    float OneOverDetail = 1.0 / float(g_Detail-1.0);
-    for( int i=0; i<g_Detail; i++ )
+    float OneOverDetail = 1.0 / float(Detail-1.0);
+    for( int i=0; i<Detail; i++ )
     {
         float t = i * OneOverDetail;
-        vec3 p = evaluateBezierPosition( ControlPoints, t );
+        vec3 p = evaluateBezierPosition( t );
         gl_Position = modelViewProjectionMatrix * vec4( p.xyz, 1.0 );
         EmitVertex();
     }
