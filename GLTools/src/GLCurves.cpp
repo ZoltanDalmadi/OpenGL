@@ -12,7 +12,7 @@ GLTools::GLCurves::GLCurves()
   m_VBO.upload(m_controlPoints.data(),
                m_controlPoints.size() * sizeof(glm::vec3));
 
-  m_VAO.setAttributeArray(0, 4, sizeof(float));
+  m_VAO.setAttributeArray(0, 4, sizeof(glm::vec3));
 
   m_VAO.unbind();
 }
@@ -103,11 +103,11 @@ double GLTools::GLCurves::getT()
 
 void GLTools::GLCurves::render()
 {
-  //m_VAO.bind();
-  //glDrawElements(GL_POINTS, static_cast<GLsizei>(m_controlPoints.size()),
-  //GL_UNSIGNED_INT, nullptr);
+  m_VAO.bind();
+  /*glDrawElements(GL_POINTS, 12,
+                 GL_UNSIGNED_INT, nullptr);*/
 
-  //m_VAO.unbind();
+  m_VAO.unbind();
 }
 
 glm::vec3 GLTools::GLCurves::evaluateBezierPosition(float t)

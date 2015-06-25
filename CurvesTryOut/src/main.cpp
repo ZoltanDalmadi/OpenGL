@@ -36,6 +36,7 @@ std::array<glm::vec3, 4> temp = { glm::vec3(1.0f), glm::vec3(10.0f), glm::vec3(1
 GLTools::GLCurves curve(temp);
 //std::unique_ptr<GLTools::GLSphere> targetSphere;
 //std::unique_ptr<GLTools::GLPlane> floorPlane;
+glm::mat4 projection;
 
 bool keys[1024];
 
@@ -139,7 +140,7 @@ void setupShaders(GLShaderProgram& shaderProgram)
   shaderProgram.create();
   shaderProgram.addShader(vertexShader);
   shaderProgram.addShader(fragmentShader);
-  shaderProgram.addShader(geometryShader);
+  //shaderProgram.addShader(geometryShader);
   shaderProgram.link();
   std::cout << shaderProgram.log() << std::endl;
 }
@@ -151,9 +152,12 @@ int main()
   auto shaderProgram = std::make_unique<GLShaderProgram>();
   setupShaders(*shaderProgram);
 
+  projection = glm::perspective(glm::radians(50.0f), (float)WIDTH / HEIGHT, 0.01f,
+                                100.0f);
+
   shaderProgram->use();
 
-  shaderProgram
+  //shaderProgram
 
   while (!glfwWindowShouldClose(window))
   {
@@ -163,7 +167,7 @@ int main()
     shaderProgram->setUniformValue("modelViewProjectionMatrix",
                                    projection * camera.m_viewMatrix);
 
-    //curve.render();
+    curve.render();
 
     glfwSwapBuffers(window);
   }
