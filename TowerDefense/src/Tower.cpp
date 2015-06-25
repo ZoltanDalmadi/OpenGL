@@ -1,4 +1,5 @@
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 #include "Tower.h"
 
 Tower::Tower(GLTools::GLModel *base, GLTools::GLModel *cannon)
@@ -57,9 +58,14 @@ void Tower::clearTarget()
   m_cannonMatrix = translate(m_modelMatrix, m_offset);
 }
 
-void Tower::draw(const GLTools::GLShaderProgram& shaderProgram)
+void Tower::shoot()
 {
-  this->update();
+  std::cout << "shoot!" << std::endl;
+}
+
+void Tower::draw(const GLTools::GLShaderProgram& shaderProgram, double time)
+{
+  this->update(time);
 
   shaderProgram.setUniformValue("model", m_modelMatrix);
   auto normalMatrix = glm::mat3(m_modelMatrix);
@@ -72,7 +78,7 @@ void Tower::draw(const GLTools::GLShaderProgram& shaderProgram)
   m_cannon->draw(shaderProgram);
 }
 
-void Tower::update()
+void Tower::update(double time)
 {
   if (!m_target)
     return;
@@ -90,4 +96,13 @@ void Tower::update()
   m_cannonMatrix = translate(m_modelMatrix, m_offset);
   m_cannonMatrix = rotate(m_cannonMatrix, m_cannonAngle, glm::vec3(0.0f, 0.0f,
                           1.0f));
+
+  m_deltaTime += time - m_lastShotTime;
+
+  if (m_deltaTime >= m_coolDown)
+  {
+    shoot();
+    m_deltaTime = 0.0f;
+    m_lastShotTime = time;
+  }
 }

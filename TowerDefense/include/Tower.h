@@ -18,8 +18,11 @@ public:
 
   void setTarget(glm::vec3 *target);
   void clearTarget();
-  void draw(const GLTools::GLShaderProgram& shaderProgram);
-  void update();
+
+  void shoot();
+
+  void draw(const GLTools::GLShaderProgram& shaderProgram, double time);
+  void update(double time);
 
 private:
   GLTools::GLModel *m_base;
@@ -33,4 +36,10 @@ private:
 
   glm::mat4 m_modelMatrix;
   glm::mat4 m_cannonMatrix;
+
+  float range;
+
+  double m_coolDown = 100.0f;
+  double m_deltaTime = 0.0f;
+  double m_lastShotTime;
 };

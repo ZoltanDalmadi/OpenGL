@@ -175,7 +175,7 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   floorPlane->draw(shaderProgram);
 
-  tower->draw(shaderProgram);
+  tower->draw(shaderProgram, glfwGetTime());
 }
 
 int main()
