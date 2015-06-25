@@ -3,6 +3,11 @@
 #include <functional>
 #include "GLFWApplication.h"
 
+GLTools::GLFWApplication::GLFWApplication()
+  : GLFWApplication(4, 3)
+{
+}
+
 GLTools::GLFWApplication::GLFWApplication(int major, int minor)
   : m_majorVersion(major), m_minorVersion(minor)
 {
@@ -19,6 +24,7 @@ void GLTools::GLFWApplication::initGLFW()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, m_minorVersion);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+  glfwWindowHint(GLFW_SAMPLES, 8);
 }
 
 void GLTools::GLFWApplication::createWindow(int width, int height,
@@ -32,4 +38,19 @@ void GLTools::GLFWApplication::createWindow(int width, int height,
   glewInit();
 
   glViewport(0, 0, width, height);
+}
+
+GLFWwindow *GLTools::GLFWApplication::getWindow() const
+{
+  return m_window;
+}
+
+int GLTools::GLFWApplication::getMajorVersion() const
+{
+  return m_majorVersion;
+}
+
+int GLTools::GLFWApplication::getMinorVersion() const
+{
+  return m_minorVersion;
 }

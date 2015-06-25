@@ -37,13 +37,16 @@ void GLTools::GLMesh::initialize()
 
 void GLTools::GLMesh::draw(const GLShaderProgram& shaderProgram)
 {
-  if (m_material->m_diffuseTex)
-    m_material->m_diffuseTex->bind(m_material->m_diffuseTex_index);
+  if (m_material)
+  {
+    if (m_material->m_diffuseTex)
+      m_material->m_diffuseTex->bind(m_material->m_diffuseTex_index);
 
-  if (m_material->m_specularTex)
-    m_material->m_specularTex->bind(m_material->m_specularTex_index);
+    if (m_material->m_specularTex)
+      m_material->m_specularTex->bind(m_material->m_specularTex_index);
 
-  m_material->setShaderUniform(shaderProgram);
+    m_material->setShaderUniform(shaderProgram);
+  }
 
   draw();
 }

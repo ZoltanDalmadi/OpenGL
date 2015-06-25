@@ -20,7 +20,7 @@ const GLuint HEIGHT = 720;
 GLFWwindow *window;
 
 GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, -5.0f));
-GLTools::GLPointLight pointLight(glm::vec3(0.0f, 5.0f, 0.0f));
+GLTools::GLPointLight pointLight(glm::vec3(0.0f, 10.0f, 0.0f));
 
 glm::vec3 target(5.0f, 5.0f, 5.0f);
 
@@ -161,21 +161,20 @@ void init()
 
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
-  glm::mat4 modelModel;
-  modelModel = translate(modelModel, target);
-  auto normalMatrix = glm::mat3(transpose(inverse(modelModel)));
-  shaderProgram.setUniformValue("model", modelModel);
+  glm::mat4 model;
+  model = translate(model, target);
+  auto normalMatrix = glm::mat3(model);
+  shaderProgram.setUniformValue("model", model);
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
-  targetSphere->draw();
+  targetSphere->draw(shaderProgram);
 
-  modelModel = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
-                           0.0f, 0.0f));
-  normalMatrix = glm::mat3(transpose(inverse(modelModel)));
-  shaderProgram.setUniformValue("model", modelModel);
+  model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
+                 0.0f, 0.0f));
+  normalMatrix = glm::mat3(model);
+  shaderProgram.setUniformValue("model", model);
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
-  floorPlane->draw();
+  floorPlane->draw(shaderProgram);
 
-  tower->update();
   tower->draw(shaderProgram);
 }
 
@@ -187,21 +186,27 @@ int main()
   setupShaders(*shaderProgram);
 
   shaderProgram->use();
-  shaderProgram->setUniformValue("shadowMap", 0);
-  shaderProgram->setUniformValue("projectTex", 3);
-  shaderProgram->setUniformValue("rect", true);
+
+  auto defaultMaterial = std::make_unique<GLTools::GLMaterial>();
 
   auto base = std::make_unique<GLTools::GLModel>("models/turret_base.obj");
   auto cannon = std::make_unique<GLTools::GLModel>("models/turret_cannon.obj");
 
+  base->m_materials[0] = *defaultMaterial;
+  cannon->m_materials[0] = *defaultMaterial;
+
   targetSphere = std::make_unique<GLTools::GLSphere>(1.0f, 24, 24);
   targetSphere->initialize();
+  targetSphere->m_material = defaultMaterial.get();
 
   floorPlane = std::make_unique<GLTools::GLPlane>(100.0f, 100.0f);
   floorPlane->initialize();
+  floorPlane->m_material = defaultMaterial.get();
 
   tower = std::make_unique<Tower>(base.get(), cannon.get());
   //tower->setPosition(glm::vec3(10.0f, 0.0f, 1.0f));
+
+  pointLight.setEnergy(2.0f);
 
   auto projection =
     glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
@@ -216,7 +221,7 @@ int main()
 
     shaderProgram->setUniformValue("viewProjection",
                                    projection * camera.m_viewMatrix);
-    //shaderProgram->setUniformValue("camPos", camera.m_position);
+    shaderProgram->setUniformValue("camPos", camera.m_position);
     pointLight.setShaderUniform(*shaderProgram);
 
     renderScene(*shaderProgram);

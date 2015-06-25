@@ -4,21 +4,21 @@
 GLTools::GLSphere::GLSphere(float radius, int slices, int stacks)
 {
   float theta, phi;
-  float thetaFac = glm::two_pi<float>() / slices;
-  float phiFac = glm::pi<float>() / stacks;
+  auto thetaFac = glm::two_pi<float>() / slices;
+  auto phiFac = glm::pi<float>() / stacks;
   float nx, ny, nz, s, t;
 
   Vertex vert;
 
-  for (int i = 0; i <= slices; i++)
+  for (auto i = 0; i <= slices; i++)
   {
     theta = i * thetaFac;
-    s = (float) i / slices;
+    s = static_cast<float>(i) / slices;
 
-    for (int j = 0; j <= stacks; j++)
+    for (auto j = 0; j <= stacks; j++)
     {
       phi = j * phiFac;
-      t = (float) j / stacks;
+      t = static_cast<float>(j) / stacks;
       nx = std::sin(phi) * std::cos(theta);
       ny = std::sin(phi) * std::sin(theta);
       nz = std::cos(phi);
@@ -31,12 +31,12 @@ GLTools::GLSphere::GLSphere(float radius, int slices, int stacks)
     }
   }
 
-  for (int i = 0; i < slices; i++)
+  for (auto i = 0; i < slices; i++)
   {
     GLuint stackStart = i * (stacks + 1);
     GLuint nextStackStart = (i + 1) * (stacks + 1);
 
-    for (int j = 0; j < stacks; j++)
+    for (auto j = 0; j < stacks; j++)
     {
       if (j == 0)
       {

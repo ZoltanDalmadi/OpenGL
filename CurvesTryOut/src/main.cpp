@@ -24,7 +24,6 @@ double lastX = WIDTH / 2.0f;
 double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
 
-
 // GLOBAL VARIABLES -------------------------------------------------------
 GLFWwindow *window;
 
@@ -115,7 +114,6 @@ void init()
   //glEnable(GL_CULL_FACE);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-  //curve.setControlPoints(controlPoints);
 }
 
 void setupShaders(GLShaderProgram& shaderProgram)
@@ -148,7 +146,6 @@ void setupShaders(GLShaderProgram& shaderProgram)
 
 int main()
 {
-
   init();
 
   auto shaderProgram = std::make_unique<GLShaderProgram>();
@@ -156,17 +153,7 @@ int main()
 
   shaderProgram->use();
 
-  shaderProgram->setUniformValue("Detail", 100);
-  //shaderProgram->setUniformValue("ControlPoints[]", curve.getControlPoints());
-
-  //targetSphere = std::make_unique<GLTools::GLSphere>(1.0f, 24, 24);
-  //targetSphere->initialize();
-
-  //floorPlane = std::make_unique<GLTools::GLPlane>(100.0f, 100.0f);
-  //floorPlane->initialize();
-
-  auto projection =
-    glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
+  shaderProgram
 
   while (!glfwWindowShouldClose(window))
   {

@@ -32,8 +32,7 @@ void GLTools::GLModel::loadModel(const std::string& path)
   {
     auto activeAiMesh = scene->mMeshes[i];
     m_meshes.emplace_back(loadMesh(activeAiMesh));
-    m_meshes.back().m_material =
-      std::make_shared<GLMaterial>(m_materials[activeAiMesh->mMaterialIndex]);
+    m_meshes.back().m_material = &m_materials[activeAiMesh->mMaterialIndex];
     m_meshes.back().setMaterialTextureIndices(1, 2);
     m_meshes.back().initialize();
   }
