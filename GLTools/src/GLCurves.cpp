@@ -18,8 +18,6 @@ GLTools::GLCurves::GLCurves(GLCurves firstCurve,
   m_controlPoints[1] = m_controlPoints[0] + fourMinusThree;
   m_controlPoints[2] = controlPoints[0];
   m_controlPoints[3] = controlPoints[1];
-
-  GLCurves();
 }
 
 GLTools::GLCurves::GLCurves(std::array<glm::vec3, 4> controlPoints)
@@ -28,8 +26,6 @@ GLTools::GLCurves::GLCurves(std::array<glm::vec3, 4> controlPoints)
   {
     m_controlPoints[i] = controlPoints[i];
   }
-
-  GLCurves();
 }
 
 void GLTools::GLCurves::setControlPoints(std::array<glm::vec3, 4> controlPoints)
@@ -38,8 +34,6 @@ void GLTools::GLCurves::setControlPoints(std::array<glm::vec3, 4> controlPoints)
   {
     m_controlPoints[i] = controlPoints[i];
   }
-
-  GLCurves();
 }
 
 std::array<glm::vec3, 4> GLTools::GLCurves::getControlPoints()

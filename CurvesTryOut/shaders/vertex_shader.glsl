@@ -5,6 +5,5 @@ out vec3 ControlPoints;
 
 void main()
 {
-	ControlPoints = vertex_position;
-  gl_Position = vec4(vertex_position, 1.0);
+  gl_Position = vec4(vertex_position.x, vertex_position.y, 0.0f, 1.0);
 }

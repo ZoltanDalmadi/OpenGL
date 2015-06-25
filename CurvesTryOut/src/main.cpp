@@ -32,7 +32,7 @@ GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, -5.0f));
 
 glm::vec3 target(5.0f, 5.0f, 5.0f);
 
-std::array<glm::vec3, 4> temp = { glm::vec3(1.0f), glm::vec3(10.0f), glm::vec3(11.0f), glm::vec3(12.0f)};
+std::array<glm::vec3, 4> temp = { glm::vec3(0.1f), glm::vec3(0.5f), glm::vec3(0.6f), glm::vec3(0.7f)};
 GLTools::GLCurves curve(temp);
 //std::unique_ptr<GLTools::GLSphere> targetSphere;
 //std::unique_ptr<GLTools::GLPlane> floorPlane;
@@ -140,7 +140,7 @@ void setupShaders(GLShaderProgram& shaderProgram)
   shaderProgram.create();
   shaderProgram.addShader(vertexShader);
   shaderProgram.addShader(fragmentShader);
-  //shaderProgram.addShader(geometryShader);
+  shaderProgram.addShader(geometryShader);
   shaderProgram.link();
   std::cout << shaderProgram.log() << std::endl;
 }

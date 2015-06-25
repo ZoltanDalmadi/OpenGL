@@ -1,10 +1,8 @@
-#version 430 core
+﻿#version 330 core
+layout (points) in;
+layout (line_strip, max_vertices = 2) out;
 
-uniform int Detail;
-in vec3 ControlPoints[];
-uniform mat4 modelViewProjectionMatrix;
-
-vec3 evaluateBezierPosition( float t )
+vec3 evaluateBezierPosition( vec3 ControlPoints[4],  float t )
 {
     vec3 p;
     float OneMinusT = 1.0 - t;
@@ -15,16 +13,29 @@ vec3 evaluateBezierPosition( float t )
     return b0*ControlPoints[0] + b1*ControlPoints[1] + b2*ControlPoints[2] + b3*ControlPoints[3];
 }
 
-void main()
-{
-    float OneOverDetail = 1.0 / float(Detail-1.0);
-    for( int i=0; i<Detail; i++ )
+void main() {    
+
+	vec3 cPoints[4];
+
+   /* cPoints[0] = vec3(gl_in[0].gl_Position); 
+    cPoints[1] = vec3(gl_in[1].gl_Position); 
+    cPoints[2] = vec3(gl_in[2].gl_Position); 
+    cPoints[3] = vec3(gl_in[3].gl_Position); */
+
+    /*float OneOverDetail = 1.0 / float(3.0-1.0);
+    for( int i=0; i< 3; i++ )
     {
         float t = i * OneOverDetail;
-        vec3 p = evaluateBezierPosition( t );
-        gl_Position = modelViewProjectionMatrix * vec4( p.xyz, 1.0 );
+        vec3 p = evaluateBezierPosition( cPoints, t );
+        gl_Position = vec4( p.x, p.y, 0.0, 1.0 );
         EmitVertex();
-    }
- 
-    EndPrimitive();
-}
+    }*/
+
+	gl_Position = gl_in[0].gl_Position; 
+    EmitVertex();
+
+	gl_Position = gl_in[0].gl_Position + vec4(0.2, 0.4, 0.0, 1.0); 
+    EmitVertex();
+    
+	EndPrimitive();	
+}  
