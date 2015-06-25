@@ -1,8 +1,7 @@
 #include "GLCurves.h"
 
-using namespace GLTools;
 
-GLCurves::GLCurves()
+GLTools::GLCurves::GLCurves()
 {
   m_VAO.create();
   m_VBO.create();
@@ -21,8 +20,8 @@ GLCurves::GLCurves()
 /*
 C1 incessant.
 */
-GLCurves::GLCurves(GLCurves firstCurve,
-                   std::array<glm::vec3, 2> controlPoints)
+GLTools::GLCurves::GLCurves(GLCurves firstCurve,
+                            std::array<glm::vec3, 2> controlPoints)
 {
   m_controlPoints[0] = firstCurve.getControlPoints().at(3);
   glm::vec3 fourMinusThree = firstCurve.getControlPoints().at(3)
@@ -31,25 +30,31 @@ GLCurves::GLCurves(GLCurves firstCurve,
   m_controlPoints[1] = m_controlPoints[0] + fourMinusThree;
   m_controlPoints[2] = controlPoints[0];
   m_controlPoints[3] = controlPoints[1];
+
+  GLCurves();
 }
 
-GLCurves::GLCurves(std::array<glm::vec3, 4> controlPoints)
+GLTools::GLCurves::GLCurves(std::array<glm::vec3, 4> controlPoints)
 {
   for (int i = 0; i < controlPoints.size(); i++)
   {
     m_controlPoints[i] = controlPoints[i];
   }
+
+  //GLCurves();
 }
 
-void GLCurves::setControlPoints(std::array<glm::vec3, 4> controlPoints)
+void GLTools::GLCurves::setControlPoints(std::array<glm::vec3, 4> controlPoints)
 {
   for (int i = 0; i < controlPoints.size(); i++)
   {
     m_controlPoints[i] = controlPoints[i];
   }
+
+  GLCurves();
 }
 
-std::array<glm::vec3, 4> GLCurves::getControlPoints()
+std::array<glm::vec3, 4> GLTools::GLCurves::getControlPoints()
 {
   return m_controlPoints;
 }
@@ -57,7 +62,7 @@ std::array<glm::vec3, 4> GLCurves::getControlPoints()
 /*
 Get position in T;
 */
-glm::vec3 GLCurves::getPosition(double t)
+glm::vec3 GLTools::GLCurves::getPosition(double t)
 {
   return evaluateBezierPosition(t);
 }
@@ -65,7 +70,7 @@ glm::vec3 GLCurves::getPosition(double t)
 /*
 Get position with the class t.
 */
-glm::vec3 GLCurves::getPosition()
+glm::vec3 GLTools::GLCurves::getPosition()
 {
   return getPosition(this->t);
 }
@@ -73,7 +78,7 @@ glm::vec3 GLCurves::getPosition()
 /*
 Return the tangent of the t.
 */
-glm::vec3 GLCurves::getTangent(double t)
+glm::vec3 GLTools::GLCurves::getTangent(double t)
 {
   return glm::vec3(1.0f);
 }
@@ -81,31 +86,31 @@ glm::vec3 GLCurves::getTangent(double t)
 /*
 Return the tangent of the class t.
 */
-glm::vec3 GLCurves::getTangent()
+glm::vec3 GLTools::GLCurves::getTangent()
 {
   return getTangent(this->t);
 }
 
-void GLCurves::setT(double t)
+void GLTools::GLCurves::setT(double t)
 {
   this->t = t;
 }
 
-double GLCurves::getT()
+double GLTools::GLCurves::getT()
 {
   return this->t;
 }
 
-void GLCurves::render()
+void GLTools::GLCurves::render()
 {
-  m_VAO.bind();
-  glDrawElements(GL_POINTS, static_cast<GLsizei>(m_controlPoints.size()),
-                 GL_UNSIGNED_INT, nullptr);
+  //m_VAO.bind();
+  //glDrawElements(GL_POINTS, static_cast<GLsizei>(m_controlPoints.size()),
+  //GL_UNSIGNED_INT, nullptr);
 
-  m_VAO.unbind();
+  //m_VAO.unbind();
 }
 
-glm::vec3 GLCurves::evaluateBezierPosition(float t)
+glm::vec3 GLTools::GLCurves::evaluateBezierPosition(float t)
 {
   float OneMinusT = 1.0 - t;
   float b0 = OneMinusT * OneMinusT * OneMinusT;
@@ -116,11 +121,11 @@ glm::vec3 GLCurves::evaluateBezierPosition(float t)
            1) + b2 * m_controlPoints.at(2) + b3 * m_controlPoints.at(3);
 }
 
-glm::vec3 GLCurves::evaluateBezierTangent(float t)
+glm::vec3 GLTools::GLCurves::evaluateBezierTangent(float t)
 {
   return glm::vec3(1.0f);
 }
 
-GLCurves::~GLCurves()
+GLTools::GLCurves::~GLCurves()
 {
 }
