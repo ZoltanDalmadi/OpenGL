@@ -3,7 +3,7 @@
 
 GLTools::GLCurves::GLCurves()
 {
-  m_VAO.create();
+  /*m_VAO.create();
   m_VBO.create();
 
   m_VAO.bind();
@@ -15,6 +15,7 @@ GLTools::GLCurves::GLCurves()
   m_VAO.setAttributeArray(0, 4, sizeof(glm::vec3));
 
   m_VAO.unbind();
+  */
 }
 
 /*
@@ -41,7 +42,7 @@ GLTools::GLCurves::GLCurves(std::array<glm::vec3, 4> controlPoints)
     m_controlPoints[i] = controlPoints[i];
   }
 
-  //GLCurves();
+  GLCurves();
 }
 
 void GLTools::GLCurves::setControlPoints(std::array<glm::vec3, 4> controlPoints)
@@ -104,9 +105,8 @@ double GLTools::GLCurves::getT()
 void GLTools::GLCurves::render()
 {
   m_VAO.bind();
-  /*glDrawElements(GL_POINTS, 12,
+  /*glDrawElements(GL_POINTS, 4,
                  GL_UNSIGNED_INT, nullptr);*/
-
   m_VAO.unbind();
 }
 
