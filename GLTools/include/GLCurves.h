@@ -16,6 +16,7 @@ public:
   void setControlPoints(std::array<glm::vec3, 4>);
   std::array<glm::vec3, 4> getControlPoints();
 
+  void initialize();
   /*
   Get position in T;
   */
