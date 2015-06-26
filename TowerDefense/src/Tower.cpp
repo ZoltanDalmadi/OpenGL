@@ -1,8 +1,6 @@
 #include <glm/gtc/matrix_transform.hpp>
-#include <iostream>
 #include "Tower.h"
 
-#define X_AXIS glm::vec3(1.0f, 0.0f, 0.0f)
 #define Y_AXIS glm::vec3(0.0f, 1.0f, 0.0f)
 #define Z_AXIS glm::vec3(0.0f, 0.0f, 1.0f)
 
@@ -66,7 +64,6 @@ void Tower::clearTarget()
 
 void Tower::shoot(const glm::vec3& pos, const glm::vec3& dir)
 {
-  std::cout << "shoot!" << std::endl;
   m_missiles.emplace_back(m_missile, pos, dir);
 }
 
@@ -96,7 +93,6 @@ void Tower::update(double time)
   if (!m_target)
     return;
 
-  // will be the direction vector of the missile
   auto v = *m_target - m_position;
   m_baseAngle = -glm::atan(v.z, v.x);
 
@@ -114,8 +110,7 @@ void Tower::update(double time)
 
   if (m_deltaTime >= m_coolDown)
   {
-    auto missilePos =
-      glm::vec3(m_cannonMatrix * glm::vec4(m_cannonFront, 1.0f));
+    auto missilePos = glm::vec3(m_cannonMatrix * glm::vec4(m_cannonFront, 1.0f));
     auto missileDir = normalize(*m_target - missilePos);
     shoot(missilePos, missileDir);
     m_deltaTime = 0.0f;
