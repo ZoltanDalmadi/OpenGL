@@ -191,6 +191,7 @@ int main()
 
   auto base = std::make_unique<GLTools::GLModel>("models/turret_base.obj");
   auto cannon = std::make_unique<GLTools::GLModel>("models/turret_cannon.obj");
+  auto missile = std::make_unique<GLTools::GLModel>("models/missile.obj");
 
   base->m_materials[0] = *defaultMaterial;
   cannon->m_materials[0] = *defaultMaterial;
@@ -203,8 +204,8 @@ int main()
   floorPlane->initialize();
   floorPlane->m_material = defaultMaterial.get();
 
-  tower = std::make_unique<Tower>(base.get(), cannon.get());
-  //tower->setPosition(glm::vec3(10.0f, 0.0f, 1.0f));
+  tower = std::make_unique<Tower>(base.get(), cannon.get(), missile.get());
+  tower->setPosition(glm::vec3(10.0f, 0.0f, 1.0f));
 
   pointLight.setEnergy(2.0f);
 
