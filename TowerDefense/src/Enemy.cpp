@@ -1,6 +1,5 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
-#include <limits>
 #include "Enemy.h"
 
 #define Z_AXIS glm::vec3(0.0f, 0.0f, 1.0f)
@@ -61,8 +60,9 @@ void Enemy::draw(const GLTools::GLShaderProgram& shaderProgram)
 std::pair<glm::vec3, glm::vec3> Enemy::calculate_AABB()
 {
   float min_x, min_y, min_z, max_x, max_y, max_z;
-  min_x = min_y = min_z = std::numeric_limits<float>::max();
-  max_x = max_y = max_z = std::numeric_limits<float>::min();
+
+  min_x = min_y = min_z = 10000.0f;
+  max_x = max_y = max_z = -10000.0f;
 
   for (const auto& mesh : m_model->m_meshes)
   {
