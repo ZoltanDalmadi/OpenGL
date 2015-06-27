@@ -11,6 +11,7 @@
 #include "GLModel.h"
 #include "GLPointLight.h"
 #include "GLPlane.h"
+#include "GLBoundingBox.h"
 #include "Tower.h"
 #include "Enemy.h"
 
@@ -35,6 +36,7 @@ bool firstMouse = true;
 
 std::unique_ptr<Tower> tower;
 std::unique_ptr<Enemy> targetShip;
+std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -202,12 +204,32 @@ void init()
   glEnable(GL_CULL_FACE);
   glEnable(GL_POLYGON_OFFSET_FILL);
   glPolygonOffset(1, 0);
+  glLineWidth(2);
   glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
+}
+
+std::pair<glm::vec3, glm::vec3> calcBoundingBox
+(const std::pair<glm::vec3, glm::vec3>& input)
+{
+  auto& minX = input.first.x;
+  auto& minY = input.first.y;
+  auto& minZ = input.first.z;
+  auto& maxX = input.second.x;
+  auto& maxY = input.second.y;
+  auto& maxZ = input.second.z;
+
+  auto center =
+    glm::vec3((minX + maxX) / 2.0f, (minY + maxY) / 2.0f, (minZ + maxZ) / 2.0f);
+  auto size = glm::vec3(maxX - minX, maxY - minY, maxZ - minZ);
+  return std::make_pair(center, size);
 }
 
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
   targetShip->draw(shaderProgram);
+  auto aabb = targetShip->calculate_AABB();
+  auto bounding = calcBoundingBox(aabb);
+  boundingBox->draw(shaderProgram, bounding.first, bounding.second);
 
   auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
                       0.0f, 0.0f));
@@ -239,6 +261,9 @@ int main()
   cannon->m_materials[0] = *defaultMaterial;
 
   targetShip = std::make_unique<Enemy>(enemy.get(), target, targetDir);
+
+  boundingBox = std::make_unique<GLTools::GLBoundingBox>();
+  boundingBox->initialize();
 
   floorPlane = std::make_unique<GLTools::GLPlane>(100.0f, 100.0f);
   floorPlane->initialize();
