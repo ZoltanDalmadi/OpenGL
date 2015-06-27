@@ -14,10 +14,25 @@ public:
   const glm::vec3& getDirection() const;
   void setDirection(const glm::vec3& dir);
 
+  float getVelocity() const;
+  void setVelocity(float velocity);
+
+  float getMaxVelocity() const;
+  void setMaxVelocity(float max_velocity);
+
+  float getAcceleration() const;
+  void setAcceleration(float acceleration);
+
+  float getSpin() const;
+  void setSpin(float spin);
+
+  float getSpinSpeed() const;
+  void setSpinSpeed(float spin_speed);
+
   void draw(const GLTools::GLShaderProgram& shaderProgram);
-  void update();
 
 private:
+  void update();
   GLTools::GLModel *m_model;
 
   // in world space

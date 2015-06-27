@@ -41,6 +41,56 @@ void Missile::setDirection(const glm::vec3& dir)
   m_direction = dir;
 }
 
+float Missile::getVelocity() const
+{
+  return m_velocity;
+}
+
+void Missile::setVelocity(float velocity)
+{
+  m_velocity = velocity;
+}
+
+float Missile::getMaxVelocity() const
+{
+  return m_maxVelocity;
+}
+
+void Missile::setMaxVelocity(float max_velocity)
+{
+  m_maxVelocity = max_velocity;
+}
+
+float Missile::getAcceleration() const
+{
+  return m_acceleration;
+}
+
+void Missile::setAcceleration(float acceleration)
+{
+  m_acceleration = acceleration;
+}
+
+float Missile::getSpin() const
+{
+  return m_spin;
+}
+
+void Missile::setSpin(float spin)
+{
+  m_spin = spin;
+}
+
+float Missile::getSpinSpeed() const
+{
+  return m_spinSpeed;
+}
+
+void Missile::setSpinSpeed(float spin_speed)
+{
+  m_spinSpeed = spin_speed;
+}
+
 void Missile::draw(const GLTools::GLShaderProgram& shaderProgram)
 {
   this->update();
