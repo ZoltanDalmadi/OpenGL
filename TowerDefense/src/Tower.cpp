@@ -40,6 +40,16 @@ void Tower::setOffset(const glm::vec3& offset)
   m_offset = offset;
 }
 
+float Tower::getCannonLength() const
+{
+  return m_cannonLength;
+}
+
+void Tower::setCannonLength(float cannon_length)
+{
+  m_cannonLength = cannon_length;
+}
+
 const float& Tower::getBaseAngle() const
 {
   return m_baseAngle;
@@ -82,10 +92,7 @@ void Tower::draw(const GLTools::GLShaderProgram& shaderProgram, double time)
   m_cannon->draw(shaderProgram);
 
   for (auto& missile : m_missiles)
-  {
-    missile.update();
     missile.draw(shaderProgram);
-  }
 }
 
 void Tower::update(double time)
@@ -110,7 +117,8 @@ void Tower::update(double time)
 
   if (m_deltaTime >= m_coolDown)
   {
-    auto missilePos = glm::vec3(m_cannonMatrix * glm::vec4(m_cannonFront, 1.0f));
+    auto missilePos =
+      glm::vec3(m_cannonMatrix * glm::vec4(m_cannonLength, 0.0f, 0.0f, 1.0f));
     auto missileDir = normalize(*m_target - missilePos);
     shoot(missilePos, missileDir);
     m_deltaTime = 0.0f;
