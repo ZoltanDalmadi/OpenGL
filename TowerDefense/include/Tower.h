@@ -19,11 +19,14 @@ public:
   float getCannonLength() const;
   void setCannonLength(float cannon_length);
 
-  const float& getBaseAngle() const;
-  const float& getCannonAngle() const;
-
   void setTarget(glm::vec3 *target);
   void clearTarget();
+
+  float getRange() const;
+  void setRange(float range);
+
+  float getDamage() const;
+  void setDamage(float damage);
 
   void shoot(const glm::vec3& pos, const glm::vec3& dir);
   void draw(const GLTools::GLShaderProgram& shaderProgram, double time);
@@ -48,7 +51,8 @@ private:
   glm::mat4 m_modelMatrix;
   glm::mat4 m_cannonMatrix;
 
-  float range;
+  float m_range = 10.0f;
+  float m_damage = 25.0f;
 
   double m_coolDown = 100.0f;
   double m_deltaTime = 0.0f;
