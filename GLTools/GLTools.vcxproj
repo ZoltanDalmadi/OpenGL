@@ -140,6 +140,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\GLBoundingBox.h" />
     <ClInclude Include="include\GLBufferObject.h" />
     <ClInclude Include="include\GLCamera.h" />
     <ClInclude Include="include\GLCube.h" />
@@ -164,6 +165,7 @@
     <ClInclude Include="include\GLVertexArrayObject.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\GLBoundingBox.cpp" />
     <ClCompile Include="src\GLBufferObject.cpp" />
     <ClCompile Include="src\GLCamera.cpp" />
     <ClCompile Include="src\GLCube.cpp" />
