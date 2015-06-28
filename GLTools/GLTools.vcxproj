@@ -144,6 +144,7 @@
     <ClInclude Include="include\GLBufferObject.h" />
     <ClInclude Include="include\GLCamera.h" />
     <ClInclude Include="include\GLCube.h" />
+    <ClInclude Include="include\GLCurvePath.h" />
     <ClInclude Include="include\GLCurves.h" />
     <ClInclude Include="include\GLDirectionalLight.h" />
     <ClInclude Include="include\GLFPSCamera.h" />
@@ -169,6 +170,7 @@
     <ClCompile Include="src\GLBufferObject.cpp" />
     <ClCompile Include="src\GLCamera.cpp" />
     <ClCompile Include="src\GLCube.cpp" />
+    <ClCompile Include="src\GLCurvePath.cpp" />
     <ClCompile Include="src\GLCurves.cpp" />
     <ClCompile Include="src\GLDirectionalLight.cpp" />
     <ClCompile Include="src\GLFPSCamera.cpp" />
