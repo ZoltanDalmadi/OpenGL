@@ -34,10 +34,14 @@ glm::vec3 target(5.0f, 5.0f, 5.0f);
 
 std::array<glm::vec3, 4> temp = { glm::vec3(0.0f, 0.0f, 0.0f),
                                   glm::vec3(10.0f, 0.0f, 30.0f),
-                                  glm::vec3(50.0f, 30.0f, -50.0f),
-                                  glm::vec3(100.0f, 0.0f, 100.0f)
+                                  glm::vec3(17.0f, 30.0f, -34.0f),
+                                  glm::vec3(40.0f, 0.0f, 40.0f)
                                 };
 GLTools::GLCurves curve(temp);
+std::array<glm::vec3, 2> temp1 = { glm::vec3(50.0f, 30.0f, -50.0f),
+                                   glm::vec3(100.0f, 0.0f, 100.0f)
+                                 };
+GLTools::GLCurves curve1(curve, temp1);
 //std::unique_ptr<GLTools::GLSphere> targetSphere;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
 glm::mat4 projection;
@@ -115,11 +119,13 @@ void init()
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   glViewport(0, 0, WIDTH, HEIGHT);
-  //glEnable(GL_DEPTH_TEST);
+  glEnable(GL_DEPTH_TEST);
   //glEnable(GL_CULL_FACE);
   glLineWidth(5);
+  glPointSize(10);
   glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
   curve.initialize();
+  curve1.initialize();
 }
 
 void setupShaders(GLShaderProgram& shaderProgram)
@@ -190,13 +196,13 @@ int main()
   setupShaders(*shaderProgram);
 
   projection = glm::perspective(glm::radians(50.0f), (float)WIDTH / HEIGHT, 0.01f,
-                                100.0f);
+                                500.0f);
 
 
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     moveCamera();
     shaderProgram1->use();
     auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
@@ -212,6 +218,7 @@ int main()
                                    projection * camera.m_viewMatrix);
 
     curve.render();
+    curve1.render();
 
     glfwSwapBuffers(window);
   }

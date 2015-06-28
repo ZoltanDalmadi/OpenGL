@@ -8,14 +8,16 @@ GLTools::GLCurves::GLCurves()
 /*
 C1 incessant.
 */
-GLTools::GLCurves::GLCurves(GLCurves firstCurve,
+GLTools::GLCurves::GLCurves(GLCurves& firstCurve,
                             std::array<glm::vec3, 2> controlPoints)
 {
-  m_controlPoints[0] = firstCurve.getControlPoints().at(3);
-  glm::vec3 fourMinusThree = firstCurve.getControlPoints().at(3)
-                             - firstCurve.getControlPoints().at(3);
+  glm::vec3 midPoint = (firstCurve.getControlPoints().at(2) +
+                        firstCurve.getControlPoints().at(3)) / glm::vec3(2.0f);
 
-  m_controlPoints[1] = m_controlPoints[0] + fourMinusThree;
+  m_controlPoints[1] = firstCurve.getControlPoints().at(3);
+  firstCurve.m_controlPoints[3] = midPoint;
+
+  m_controlPoints[0] = midPoint;
   m_controlPoints[2] = controlPoints[0];
   m_controlPoints[3] = controlPoints[1];
 }
@@ -102,6 +104,13 @@ void GLTools::GLCurves::render()
 {
   m_VAO.bind();
   glDrawArrays(GL_LINES_ADJACENCY, 0, m_controlPoints.size());
+  m_VAO.unbind();
+}
+
+void GLTools::GLCurves::drawPoints()
+{
+  m_VAO.bind();
+  glDrawArrays(GL_POINTS, 0, m_controlPoints.size());
   m_VAO.unbind();
 }
 

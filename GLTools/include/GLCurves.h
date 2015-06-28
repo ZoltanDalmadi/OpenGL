@@ -11,7 +11,7 @@ class GLCurves
 {
 public:
   GLCurves();
-  GLCurves(GLCurves, std::array<glm::vec3, 2>);
+  GLCurves(GLCurves&, std::array<glm::vec3, 2>);
   GLCurves(std::array<glm::vec3, 4>);
   void setControlPoints(std::array<glm::vec3, 4>);
   std::array<glm::vec3, 4> getControlPoints();
@@ -41,6 +41,8 @@ public:
   double getT();
   void render();
 
+  void drawPoints();
+
   virtual ~GLCurves();
 
 private:
@@ -48,7 +50,6 @@ private:
   std::array<glm::vec3, 4> m_controlPoints;
   glm::vec3 evaluateBezierPosition(float);
   glm::vec3 evaluateBezierTangent(float);
-
 
   GLVertexArrayObject m_VAO;
   GLBufferObject m_VBO;
