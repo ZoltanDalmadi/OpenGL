@@ -43,6 +43,8 @@ public:
 
   void drawPoints();
 
+  std::pair<glm::vec3, glm::vec3> getPositionAndTangent(float t);
+
   virtual ~GLCurves();
 
 private:

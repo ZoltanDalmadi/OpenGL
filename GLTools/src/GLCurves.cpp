@@ -116,18 +116,51 @@ void GLTools::GLCurves::drawPoints()
 
 glm::vec3 GLTools::GLCurves::evaluateBezierPosition(float t)
 {
-  float OneMinusT = 1.0 - t;
+  float vt = 0.0f;
+
+  if (t > 0.5)
+    vt = t * 2;
+  else
+    vt = (t * 2) - 0.5;
+
+  float OneMinusT = 1.0 - vt;
+
   float b0 = OneMinusT * OneMinusT * OneMinusT;
-  float b1 = 3.0 * t * OneMinusT * OneMinusT;
-  float b2 = 3.0 * t * t * OneMinusT;
-  float b3 = t * t * t;
+  float b1 = 3.0 * vt * OneMinusT * OneMinusT;
+  float b2 = 3.0 * vt * vt * OneMinusT;
+  float b3 = vt * vt * vt;
   return b0 * m_controlPoints.at(0) + b1 * m_controlPoints.at(
            1) + b2 * m_controlPoints.at(2) + b3 * m_controlPoints.at(3);
 }
 
 glm::vec3 GLTools::GLCurves::evaluateBezierTangent(float t)
 {
-  return glm::vec3(1.0f);
+  float vt = 0.0f;
+
+  if (t > 0.5)
+    vt = t * 2;
+  else
+    vt = (t * 2) - 0.5;
+
+  float OneMinusT = 1.0 - vt;
+
+  float b0 = 3 * OneMinusT * OneMinusT;
+  float b1 = 6 * vt * OneMinusT;
+  float b2 = 3 * vt * vt;
+
+  return b0 * (m_controlPoints.at(1) - m_controlPoints.at(0)) +
+         b1 * (m_controlPoints.at(2) - m_controlPoints.at(1)) +
+         b2 * (m_controlPoints.at(3) - m_controlPoints.at(2));
+}
+
+std::pair<glm::vec3, glm::vec3> GLTools::GLCurves::getPositionAndTangent(
+  float t)
+{
+  std::pair<glm::vec3, glm::vec3> ret;
+  ret.first = evaluateBezierPosition(t);
+  ret.second = evaluateBezierTangent(t);
+
+  return ret;
 }
 
 GLTools::GLCurves::~GLCurves()
