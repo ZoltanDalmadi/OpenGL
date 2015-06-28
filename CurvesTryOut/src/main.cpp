@@ -33,9 +33,9 @@ GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, -5.0f));
 glm::vec3 target(5.0f, 5.0f, 5.0f);
 
 std::array<glm::vec3, 4> temp = { glm::vec3(0.0f, 0.0f, 0.0f),
-                                  glm::vec3(0.2f, 0.0f, -0.2f),
-                                  glm::vec3(0.5f, 0.0f, -0.2f),
-                                  glm::vec3(-1.0f, 0.0f, -1.0f)
+                                  glm::vec3(10.0f, 0.0f, 30.0f),
+                                  glm::vec3(50.0f, 30.0f, -50.0f),
+                                  glm::vec3(100.0f, 0.0f, 100.0f)
                                 };
 GLTools::GLCurves curve(temp);
 //std::unique_ptr<GLTools::GLSphere> targetSphere;
