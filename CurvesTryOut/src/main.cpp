@@ -32,8 +32,10 @@ GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, -5.0f));
 
 glm::vec3 target(5.0f, 5.0f, 5.0f);
 
-std::array<glm::vec3, 4> temp = { glm::vec3(0.1f, -0.1f, 0.0f),
-                                  glm::vec3(0.5f, 0.9f, 0.9f), glm::vec3(0.6f), glm::vec3(0.7f)
+std::array<glm::vec3, 4> temp = { glm::vec3(0.0f, 0.0f, 0.0f),
+                                  glm::vec3(0.2f, 0.0f, -0.2f),
+                                  glm::vec3(0.5f, 0.0f, -0.2f),
+                                  glm::vec3(-1.0f, 0.0f, -1.0f)
                                 };
 GLTools::GLCurves curve(temp);
 //std::unique_ptr<GLTools::GLSphere> targetSphere;
@@ -115,6 +117,7 @@ void init()
   glViewport(0, 0, WIDTH, HEIGHT);
   //glEnable(GL_DEPTH_TEST);
   //glEnable(GL_CULL_FACE);
+  glLineWidth(5);
   glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
   curve.initialize();
 }

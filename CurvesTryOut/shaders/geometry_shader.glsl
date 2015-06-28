@@ -2,6 +2,8 @@
 layout (lines_adjacency) in;
 layout (line_strip, max_vertices = 100) out;
 
+uniform mat4 MVP;
+
 vec3 evaluateBezierPosition( vec3 ControlPoints[4],  float t )
 {
     vec3 p;
@@ -27,7 +29,7 @@ void main() {
     {
         float t = i * OneOverDetail;
         vec3 p = evaluateBezierPosition( cPoints, t );
-        gl_Position = vec4( p.x, p.y, 0.0, 1.0 );
+        gl_Position = MVP * vec4( p, 1.0 );
         EmitVertex();
     }
 
