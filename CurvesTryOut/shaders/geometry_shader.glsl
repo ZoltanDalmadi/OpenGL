@@ -1,6 +1,6 @@
 ﻿#version 330 core
-layout (points) in;
-layout (line_strip, max_vertices = 2) out;
+layout (lines_adjacency) in;
+layout (line_strip, max_vertices = 100) out;
 
 vec3 evaluateBezierPosition( vec3 ControlPoints[4],  float t )
 {
@@ -17,25 +17,19 @@ void main() {
 
 	vec3 cPoints[4];
 
-   /* cPoints[0] = vec3(gl_in[0].gl_Position); 
+    cPoints[0] = vec3(gl_in[0].gl_Position); 
     cPoints[1] = vec3(gl_in[1].gl_Position); 
     cPoints[2] = vec3(gl_in[2].gl_Position); 
-    cPoints[3] = vec3(gl_in[3].gl_Position); */
+    cPoints[3] = vec3(gl_in[3].gl_Position);
 
-    /*float OneOverDetail = 1.0 / float(3.0-1.0);
-    for( int i=0; i< 3; i++ )
+    float OneOverDetail = 1.0 / float(100.0-1.0);
+    for( int i=0; i< 100; i++ )
     {
         float t = i * OneOverDetail;
         vec3 p = evaluateBezierPosition( cPoints, t );
         gl_Position = vec4( p.x, p.y, 0.0, 1.0 );
         EmitVertex();
-    }*/
+    }
 
-	gl_Position = gl_in[0].gl_Position; 
-    EmitVertex();
-
-	gl_Position = gl_in[0].gl_Position + vec4(0.2, 0.4, 0.0, 1.0); 
-    EmitVertex();
-    
 	EndPrimitive();	
 }  
