@@ -37,7 +37,7 @@ std::array<glm::vec3, 4> temp = { glm::vec3(0.1f, -0.1f, 0.0f),
                                 };
 GLTools::GLCurves curve(temp);
 //std::unique_ptr<GLTools::GLSphere> targetSphere;
-//std::unique_ptr<GLTools::GLPlane> floorPlane;
+std::unique_ptr<GLTools::GLPlane> floorPlane;
 glm::mat4 projection;
 
 bool keys[1024];
@@ -115,7 +115,7 @@ void init()
   glViewport(0, 0, WIDTH, HEIGHT);
   //glEnable(GL_DEPTH_TEST);
   //glEnable(GL_CULL_FACE);
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
   curve.initialize();
 }
 
@@ -147,9 +147,41 @@ void setupShaders(GLShaderProgram& shaderProgram)
   std::cout << shaderProgram.log() << std::endl;
 }
 
+
+void setupShaders1(GLShaderProgram& shaderProgram)
+{
+  auto vertexShader = std::make_shared<GLShader>
+                      (GLShader::shaderType::VERTEX_SHADER);
+  vertexShader->loadSource("shaders/vertex_shader1.glsl");
+  vertexShader->compile();
+  std::cout << vertexShader->log() << std::endl;
+
+  auto fragmentShader = std::make_shared<GLShader>
+                        (GLShader::shaderType::FRAGMENT_SHADER);
+  fragmentShader->loadSource("shaders/fragment_shader1.glsl");
+  fragmentShader->compile();
+  std::cout << fragmentShader->log() << std::endl;
+
+  shaderProgram.create();
+  shaderProgram.addShader(vertexShader);
+  shaderProgram.addShader(fragmentShader);
+  shaderProgram.link();
+  std::cout << shaderProgram.log() << std::endl;
+}
+
+
 int main()
 {
   init();
+
+  auto defaultMaterial = std::make_unique<GLTools::GLMaterial>();
+
+  floorPlane = std::make_unique<GLPlane>(100.0f, 100.0f);
+  floorPlane->initialize();
+  floorPlane->m_material = defaultMaterial.get();
+
+  auto shaderProgram1 = std::make_unique<GLShaderProgram>();
+  setupShaders1(*shaderProgram1);
 
   auto shaderProgram = std::make_unique<GLShaderProgram>();
   setupShaders(*shaderProgram);
@@ -157,16 +189,23 @@ int main()
   projection = glm::perspective(glm::radians(50.0f), (float)WIDTH / HEIGHT, 0.01f,
                                 100.0f);
 
-  shaderProgram->use();
-
-  //shaderProgram
 
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT);
+    moveCamera();
+    shaderProgram1->use();
+    auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
+                        0.0f, 0.0f));
+    shaderProgram1->setUniformValue("MVP",
+                                    projection * camera.m_viewMatrix * model);
 
-    shaderProgram->setUniformValue("modelViewProjectionMatrix",
+    floorPlane->draw();
+
+    shaderProgram->use();
+
+    shaderProgram->setUniformValue("MVP",
                                    projection * camera.m_viewMatrix);
 
     curve.render();
