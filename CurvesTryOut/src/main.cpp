@@ -225,8 +225,11 @@ int main()
 
 
     path.draw();
-    //std::pair<glm::vec3, glm::vec3> asd = ;
-    //std::cout <<
+    std::pair<glm::vec3, glm::vec3> asd = path.getPositionAndTangent(t);
+    std::cout << t << ":::::: " << asd.first.x << asd.first.y << asd.first.z <<
+              " :: " << asd.second.x
+              << asd.second.y << asd.second.z << "\n";
+    t += 0.001;
 
     glfwSwapBuffers(window);
   }

@@ -15,14 +15,15 @@ std::pair<glm::vec3, glm::vec3> GLTools::GLCurvePath::getPositionAndTangent(
 {
   std::pair<glm::vec3, glm::vec3> ret;
 
-  for (int i = 1; i <= m_data.size(); i++)
-  {
-    if (t < i * (1 / m_data.size()))
-    {
-      float vt = 0.0f;
+  auto size = m_data.size();
+  auto oneSlashSize = 1.0f / size;
 
-      vt = 1 - (t * ((i - 1) * (1 / m_data.size()))) + (t * (i *
-                                                        (1 / m_data.size()))) ;
+  for (int i = 1; i <= size; i++)
+  {
+    if (t < i * oneSlashSize)
+    {
+      auto vt = 1 - (t * ((i - 1) * oneSlashSize)) + (t * (i *
+                                                      oneSlashSize)) ;
 
       return m_data[i - 1].getPositionAndTangent(vt);
     }
