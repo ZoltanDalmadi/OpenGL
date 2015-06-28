@@ -3,15 +3,17 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include <memory>
 #include <iostream>
 
 #include "GLFPSCamera.h"
 #include "GLModel.h"
 #include "GLPointLight.h"
-#include "Tower.h"
-#include "GLSphere.h"
 #include "GLPlane.h"
+#include "GLBoundingBox.h"
+#include "Tower.h"
+#include "Enemy.h"
 
 //constants
 const GLuint WIDTH = 1280;
@@ -23,6 +25,7 @@ GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, -5.0f));
 GLTools::GLPointLight pointLight(glm::vec3(0.0f, 10.0f, 0.0f));
 
 glm::vec3 target(5.0f, 5.0f, 5.0f);
+glm::vec3 targetDir(0.0f, 0.0f, 1.0f);
 
 bool keys[1024];
 
@@ -32,7 +35,8 @@ double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
 
 std::unique_ptr<Tower> tower;
-std::unique_ptr<GLTools::GLSphere> targetSphere;
+std::unique_ptr<Enemy> targetShip;
+std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -77,22 +81,64 @@ void moveCamera()
 void moveTarget()
 {
   if (keys[GLFW_KEY_UP])
+  {
     target += glm::vec3(0.0f, 0.2f, 0.0f);
+    targetShip->setPosition(target);
+  }
 
   if (keys[GLFW_KEY_DOWN])
+  {
     target -= glm::vec3(0.0f, 0.2f, 0.0f);
+    targetShip->setPosition(target);
+  }
 
   if (keys[GLFW_KEY_LEFT])
+  {
     target += glm::vec3(0.2f, 0.0f, 0.0f);
+    targetShip->setPosition(target);
+  }
 
   if (keys[GLFW_KEY_RIGHT])
+  {
     target -= glm::vec3(0.2f, 0.0f, 0.0f);
+    targetShip->setPosition(target);
+  }
 
   if (keys[GLFW_KEY_PAGE_UP])
+  {
     target += glm::vec3(0.0f, 0.0f, 0.2f);
+    targetShip->setPosition(target);
+  }
 
   if (keys[GLFW_KEY_PAGE_DOWN])
+  {
     target -= glm::vec3(0.0f, 0.0f, 0.2f);
+    targetShip->setPosition(target);
+  }
+
+  if (keys[GLFW_KEY_I])
+  {
+    targetDir = rotateX(targetDir, glm::radians(-1.0f));
+    targetShip->setDirection(targetDir);
+  }
+
+  if (keys[GLFW_KEY_K])
+  {
+    targetDir = rotateX(targetDir, glm::radians(1.0f));
+    targetShip->setDirection(targetDir);
+  }
+
+  if (keys[GLFW_KEY_J])
+  {
+    targetDir = rotateY(targetDir, glm::radians(-1.0f));
+    targetShip->setDirection(targetDir);
+  }
+
+  if (keys[GLFW_KEY_L])
+  {
+    targetDir = rotateY(targetDir, glm::radians(1.0f));
+    targetShip->setDirection(targetDir);
+  }
 }
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
@@ -156,21 +202,38 @@ void init()
   glViewport(0, 0, WIDTH, HEIGHT);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
+  glEnable(GL_POLYGON_OFFSET_FILL);
+  glPolygonOffset(1, 0);
+  glLineWidth(2);
   glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
+}
+
+std::pair<glm::vec3, glm::vec3> calcBoundingBox
+(const std::pair<glm::vec3, glm::vec3>& input)
+{
+  auto& minX = input.first.x;
+  auto& minY = input.first.y;
+  auto& minZ = input.first.z;
+  auto& maxX = input.second.x;
+  auto& maxY = input.second.y;
+  auto& maxZ = input.second.z;
+
+  auto center =
+    glm::vec3((minX + maxX) / 2.0f, (minY + maxY) / 2.0f, (minZ + maxZ) / 2.0f);
+  auto size = glm::vec3(maxX - minX, maxY - minY, maxZ - minZ);
+  return std::make_pair(center, size);
 }
 
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
-  glm::mat4 model;
-  model = translate(model, target);
-  auto normalMatrix = glm::mat3(model);
-  shaderProgram.setUniformValue("model", model);
-  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
-  targetSphere->draw(shaderProgram);
+  targetShip->draw(shaderProgram);
+  auto aabb = targetShip->calculate_AABB();
+  auto bounding = calcBoundingBox(aabb);
+  boundingBox->draw(shaderProgram, bounding.first, bounding.second);
 
-  model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
-                 0.0f, 0.0f));
-  normalMatrix = glm::mat3(model);
+  auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
+                      0.0f, 0.0f));
+  auto normalMatrix = glm::mat3(model);
   shaderProgram.setUniformValue("model", model);
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   floorPlane->draw(shaderProgram);
@@ -191,20 +254,23 @@ int main()
 
   auto base = std::make_unique<GLTools::GLModel>("models/turret_base.obj");
   auto cannon = std::make_unique<GLTools::GLModel>("models/turret_cannon.obj");
+  auto missile = std::make_unique<GLTools::GLModel>("models/missile.obj");
+  auto enemy = std::make_unique<GLTools::GLModel>("models/enemyship.obj");
 
   base->m_materials[0] = *defaultMaterial;
   cannon->m_materials[0] = *defaultMaterial;
 
-  targetSphere = std::make_unique<GLTools::GLSphere>(1.0f, 24, 24);
-  targetSphere->initialize();
-  targetSphere->m_material = defaultMaterial.get();
+  targetShip = std::make_unique<Enemy>(enemy.get(), target, targetDir);
+
+  boundingBox = std::make_unique<GLTools::GLBoundingBox>();
+  boundingBox->initialize();
 
   floorPlane = std::make_unique<GLTools::GLPlane>(100.0f, 100.0f);
   floorPlane->initialize();
   floorPlane->m_material = defaultMaterial.get();
 
-  tower = std::make_unique<Tower>(base.get(), cannon.get());
-  //tower->setPosition(glm::vec3(10.0f, 0.0f, 1.0f));
+  tower = std::make_unique<Tower>(base.get(), cannon.get(), missile.get());
+  tower->setPosition(glm::vec3(10.0f, 0.0f, 1.0f));
 
   pointLight.setEnergy(2.0f);
 

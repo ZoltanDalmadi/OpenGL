@@ -1,10 +1,13 @@
 #pragma once
-#include <GLModel.h>
+#include <list>
+#include "GLModel.h"
+#include "Missile.h"
 
 class Tower
 {
 public:
-  explicit Tower(GLTools::GLModel *base, GLTools::GLModel *cannon);
+  explicit Tower(GLTools::GLModel *base, GLTools::GLModel *cannon,
+                 GLTools::GLModel *missile);
   virtual ~Tower();
 
   const glm::vec3& getPosition() const;
@@ -13,31 +16,43 @@ public:
   const glm::vec3& getOffset() const;
   void setOffset(const glm::vec3& offset);
 
-  const float& getBaseAngle() const;
-  const float& getCannonAngle() const;
+  float getCannonLength() const;
+  void setCannonLength(float cannon_length);
 
   void setTarget(glm::vec3 *target);
   void clearTarget();
 
-  void shoot();
+  float getRange() const;
+  void setRange(float range);
 
+  float getDamage() const;
+  void setDamage(float damage);
+
+  void shoot(const glm::vec3& pos, const glm::vec3& dir);
   void draw(const GLTools::GLShaderProgram& shaderProgram, double time);
-  void update(double time);
 
 private:
+  void update(double time);
+
   GLTools::GLModel *m_base;
   GLTools::GLModel *m_cannon;
-  float m_baseAngle;
-  float m_cannonAngle;
+  GLTools::GLModel *m_missile;
+
+  std::list<Missile> m_missiles;
 
   glm::vec3 m_position;
   glm::vec3 *m_target;
   glm::vec3 m_offset = glm::vec3(0.33183f, 0.93760f, 0.0f);
+  float m_cannonLength = 2.9f;
+
+  float m_baseAngle;
+  float m_cannonAngle;
 
   glm::mat4 m_modelMatrix;
   glm::mat4 m_cannonMatrix;
 
-  float range;
+  float m_range = 10.0f;
+  float m_damage = 25.0f;
 
   double m_coolDown = 100.0f;
   double m_deltaTime = 0.0f;
