@@ -12,6 +12,7 @@
 #include "GLPlane.h"
 #include "GLPointLight.h"
 #include "GLCurves.h"
+#include "GLCurvePath.h"
 
 //A görbe kipróbálása, illettve tárgyak görbe mentén lévõ mozgatásának kipróbálására készült project
 
@@ -42,6 +43,8 @@ std::array<glm::vec3, 2> temp1 = { glm::vec3(50.0f, 30.0f, -50.0f),
                                    glm::vec3(100.0f, 0.0f, 100.0f)
                                  };
 GLTools::GLCurves curve1(curve, temp1);
+
+GLTools::GLCurvePath path;
 //std::unique_ptr<GLTools::GLSphere> targetSphere;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
 glm::mat4 projection;
@@ -126,6 +129,8 @@ void init()
   glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
   curve.initialize();
   curve1.initialize();
+  path.m_data.push_back(curve);
+  path.m_data.push_back(curve1);
 }
 
 void setupShaders(GLShaderProgram& shaderProgram)
@@ -198,6 +203,7 @@ int main()
   projection = glm::perspective(glm::radians(50.0f), (float)WIDTH / HEIGHT, 0.01f,
                                 500.0f);
 
+  float t = 0.0f;
 
   while (!glfwWindowShouldClose(window))
   {
@@ -217,8 +223,10 @@ int main()
     shaderProgram->setUniformValue("MVP",
                                    projection * camera.m_viewMatrix);
 
-    curve.render();
-    curve1.render();
+
+    path.draw();
+    //std::pair<glm::vec3, glm::vec3> asd = ;
+    //std::cout <<
 
     glfwSwapBuffers(window);
   }
