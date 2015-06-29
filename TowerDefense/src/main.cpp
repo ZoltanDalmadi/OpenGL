@@ -418,7 +418,7 @@ int main()
     std::pair<glm::vec3, glm::vec3> temp = path.getPositionAndTangent(t);
     targetShip->setPosition(temp.first);
     target = temp.first;
-    auto targetDir1 = rotateX(glm::normalize(temp.second), glm::radians(-1.0f));
+    auto targetDir1 = glm::normalize(temp.second);
     auto targetDir2 = glm::vec3(-targetDir1.x, targetDir1.y, -targetDir1.z);
     targetShip->setDirection(targetDir2);
 

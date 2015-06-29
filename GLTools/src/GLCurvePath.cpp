@@ -24,8 +24,8 @@ std::pair<glm::vec3, glm::vec3> GLTools::GLCurvePath::getPositionAndTangent(
     {
       auto vt = (t - ((i - 1) * oneSlashSize)) * size;
 
-      std::cout << vt << std::endl;
-      return m_data[i - 1].getPositionAndTangent(vt);
+      ret = m_data[i - 1].getPositionAndTangent(vt);
+      break;
     }
   }
 
