@@ -1,4 +1,4 @@
-﻿#version 330 core
+#version 330 core
 layout (lines_adjacency) in;
 layout (line_strip, max_vertices = 100) out;
 
