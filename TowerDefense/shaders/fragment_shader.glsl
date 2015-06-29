@@ -8,6 +8,7 @@ out vec4 fragColor;
 
 uniform vec3 camPos;
 uniform bool lines;
+uniform bool transparent;
 
 struct Material
 {
@@ -72,6 +73,11 @@ void main()
   vec3 norm = normalize(normal);
   vec3 camDir = normalize(camPos - fragPos);
   vec3 color = vec3(0.0f);  
+  float alpha = 1.0f;
+  
+  if(transparent){
+	alpha = 0.3f;
+  }
   
   if(lines)
   {
@@ -82,5 +88,5 @@ void main()
     color = calcPointLight(pointLight, norm, fragPos, camDir);
   }
   
-  fragColor = vec4(color, 1.0);
+  fragColor = vec4(color, alpha);
 }

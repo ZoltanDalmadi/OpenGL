@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/intersect.hpp>
 #include <memory>
 #include <iostream>
 
@@ -76,6 +77,12 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     PlaySound("explosion.WAV", NULL, SND_ASYNC);
     timeToExplode = glfwGetTime();
   }
+
+  if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS)
+  {
+
+  }
+
 }
 
 void moveCamera()
@@ -280,17 +287,19 @@ void init()
   glEnable(GL_DEPTH_TEST);
   //glEnable(GL_CULL_FACE);
   glEnable(GL_POLYGON_OFFSET_FILL);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glPolygonOffset(1, 0);
   glLineWidth(2);
   glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
 
   std::array<glm::vec3, 4> temp = { glm::vec3(0.0f, 0.0f, 0.0f),
                                     glm::vec3(10.0f, 0.0f, 30.0f),
-                                    glm::vec3(17.0f, 20.0f, -34.0f),
+                                    glm::vec3(17.0f, 0.0f, -34.0f),
                                     glm::vec3(40.0f, 0.0f, 40.0f)
                                   };
   GLTools::GLCurves curve(temp);
-  std::array<glm::vec3, 2> temp1 = { glm::vec3(45.0f, 20.0f, -45.0f),
+  std::array<glm::vec3, 2> temp1 = { glm::vec3(45.0f, 0.0f, -45.0f),
                                      glm::vec3(50.0f, 0.0f, 50.0f)
                                    };
   GLTools::GLCurves curve1(curve, temp1);
@@ -330,7 +339,16 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
   gridPlane->drawLines();
   shaderProgram.setUniformValue("lines", false);
 
+  float d = 0.0f;
+  bool intersect = glm::intersectRayPlane(camera.m_position, -camera.m_front,
+                                          glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), d);
+
+  auto temp = -camera.m_front * d;
+  temp.y = 0.0f;
+  tower->setPosition(gridPlane->getCenter(temp));
+  shaderProgram.setUniformValue("transparent", true);
   tower->draw(shaderProgram, glfwGetTime());
+  shaderProgram.setUniformValue("transparent", false);
 }
 
 int main()
@@ -367,7 +385,7 @@ int main()
   floorPlane->initialize();
   floorPlane->m_material = defaultMaterial.get();
 
-  gridPlane = std::make_unique<GridPlane>(100.0f, 100.0f, 2.0f);
+  gridPlane = std::make_unique<GridPlane>(100.0f, 100.0f, 4.0f);
   gridPlane->initialize();
   gridPlane->setMaterial(defaultMaterial.get());
 
@@ -375,7 +393,7 @@ int main()
   tower = std::make_unique<Tower>(base.get(), cannon.get(), missile.get());
   glm::vec3 temp = gridPlane->getCenter(glm::vec3(-25.0f, 0.0f, 32.0f));
   std::cout << temp.x << " " << temp.z << std::endl;
-  tower->setPosition(gridPlane->getCenter(glm::vec3(0.0f, 0.0f, 0.0f)));
+  tower->setPosition(gridPlane->getCenter(glm::vec3(10.0f, 0.0f, 10.0f)));
 
   pointLight.setEnergy(2.0f);
 
@@ -389,6 +407,8 @@ int main()
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
+    auto asd = glm::normalize(camera.m_position - camera.m_front);
+    //std::cout << asd.x << " " << asd.y << " " << asd.z << std::endl;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     moveCamera();

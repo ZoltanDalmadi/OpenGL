@@ -91,7 +91,7 @@ glm::vec3 GridPlane::getCenter(glm::vec3 position)
 {
   glm::vec3 ret = position;
 
-  for (auto i : m_grid)
+  for (auto& i : m_grid)
   {
     if (i.first.x <= position.x && i.second.x >= position.x)
     {
