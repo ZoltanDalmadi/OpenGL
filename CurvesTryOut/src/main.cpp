@@ -137,19 +137,19 @@ void setupShaders(GLShaderProgram& shaderProgram)
 {
   auto vertexShader = std::make_shared<GLShader>
                       (GLShader::shaderType::VERTEX_SHADER);
-  vertexShader->loadSource("shaders/vertex_shader.glsl");
+  vertexShader->loadSource("shaders/curves_vertex_shader.glsl");
   vertexShader->compile();
   std::cout << vertexShader->log() << std::endl;
 
   auto fragmentShader = std::make_shared<GLShader>
                         (GLShader::shaderType::FRAGMENT_SHADER);
-  fragmentShader->loadSource("shaders/fragment_shader.glsl");
+  fragmentShader->loadSource("shaders/curves_fragment_shader.glsl");
   fragmentShader->compile();
   std::cout << fragmentShader->log() << std::endl;
 
   auto geometryShader = std::make_shared<GLShader>
                         (GLShader::shaderType::GEOMETRY_SHADER);
-  geometryShader->loadSource("shaders/geometry_shader.glsl");
+  geometryShader->loadSource("shaders/curves_geometry_shader.glsl");
   geometryShader->compile();
   std::cout << geometryShader->log() << std::endl;
 
@@ -205,6 +205,13 @@ int main()
 
   float t = 0.0f;
 
+
+
+  std::pair<glm::vec3, glm::vec3> asd1 = path.getPositionAndTangent(1.0f);
+  std::cout << t << ": " << asd1.first.x << " " << asd1.first.y << " " <<
+            asd1.first.z << " :: " << asd1.second.x << " " << asd1.second.y << " " <<
+            asd1.second.z << "\n";
+
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
@@ -225,10 +232,10 @@ int main()
 
 
     path.draw();
-    std::pair<glm::vec3, glm::vec3> asd = path.getPositionAndTangent(t);
-    std::cout << t << ":::::: " << asd.first.x << asd.first.y << asd.first.z <<
-              " :: " << asd.second.x
-              << asd.second.y << asd.second.z << "\n";
+    //std::pair<glm::vec3, glm::vec3> asd = path.getPositionAndTangent(t);
+    /*std::cout << t << ": " << asd.first.x << " " << asd.first.y << " " <<
+              asd.first.z << " :: " << asd.second.x << " " << asd.second.y << " " <<
+              asd.second.z << "\n";*/
     t += 0.001;
 
     glfwSwapBuffers(window);

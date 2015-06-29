@@ -12,6 +12,8 @@
 #include "GLPointLight.h"
 #include "GLPlane.h"
 #include "GLBoundingBox.h"
+#include "GLCurves.h"
+#include "GLCurvePath.h"
 #include "Tower.h"
 #include "Enemy.h"
 
@@ -33,11 +35,14 @@ bool keys[1024];
 double lastX = WIDTH / 2.0f;
 double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
+bool enabled = false;
 
 std::unique_ptr<Tower> tower;
 std::unique_ptr<Enemy> targetShip;
 std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
+
+GLTools::GLCurvePath path;
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
@@ -55,6 +60,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 
   if (key == GLFW_KEY_V && action == GLFW_PRESS)
     tower->setTarget(&target);
+
+  if (key == GLFW_KEY_B && action == GLFW_PRESS)
+    enabled = true;
 }
 
 void moveCamera()
@@ -179,6 +187,34 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram)
   std::cout << shaderProgram.log() << std::endl;
 }
 
+void setupShaders1(GLTools::GLShaderProgram& shaderProgram)
+{
+  auto vertexShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/curves_vertex_shader.glsl");
+  std::cout << vertexShader->log() << std::endl;
+
+  auto fragmentShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/curves_fragment_shader.glsl");
+  std::cout << fragmentShader->log() << std::endl;
+
+  auto geometryShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::GEOMETRY_SHADER,
+     "shaders/curves_geometry_shader.glsl");
+  std::cout << geometryShader->log() << std::endl;
+
+  shaderProgram.create();
+  shaderProgram.addShader(vertexShader);
+  shaderProgram.addShader(geometryShader);
+  shaderProgram.addShader(fragmentShader);
+  shaderProgram.link();
+  std::cout << shaderProgram.log() << std::endl;
+}
+
 void init()
 {
   glfwInit();
@@ -206,6 +242,21 @@ void init()
   glPolygonOffset(1, 0);
   glLineWidth(2);
   glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
+
+  std::array<glm::vec3, 4> temp = { glm::vec3(0.0f, 0.0f, 0.0f),
+                                    glm::vec3(10.0f, 0.0f, 30.0f),
+                                    glm::vec3(17.0f, 20.0f, -34.0f),
+                                    glm::vec3(40.0f, 0.0f, 40.0f)
+                                  };
+  GLTools::GLCurves curve(temp);
+  std::array<glm::vec3, 2> temp1 = { glm::vec3(45.0f, 20.0f, -45.0f),
+                                     glm::vec3(50.0f, 0.0f, 50.0f)
+                                   };
+  GLTools::GLCurves curve1(curve, temp1);
+  curve.initialize();
+  curve1.initialize();
+  path.m_data.push_back(curve);
+  path.m_data.push_back(curve1);
 }
 
 std::pair<glm::vec3, glm::vec3> calcBoundingBox
@@ -245,6 +296,9 @@ int main()
 {
   init();
 
+  auto shaderProgram1 = std::make_unique<GLTools::GLShaderProgram>();
+  setupShaders1(*shaderProgram1);
+
   auto shaderProgram = std::make_unique<GLTools::GLShaderProgram>();
   setupShaders(*shaderProgram);
 
@@ -275,7 +329,9 @@ int main()
   pointLight.setEnergy(2.0f);
 
   auto projection =
-    glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
+    glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 500.0f);
+
+  auto t = 0.0f;
 
   while (!glfwWindowShouldClose(window))
   {
@@ -285,12 +341,35 @@ int main()
     moveCamera();
     moveTarget();
 
+    shaderProgram->use();
     shaderProgram->setUniformValue("viewProjection",
                                    projection * camera.m_viewMatrix);
     shaderProgram->setUniformValue("camPos", camera.m_position);
     pointLight.setShaderUniform(*shaderProgram);
 
     renderScene(*shaderProgram);
+
+    shaderProgram1->use();
+    shaderProgram1->setUniformValue("MVP", projection * camera.m_viewMatrix);
+
+    path.draw();
+    std::pair<glm::vec3, glm::vec3> temp = path.getPositionAndTangent(t);
+    targetShip->setPosition(temp.first);
+    target = temp.first;
+    auto targetDir1 = rotateX(glm::normalize(temp.second), glm::radians(-1.0f));
+    auto targetDir2 = glm::vec3(-targetDir1.x, targetDir1.y, -targetDir1.z);
+    targetShip->setDirection(targetDir2);
+
+    if (t < 1.0f)
+    {
+      if (enabled)
+        t += 0.001f;
+    }
+    else
+    {
+      t = 1.0f;
+    }
+
 
     glfwSwapBuffers(window);
   }
