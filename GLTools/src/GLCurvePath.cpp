@@ -36,6 +36,6 @@ void GLTools::GLCurvePath::draw()
 {
   for (auto i : m_data)
   {
-    i.render();
+    i.draw();
   }
 }

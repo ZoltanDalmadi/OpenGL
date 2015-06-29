@@ -3,6 +3,7 @@
 #include <glm\glm.hpp>
 #include "GLVertexArrayObject.h"
 #include "GLBufferObject.h"
+#include "GLShaderProgram.h"
 
 namespace GLTools
 {
@@ -39,7 +40,7 @@ public:
 
   void setT(double);
   double getT();
-  void render();
+  void draw();
 
   void drawPoints();
 
