@@ -100,3 +100,8 @@ void Enemy::update()
   m_modelMatrix = translate(glm::mat4(), m_position);
   m_modelMatrix *= orientation(m_direction, Z_AXIS);
 }
+
+glm::mat4 Enemy::getModelMatrx()
+{
+  return m_modelMatrix;
+}

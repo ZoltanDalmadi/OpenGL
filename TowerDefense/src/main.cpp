@@ -43,6 +43,9 @@ std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
 
 GLTools::GLCurvePath path;
+bool exploding = false;
+float timeToExplode = 0.0f;
+
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
@@ -63,6 +66,12 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 
   if (key == GLFW_KEY_B && action == GLFW_PRESS)
     enabled = true;
+
+  if (key == GLFW_KEY_N && action == GLFW_PRESS)
+  {
+    exploding = true;
+    timeToExplode = glfwGetTime();
+  }
 }
 
 void moveCamera()
@@ -215,6 +224,34 @@ void setupShaders1(GLTools::GLShaderProgram& shaderProgram)
   std::cout << shaderProgram.log() << std::endl;
 }
 
+void setupShaders2(GLTools::GLShaderProgram& shaderProgram)
+{
+  auto vertexShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/exploding_vertex_shader.glsl");
+  std::cout << vertexShader->log() << std::endl;
+
+  auto fragmentShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/exploding_fragment_shader.glsl");
+  std::cout << fragmentShader->log() << std::endl;
+
+  auto geometryShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::GEOMETRY_SHADER,
+     "shaders/exploding_geometry_shader.glsl");
+  std::cout << geometryShader->log() << std::endl;
+
+  shaderProgram.create();
+  shaderProgram.addShader(vertexShader);
+  shaderProgram.addShader(geometryShader);
+  shaderProgram.addShader(fragmentShader);
+  shaderProgram.link();
+  std::cout << shaderProgram.log() << std::endl;
+}
+
 void init()
 {
   glfwInit();
@@ -277,10 +314,6 @@ std::pair<glm::vec3, glm::vec3> calcBoundingBox
 
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
-  targetShip->draw(shaderProgram);
-  auto aabb = targetShip->calculate_AABB();
-  auto bounding = calcBoundingBox(aabb);
-  boundingBox->draw(shaderProgram, bounding.first, bounding.second);
 
   auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
                       0.0f, 0.0f));
@@ -295,6 +328,9 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 int main()
 {
   init();
+
+  auto shaderProgram2 = std::make_unique<GLTools::GLShaderProgram>();
+  setupShaders2(*shaderProgram2);
 
   auto shaderProgram1 = std::make_unique<GLTools::GLShaderProgram>();
   setupShaders1(*shaderProgram1);
@@ -333,6 +369,7 @@ int main()
 
   auto t = 0.0f;
 
+
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
@@ -348,6 +385,27 @@ int main()
     pointLight.setShaderUniform(*shaderProgram);
 
     renderScene(*shaderProgram);
+
+    if (!exploding)
+    {
+      targetShip->draw(*shaderProgram);
+      auto aabb = targetShip->calculate_AABB();
+      auto bounding = calcBoundingBox(aabb);
+      boundingBox->draw(*shaderProgram, bounding.first, bounding.second);
+    }
+    else
+    {
+      if (glfwGetTime() - timeToExplode < 2)
+      {
+        shaderProgram2->use();
+
+        shaderProgram2->setUniformValue("projection", projection);
+        shaderProgram2->setUniformValue("view", camera.m_viewMatrix);
+        shaderProgram2->setUniformValue("model", targetShip->getModelMatrx());
+        shaderProgram2->setUniformValue("time", (float)glfwGetTime());
+        targetShip->draw(*shaderProgram2);
+      }
+    }
 
     shaderProgram1->use();
     shaderProgram1->setUniformValue("MVP", projection * camera.m_viewMatrix);
@@ -369,6 +427,8 @@ int main()
     {
       t = 1.0f;
     }
+
+
 
 
     glfwSwapBuffers(window);

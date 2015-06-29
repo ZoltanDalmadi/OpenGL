@@ -24,6 +24,8 @@ public:
 
   std::pair<glm::vec3, glm::vec3> calculate_AABB();
 
+  glm::mat4 getModelMatrx();
+
 private:
   void update();
   GLTools::GLModel *m_model;
