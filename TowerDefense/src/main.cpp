@@ -40,15 +40,22 @@ double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
 bool enabled = false;
 
-std::unique_ptr<Tower> tower;
+auto maxTower = 5;
+auto actualTower = 0;
+std::vector<Tower> towers;
 std::unique_ptr<Enemy> targetShip;
 std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
 std::unique_ptr<GridPlane> gridPlane;
+std::shared_ptr<GLTools::GLModel> base;
+std::shared_ptr<GLTools::GLModel> cannon;
+std::shared_ptr<GLTools::GLModel> missile;
+
 
 GLTools::GLCurvePath path;
 bool exploding = false;
 float timeToExplode = 0.0f;
+
 
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -63,10 +70,20 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     glfwSetWindowShouldClose(window, GL_TRUE);
 
   if (key == GLFW_KEY_C && action == GLFW_PRESS)
-    tower->clearTarget();
+  {
+    for (size_t i = 0; i < towers.size(); i++)
+    {
+      towers[i].clearTarget();
+    }
+  }
 
   if (key == GLFW_KEY_V && action == GLFW_PRESS)
-    tower->setTarget(&target);
+  {
+    for (size_t i = 0; i < towers.size(); i++)
+    {
+      towers[i].setTarget(&target);
+    }
+  }
 
   if (key == GLFW_KEY_B && action == GLFW_PRESS)
     enabled = true;
@@ -78,9 +95,13 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     timeToExplode = glfwGetTime();
   }
 
-  if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS)
+  if (key == GLFW_KEY_M && action == GLFW_PRESS
+      && actualTower < maxTower)
   {
+    if (actualTower + 1 != maxTower)
+      towers.push_back(Tower(base.get(), cannon.get(), missile.get()));
 
+    actualTower++;
   }
 
 }
@@ -184,6 +205,16 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
   lastY = ypos;
   camera.rotate(static_cast<float>(xoffset), static_cast<float>(yoffset));
 }
+/*
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mod)
+{
+  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE
+      && actualTower < maxTower)
+  {
+    towers.emplace_back(base.get(), cannon.get(), missile.get());
+    actualTower++;
+  }
+} */
 
 // SHADERS --------------------------------------------------------------------
 void setupShaders(GLTools::GLShaderProgram& shaderProgram)
@@ -278,6 +309,7 @@ void init()
 
   glfwSetKeyCallback(window, key_callback);
   glfwSetCursorPosCallback(window, mouse_callback);
+  //glfwSetMouseButtonCallback(window, mouse_button_callback);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   glewExperimental = GL_TRUE;
@@ -345,10 +377,23 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 
   auto temp = -camera.m_front * d;
   temp.y = 0.0f;
-  tower->setPosition(gridPlane->getCenter(temp));
-  shaderProgram.setUniformValue("transparent", true);
-  tower->draw(shaderProgram, glfwGetTime());
-  shaderProgram.setUniformValue("transparent", false);
+
+  auto towerSize = towers.size();
+
+  if (actualTower < maxTower)
+  {
+    towers[actualTower].setPosition(gridPlane->getCenter(temp));
+    shaderProgram.setUniformValue("transparent", true);
+    towers[actualTower].draw(shaderProgram, glfwGetTime());
+    shaderProgram.setUniformValue("transparent", false);
+    towerSize -= 1;
+  }
+
+  for (size_t i = 0; i < towerSize; i++)
+  {
+    towers[i].draw(shaderProgram, glfwGetTime());
+  }
+
 }
 
 int main()
@@ -368,10 +413,11 @@ int main()
 
   auto defaultMaterial = std::make_unique<GLTools::GLMaterial>();
 
-  auto base = std::make_unique<GLTools::GLModel>("models/turret_base.obj");
-  auto cannon = std::make_unique<GLTools::GLModel>("models/turret_cannon.obj");
-  auto missile = std::make_unique<GLTools::GLModel>("models/missile.obj");
   auto enemy = std::make_unique<GLTools::GLModel>("models/enemyship.obj");
+
+  base = std::make_shared<GLTools::GLModel>("models/turret_base.obj");
+  cannon = std::make_shared<GLTools::GLModel>("models/turret_cannon.obj");
+  missile = std::make_shared<GLTools::GLModel>("models/missile.obj");
 
   base->m_materials[0] = *defaultMaterial;
   cannon->m_materials[0] = *defaultMaterial;
@@ -389,11 +435,7 @@ int main()
   gridPlane->initialize();
   gridPlane->setMaterial(defaultMaterial.get());
 
-
-  tower = std::make_unique<Tower>(base.get(), cannon.get(), missile.get());
-  glm::vec3 temp = gridPlane->getCenter(glm::vec3(-25.0f, 0.0f, 32.0f));
-  std::cout << temp.x << " " << temp.z << std::endl;
-  tower->setPosition(gridPlane->getCenter(glm::vec3(10.0f, 0.0f, 10.0f)));
+  towers.push_back(Tower(base.get(), cannon.get(), missile.get()));
 
   pointLight.setEnergy(2.0f);
 
@@ -407,8 +449,6 @@ int main()
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
-    auto asd = glm::normalize(camera.m_position - camera.m_front);
-    //std::cout << asd.x << " " << asd.y << " " << asd.z << std::endl;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     moveCamera();
@@ -463,9 +503,6 @@ int main()
     {
       t = 1.0f;
     }
-
-
-
 
     glfwSwapBuffers(window);
   }
