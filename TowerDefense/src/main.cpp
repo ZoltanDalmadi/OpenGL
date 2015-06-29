@@ -371,6 +371,7 @@ int main()
 
   auto t = 0.0f;
 
+  auto explodingSize = 0.0f;
 
   while (!glfwWindowShouldClose(window))
   {
@@ -400,11 +401,11 @@ int main()
       if (glfwGetTime() - timeToExplode < 2)
       {
         shaderProgram2->use();
-
+        explodingSize += 0.2f;
         shaderProgram2->setUniformValue("projection", projection);
         shaderProgram2->setUniformValue("view", camera.m_viewMatrix);
         shaderProgram2->setUniformValue("model", targetShip->getModelMatrx());
-        shaderProgram2->setUniformValue("time", (float)glfwGetTime());
+        shaderProgram2->setUniformValue("time", explodingSize);
         targetShip->draw(*shaderProgram2);
       }
     }
