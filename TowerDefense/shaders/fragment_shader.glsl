@@ -7,6 +7,7 @@ in vec2 texCoords;
 out vec4 fragColor;
 
 uniform vec3 camPos;
+uniform bool lines;
 
 struct Material
 {
@@ -70,6 +71,16 @@ void main()
 {
   vec3 norm = normalize(normal);
   vec3 camDir = normalize(camPos - fragPos);
-
-  fragColor = vec4(calcPointLight(pointLight, norm, fragPos, camDir), 1.0);
+  vec3 color = vec3(0.0f);  
+  
+  if(lines)
+  {
+    color.b = 1.0f; 
+  }
+  else
+  {
+    color = calcPointLight(pointLight, norm, fragPos, camDir);
+  }
+  
+  fragColor = vec4(color, 1.0);
 }

@@ -278,7 +278,7 @@ void init()
 
   glViewport(0, 0, WIDTH, HEIGHT);
   glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
+  //glEnable(GL_CULL_FACE);
   glEnable(GL_POLYGON_OFFSET_FILL);
   glPolygonOffset(1, 0);
   glLineWidth(2);
@@ -319,12 +319,16 @@ std::pair<glm::vec3, glm::vec3> calcBoundingBox
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
 
+  shaderProgram.use();
   auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
                       0.0f, 0.0f));
   auto normalMatrix = glm::mat3(model);
   shaderProgram.setUniformValue("model", model);
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
-  floorPlane->draw(shaderProgram);
+  gridPlane->draw();
+  shaderProgram.setUniformValue("lines", true);
+  gridPlane->drawLines();
+  shaderProgram.setUniformValue("lines", false);
 
   tower->draw(shaderProgram, glfwGetTime());
 }
@@ -363,12 +367,15 @@ int main()
   floorPlane->initialize();
   floorPlane->m_material = defaultMaterial.get();
 
-  gridPlane = std::make_unique<GridPlane>(100.0f, 100.0f, 10.0f);
+  gridPlane = std::make_unique<GridPlane>(100.0f, 100.0f, 2.0f);
   gridPlane->initialize();
+  gridPlane->setMaterial(defaultMaterial.get());
 
 
   tower = std::make_unique<Tower>(base.get(), cannon.get(), missile.get());
-  tower->setPosition(glm::vec3(10.0f, 0.0f, 1.0f));
+  glm::vec3 temp = gridPlane->getCenter(glm::vec3(-25.0f, 0.0f, 32.0f));
+  std::cout << temp.x << " " << temp.z << std::endl;
+  tower->setPosition(gridPlane->getCenter(glm::vec3(0.0f, 0.0f, 0.0f)));
 
   pointLight.setEnergy(2.0f);
 
@@ -425,8 +432,7 @@ int main()
     targetShip->setPosition(temp.first);
     target = temp.first;
     auto targetDir1 = glm::normalize(temp.second);
-    auto targetDir2 = glm::vec3(-targetDir1.x, targetDir1.y, -targetDir1.z);
-    targetShip->setDirection(targetDir2);
+    targetShip->setDirection(targetDir1);
 
     if (t < 1.0f)
     {
