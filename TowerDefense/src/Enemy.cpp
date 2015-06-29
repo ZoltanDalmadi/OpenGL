@@ -8,7 +8,7 @@ Enemy::Enemy(GLTools::GLModel *model, const glm::vec3& pos,
              const glm::vec3& dir)
   : m_model(model),
     m_position(pos),
-    m_direction(dir.x, -dir.y, dir.z),
+    m_direction(normalize(dir)),
     m_modelMatrix(glm::mat4())
 {}
 
@@ -32,7 +32,7 @@ const glm::vec3& Enemy::getDirection() const
 
 void Enemy::setDirection(const glm::vec3& dir)
 {
-  m_direction = glm::vec3(dir.x, -dir.y, dir.z);
+  m_direction = normalize(dir);
 }
 
 void Enemy::damage(float damage)
@@ -98,5 +98,5 @@ void Enemy::update()
 {
   m_progress += m_velocity;
   m_modelMatrix = translate(glm::mat4(), m_position);
-  m_modelMatrix *= orientation(m_direction, Z_AXIS);
+  m_modelMatrix *= orientation(m_direction, -Z_AXIS);
 }
