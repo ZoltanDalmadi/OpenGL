@@ -1,5 +1,5 @@
 #include "GLCurvePath.h"
-
+#include <iostream>
 
 GLTools::GLCurvePath::GLCurvePath()
 {
@@ -20,11 +20,11 @@ std::pair<glm::vec3, glm::vec3> GLTools::GLCurvePath::getPositionAndTangent(
 
   for (int i = 1; i <= size; i++)
   {
-    if (t < i * oneSlashSize)
+    if (t <= i * oneSlashSize)
     {
-      auto vt = 1 - (t * ((i - 1) * oneSlashSize)) + (t * (i *
-                                                      oneSlashSize)) ;
+      auto vt = (t - ((i - 1) * oneSlashSize)) * size;
 
+      std::cout << vt << std::endl;
       return m_data[i - 1].getPositionAndTangent(vt);
     }
   }
