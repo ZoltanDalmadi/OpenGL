@@ -29,7 +29,7 @@ GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, -5.0f));
 GLTools::GLPointLight pointLight(glm::vec3(0.0f, 10.0f, 0.0f));
 
 glm::vec3 target(5.0f, 5.0f, 5.0f);
-glm::vec3 targetDir(0.0f, 0.0f, 1.0f);
+glm::vec3 targetDir(0.01f, 0.0f, 1.0f);
 
 bool keys[1024];
 

@@ -100,7 +100,7 @@ double GLTools::GLCurves::getT()
   return this->t;
 }
 
-void GLTools::GLCurves::render()
+void GLTools::GLCurves::draw()
 {
   m_VAO.bind();
   glDrawArrays(GL_LINES_ADJACENCY, 0, m_controlPoints.size());
