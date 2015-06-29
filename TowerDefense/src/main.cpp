@@ -16,6 +16,7 @@
 #include "GLCurvePath.h"
 #include "Tower.h"
 #include "Enemy.h"
+#include <Windows.h>
 
 //constants
 const GLuint WIDTH = 1280;
@@ -70,6 +71,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if (key == GLFW_KEY_N && action == GLFW_PRESS)
   {
     exploding = true;
+    PlaySound("explosion.WAV", NULL, SND_ASYNC);
     timeToExplode = glfwGetTime();
   }
 }
@@ -406,6 +408,7 @@ int main()
         targetShip->draw(*shaderProgram2);
       }
     }
+
 
     shaderProgram1->use();
     shaderProgram1->setUniformValue("MVP", projection * camera.m_viewMatrix);
