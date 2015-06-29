@@ -17,6 +17,7 @@
 #include "Tower.h"
 #include "Enemy.h"
 #include <Windows.h>
+#include "GridPlane.h"
 
 //constants
 const GLuint WIDTH = 1280;
@@ -42,6 +43,7 @@ std::unique_ptr<Tower> tower;
 std::unique_ptr<Enemy> targetShip;
 std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
+std::unique_ptr<GridPlane> gridPlane;
 
 GLTools::GLCurvePath path;
 bool exploding = false;
@@ -360,6 +362,10 @@ int main()
   floorPlane = std::make_unique<GLTools::GLPlane>(100.0f, 100.0f);
   floorPlane->initialize();
   floorPlane->m_material = defaultMaterial.get();
+
+  gridPlane = std::make_unique<GridPlane>(100.0f, 100.0f, 10.0f);
+  gridPlane->initialize();
+
 
   tower = std::make_unique<Tower>(base.get(), cannon.get(), missile.get());
   tower->setPosition(glm::vec3(10.0f, 0.0f, 1.0f));
