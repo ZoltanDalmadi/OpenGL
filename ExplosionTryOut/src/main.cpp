@@ -11,6 +11,7 @@
 #include "GLModel.h"
 #include "GLPointLight.h"
 #include "GLPlane.h"
+#include <Windows.h>
 
 std::unique_ptr<GLTools::GLModel> enemy;
 float time = -1.57;
@@ -50,6 +51,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 	{
 		explosion = true;
 		time = glfwGetTime();
+		PlaySound("explosion.WAV", NULL, SND_ASYNC);
 	}
 }
 
