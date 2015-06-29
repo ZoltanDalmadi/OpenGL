@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/norm.hpp>
 #include <memory>
 #include <iostream>
 
@@ -27,6 +28,8 @@ GLTools::GLPointLight pointLight(glm::vec3(0.0f, 10.0f, 0.0f));
 glm::vec3 target(5.0f, 5.0f, 5.0f);
 glm::vec3 targetDir(0.01f, 0.0f, 1.0f);
 
+std::list<Tower> towers;
+
 bool keys[1024];
 
 // for mouse
@@ -34,10 +37,26 @@ double lastX = WIDTH / 2.0f;
 double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
 
-std::unique_ptr<Tower> tower;
+//std::unique_ptr<Tower> tower;
 std::unique_ptr<Enemy> targetShip;
 std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
+
+void setTowerTargets(glm::vec3& target)
+{
+  for (auto& tower : towers)
+  {
+    tower.setTarget(&target);
+  }
+}
+
+void clearTowerTargets()
+{
+  for (auto& tower : towers)
+  {
+    tower.clearTarget();
+  }
+}
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
@@ -51,10 +70,10 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     glfwSetWindowShouldClose(window, GL_TRUE);
 
   if (key == GLFW_KEY_C && action == GLFW_PRESS)
-    tower->clearTarget();
+    clearTowerTargets();
 
   if (key == GLFW_KEY_V && action == GLFW_PRESS)
-    tower->setTarget(&target);
+    setTowerTargets(target);
 }
 
 void moveCamera()
@@ -224,12 +243,63 @@ std::pair<glm::vec3, glm::vec3> calcBoundingBox
   return std::make_pair(center, size);
 }
 
+void cleanUpMissiles()
+{
+  for (auto& tower : towers)
+  {
+    auto& missiles = tower.m_missiles;
+
+    for (auto it = missiles.begin(); it != missiles.end();)
+    {
+      if (targetShip->isColliding(it->getPosition()))
+      {
+        it = missiles.erase(it);
+        targetShip->damage(tower.getDamage());
+        std::cout << "Hit! Damage: " << tower.getDamage() <<
+                  " Ship HP: " << targetShip->m_hitPoints << std::endl;
+
+        if (targetShip->isDestroyed())
+        {
+          clearTowerTargets();
+          targetShip.reset();
+        }
+      }
+      else if (length2(it->getPosition()) > 25.0f * 25.0f)
+      {
+        it = missiles.erase(it);
+      }
+      else
+      {
+        ++it;
+      }
+    }
+  }
+}
+
+//void checkHits()
+//{
+//  for (auto& tower : towers)
+//  {
+//    auto& missiles = tower.getMissiles();
+//
+//    for (auto& missile : missiles)
+//    {
+//      if (targetShip->isColliding(missile.getPosition(), 1.0f))
+//      {
+//        std::cout << "Hit!" << std::endl;
+//      }
+//    }
+//  }
+//}
+
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
-  targetShip->draw(shaderProgram);
-  auto aabb = targetShip->calculate_AABB();
-  auto bounding = calcBoundingBox(aabb);
-  boundingBox->draw(shaderProgram, bounding.first, bounding.second);
+  if (targetShip)
+    targetShip->draw(shaderProgram);
+
+  //auto aabb = targetShip->calculate_AABB();
+  //auto bounding = calcBoundingBox(aabb);
+  //boundingBox->draw(shaderProgram, bounding.first, bounding.second);
 
   auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
                       0.0f, 0.0f));
@@ -238,7 +308,8 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   floorPlane->draw(shaderProgram);
 
-  tower->draw(shaderProgram, glfwGetTime());
+  for (auto& tower : towers)
+    tower.draw(shaderProgram, glfwGetTime());
 }
 
 int main()
@@ -269,8 +340,11 @@ int main()
   floorPlane->initialize();
   floorPlane->m_material = defaultMaterial.get();
 
-  tower = std::make_unique<Tower>(base.get(), cannon.get(), missile.get());
-  tower->setPosition(glm::vec3(10.0f, 0.0f, 1.0f));
+  towers.emplace_back(base.get(), cannon.get(), missile.get());
+  towers.back().setPosition(glm::vec3(10.0f, 0.0f, 1.0f));
+
+  towers.emplace_back(base.get(), cannon.get(), missile.get());
+  towers.back().setPosition(glm::vec3(-10.0f, 0.0f, 1.0f));
 
   pointLight.setEnergy(2.0f);
 
@@ -293,6 +367,11 @@ int main()
     renderScene(*shaderProgram);
 
     glfwSwapBuffers(window);
+
+    if (targetShip)
+      cleanUpMissiles();
+
+    //checkHits();
   }
 
   glfwTerminate();
