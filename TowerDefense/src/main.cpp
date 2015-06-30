@@ -12,7 +12,6 @@
 #include "GLModel.h"
 #include "GLPointLight.h"
 #include "GLPlane.h"
-#include "GLBoundingBox.h"
 #include "Tower.h"
 #include "Enemy.h"
 
@@ -29,6 +28,7 @@ glm::vec3 target(5.0f, 5.0f, 5.0f);
 glm::vec3 targetDir(0.01f, 0.0f, 1.0f);
 
 std::list<Tower> towers;
+std::list<Enemy> enemies;
 
 bool keys[1024];
 
@@ -37,9 +37,7 @@ double lastX = WIDTH / 2.0f;
 double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
 
-//std::unique_ptr<Tower> tower;
 std::unique_ptr<Enemy> targetShip;
-std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
 
 void setTowerTargets(glm::vec3& target)
@@ -243,7 +241,7 @@ std::pair<glm::vec3, glm::vec3> calcBoundingBox
   return std::make_pair(center, size);
 }
 
-void cleanUpMissiles()
+void checkHitsAndCleanupMissiles()
 {
   for (auto& tower : towers)
   {
@@ -276,30 +274,10 @@ void cleanUpMissiles()
   }
 }
 
-//void checkHits()
-//{
-//  for (auto& tower : towers)
-//  {
-//    auto& missiles = tower.getMissiles();
-//
-//    for (auto& missile : missiles)
-//    {
-//      if (targetShip->isColliding(missile.getPosition(), 1.0f))
-//      {
-//        std::cout << "Hit!" << std::endl;
-//      }
-//    }
-//  }
-//}
-
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
   if (targetShip)
     targetShip->draw(shaderProgram);
-
-  //auto aabb = targetShip->calculate_AABB();
-  //auto bounding = calcBoundingBox(aabb);
-  //boundingBox->draw(shaderProgram, bounding.first, bounding.second);
 
   auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
                       0.0f, 0.0f));
@@ -332,9 +310,6 @@ int main()
   cannon->m_materials[0] = *defaultMaterial;
 
   targetShip = std::make_unique<Enemy>(enemy.get(), target, targetDir);
-
-  boundingBox = std::make_unique<GLTools::GLBoundingBox>();
-  boundingBox->initialize();
 
   floorPlane = std::make_unique<GLTools::GLPlane>(100.0f, 100.0f);
   floorPlane->initialize();
@@ -369,9 +344,7 @@ int main()
     glfwSwapBuffers(window);
 
     if (targetShip)
-      cleanUpMissiles();
-
-    //checkHits();
+      checkHitsAndCleanupMissiles();
   }
 
   glfwTerminate();
