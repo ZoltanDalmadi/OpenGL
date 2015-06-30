@@ -1,5 +1,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Tower.h"
+#include <iostream>
 
 #define Y_AXIS glm::vec3(0.0f, 1.0f, 0.0f)
 #define Z_AXIS glm::vec3(0.0f, 0.0f, 1.0f)
@@ -110,6 +111,7 @@ void Tower::update(double time)
   if (!m_target)
     return;
 
+  std::cout << "iitttvann" << std::endl;
   auto v = *m_target - m_position;
   m_baseAngle = -glm::atan(v.z, v.x);
 

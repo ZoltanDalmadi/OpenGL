@@ -8,6 +8,7 @@
 #include <glm/gtx/norm.hpp>
 #include <memory>
 #include <iostream>
+#include <iterator>
 
 #include "GLFPSCamera.h"
 #include "GLModel.h"
@@ -32,9 +33,10 @@ GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, -5.0f));
 GLTools::GLPointLight pointLight(glm::vec3(0.0f, 10.0f, 0.0f));
 
 glm::vec3 target(5.0f, 5.0f, 5.0f);
+glm::vec3 target1(5.0f, 5.0f, 5.0f);
 glm::vec3 targetDir(0.01f, 0.0f, 1.0f);
 
-std::list<Tower> towers;
+std::vector<Tower> towers;
 std::list<Enemy> enemies;
 
 bool keys[1024];
@@ -50,7 +52,7 @@ bool exploding = false;
 float timeToExplode;
 GLTools::GLCurvePath path;
 
-auto maxTower = 5;
+auto maxTower = 1;
 auto actualTower = 0;
 std::unique_ptr<Enemy> targetShip;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
@@ -60,6 +62,8 @@ std::shared_ptr<GLTools::GLModel> cannon;
 std::shared_ptr<GLTools::GLModel> missile;
 std::vector<glm::vec3> closeSquares;
 auto forbiddenPlace = false;
+
+auto inTower = -1;
 
 void setTowerTargets(glm::vec3& target)
 {
@@ -111,6 +115,14 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     timeToExplode = glfwGetTime();
   }
 
+  if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+  {
+    camera.m_position = towers.front().getPosition() + glm::vec3(0.0f, 2.0f, 0.0f);
+    inTower = 0;
+
+    towers[inTower].setTarget(&target1);
+  }
+
 }
 
 void moveCamera()
@@ -134,68 +146,6 @@ void moveCamera()
     camera.move(GLTools::GLFPSCamera::Direction::DOWN);
 }
 
-void moveTarget()
-{
-  if (keys[GLFW_KEY_UP])
-  {
-    target += glm::vec3(0.0f, 0.2f, 0.0f);
-    targetShip->setPosition(target);
-  }
-
-  if (keys[GLFW_KEY_DOWN])
-  {
-    target -= glm::vec3(0.0f, 0.2f, 0.0f);
-    targetShip->setPosition(target);
-  }
-
-  if (keys[GLFW_KEY_LEFT])
-  {
-    target += glm::vec3(0.2f, 0.0f, 0.0f);
-    targetShip->setPosition(target);
-  }
-
-  if (keys[GLFW_KEY_RIGHT])
-  {
-    target -= glm::vec3(0.2f, 0.0f, 0.0f);
-    targetShip->setPosition(target);
-  }
-
-  if (keys[GLFW_KEY_PAGE_UP])
-  {
-    target += glm::vec3(0.0f, 0.0f, 0.2f);
-    targetShip->setPosition(target);
-  }
-
-  if (keys[GLFW_KEY_PAGE_DOWN])
-  {
-    target -= glm::vec3(0.0f, 0.0f, 0.2f);
-    targetShip->setPosition(target);
-  }
-
-  if (keys[GLFW_KEY_I])
-  {
-    targetDir = rotateX(targetDir, glm::radians(-1.0f));
-    targetShip->setDirection(targetDir);
-  }
-
-  if (keys[GLFW_KEY_K])
-  {
-    targetDir = rotateX(targetDir, glm::radians(1.0f));
-    targetShip->setDirection(targetDir);
-  }
-
-  if (keys[GLFW_KEY_J])
-  {
-    targetDir = rotateY(targetDir, glm::radians(-1.0f));
-    targetShip->setDirection(targetDir);
-  }
-
-  if (keys[GLFW_KEY_L])
-  {
-    targetDir = rotateY(targetDir, glm::radians(1.0f));
-    targetShip->setDirection(targetDir);
-  }
-}
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
@@ -363,7 +313,7 @@ void init()
   glLineWidth(2);
   glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
 
-  std::array<glm::vec3, 4> temp = { glm::vec3(0.0f, 0.0f, 0.0f),
+  std::array<glm::vec3, 4> temp = { glm::vec3(-48.0f, 0.0f, -48.0f),
                                     glm::vec3(10.0f, 0.0f, 30.0f),
                                     glm::vec3(17.0f, 0.0f, -34.0f),
                                     glm::vec3(40.0f, 0.0f, 40.0f)
@@ -430,12 +380,6 @@ void checkHitsAndCleanupMissiles()
 
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
-  targetShip->draw(shaderProgram);
-  auto aabb = targetShip->calculate_AABB();
-  auto bounding = calcBoundingBox(aabb);
-  boundingBox->draw(shaderProgram, bounding.first, bounding.second);
-
-
   float d = 0.0f;
   bool intersect = glm::intersectRayPlane(camera.m_position, -camera.m_front,
                                           glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), d);
@@ -475,6 +419,13 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
     tower.draw(shaderProgram, glfwGetTime());
   }
 
+  auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
+                      0.0f, 0.0f));
+  auto normalMatrix = glm::mat3(model);
+  shaderProgram.setUniformValue("model", model);
+  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
+  floorPlane->draw(shaderProgram);
+  floorPlane->draw();
 }
 
 
@@ -511,6 +462,7 @@ int main()
 
   floorPlane = std::make_unique<GLTools::GLPlane>(100.0f, 100.0f);
   floorPlane->initialize();
+  floorPlane->m_material = defaultMaterial.get();
 
   grid = std::make_unique<Grid>(100.0f, 100.0f, 4.0f);
   grid->initialize();
@@ -531,7 +483,6 @@ int main()
                     point) == closeSquares.end())
       {
         closeSquares.push_back(point);
-        std::cout << point.x << " " << point.y << " " << point.z << std::endl;
       }
     }
   }
@@ -554,8 +505,16 @@ int main()
     glfwPollEvents();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    moveCamera();
-    moveTarget();
+
+    if (inTower < 0)
+      moveCamera();
+    else
+    {
+      target1 *= glm::vec3(100.0f);
+      std::cout << target1.x << target1.y << target1.z <<
+                std::endl;
+      target1 = camera.m_front;
+    }
 
     shaderProgram->use();
     shaderProgram->setUniformValue("viewProjection",
@@ -570,7 +529,7 @@ int main()
       targetShip->draw(*shaderProgram);
       auto aabb = targetShip->calculate_AABB();
       auto bounding = calcBoundingBox(aabb);
-      boundingBox->draw(*shaderProgram, bounding.first, bounding.second);
+      //boundingBox->draw(*shaderProgram, bounding.first, bounding.second);
     }
     else
     {
