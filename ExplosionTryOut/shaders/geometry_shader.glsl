@@ -26,7 +26,6 @@ vec3 GetNormal()
 
 void main() {
 	Time = time;
-
 	if(explosion)
 	{
 		vec3 normal = GetNormal();

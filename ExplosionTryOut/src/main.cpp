@@ -76,13 +76,13 @@ void moveCamera()
 		camera.move(GLTools::GLFPSCamera::Direction::DOWN);
 	/*if (keys[GLFW_KEY_M])
 	{
-		if (time2<1.0)
+		if (time2 < 1.0)
 		time2 += 0.01;
 		std::cout << time2 << std::endl;
 	}
 	if (keys[GLFW_KEY_N])
 	{
-		if (time2>0.0)
+		if (time2 > 0.0)
 		time2 -= 0.01;
 		std::cout << time2 << std::endl;
 	}*/
