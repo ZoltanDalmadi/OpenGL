@@ -156,14 +156,14 @@ copy $(SolutionDir)..\lib\$(PlatformShortName)\assimp.dll $(OutDir)</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Enemy.cpp" />
-    <ClCompile Include="src\GridPlane.cpp" />
+    <ClCompile Include="src\Grid.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Missile.cpp" />
     <ClCompile Include="src\Tower.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Enemy.h" />
-    <ClInclude Include="include\GridPlane.h" />
+    <ClInclude Include="include\Grid.h" />
     <ClInclude Include="include\Missile.h" />
     <ClInclude Include="include\Tower.h" />
   </ItemGroup>

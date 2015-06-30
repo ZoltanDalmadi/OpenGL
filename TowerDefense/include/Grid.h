@@ -1,26 +1,25 @@
 #pragma once
 #include <memory>
 
+#include "GLShaderProgram.h"
 #include "GLVertexArrayObject.h"
 #include "GLBufferObject.h"
-#include "GLPlane.h"
 
-class GridPlane
+class Grid
 {
 public:
-  GridPlane();
-  GridPlane(float width, float height, float squareSize);
-  ~GridPlane();
+  Grid();
+  Grid(float width, float height, float squareSize);
+  ~Grid();
 
-  void draw();
-  void drawLines();
+  void draw(const GLTools::GLShaderProgram& shaderProgram);
   void initialize();
-  bool GridPlane::getCenter(const glm::vec3& position, glm::vec3& out);
+  bool Grid::getCenter(const glm::vec3& position, glm::vec3& out);
 
-  void setMaterial(GLTools::GLMaterial *material);
+  glm::vec3 color;
+  float alpha;
 
 private:
-  std::unique_ptr<GLTools::GLPlane> m_plane;
   float m_width;
   float m_height;
   float m_small_square;

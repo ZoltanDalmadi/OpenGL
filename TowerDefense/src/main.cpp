@@ -19,7 +19,7 @@
 #include "Enemy.h"
 #include <Windows.h>
 #include <algorithm>
-#include "GridPlane.h"
+#include "Grid.h"
 
 //constants
 const GLuint WIDTH = 1280;
@@ -47,7 +47,7 @@ std::list<Tower> towers;
 std::unique_ptr<Enemy> targetShip;
 std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
-std::unique_ptr<GridPlane> gridPlane;
+std::unique_ptr<Grid> grid;
 std::shared_ptr<GLTools::GLModel> base;
 std::shared_ptr<GLTools::GLModel> cannon;
 std::shared_ptr<GLTools::GLModel> missile;
@@ -295,6 +295,27 @@ void setupShaders2(GLTools::GLShaderProgram& shaderProgram)
   std::cout << shaderProgram.log() << std::endl;
 }
 
+void setupShaders3(GLTools::GLShaderProgram& shaderProgram)
+{
+  auto vertexShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/grid_vertex_shader.glsl");
+  std::cout << vertexShader->log() << std::endl;
+
+  auto fragmentShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/grid_fragment_shader.glsl");
+  std::cout << fragmentShader->log() << std::endl;
+
+  shaderProgram.create();
+  shaderProgram.addShader(vertexShader);
+  shaderProgram.addShader(fragmentShader);
+  shaderProgram.link();
+  std::cout << shaderProgram.log() << std::endl;
+}
+
 void init()
 {
   glfwInit();
@@ -374,16 +395,6 @@ bool contains(const std::vector<glm::vec3>& vec, const glm::vec3& point)
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
 
-  shaderProgram.use();
-  auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
-                      0.0f, 0.0f));
-  auto normalMatrix = glm::mat3(model);
-  shaderProgram.setUniformValue("model", model);
-  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
-  gridPlane->draw();
-  shaderProgram.setUniformValue("lines", true);
-  gridPlane->drawLines();
-  shaderProgram.setUniformValue("lines", false);
 
   float d = 0.0f;
   bool intersect = glm::intersectRayPlane(camera.m_position, -camera.m_front,
@@ -397,7 +408,7 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
   if (actualTower < maxTower)
   {
     glm::vec3 temp2;
-    auto found = gridPlane->getCenter(temp, temp2);
+    auto found = grid->getCenter(temp, temp2);
     towers.back().setPosition(temp2);
 
     /*Itt a pirosítást végzem a towereken, ahol nem szabad lerakni.*/
@@ -431,6 +442,9 @@ int main()
 {
   init();
 
+  auto shaderProgram3 = std::make_unique<GLTools::GLShaderProgram>();
+  setupShaders3(*shaderProgram3);
+
   auto shaderProgram2 = std::make_unique<GLTools::GLShaderProgram>();
   setupShaders2(*shaderProgram2);
 
@@ -460,11 +474,10 @@ int main()
 
   floorPlane = std::make_unique<GLTools::GLPlane>(100.0f, 100.0f);
   floorPlane->initialize();
-  floorPlane->m_material = defaultMaterial.get();
 
-  gridPlane = std::make_unique<GridPlane>(100.0f, 100.0f, 4.0f);
-  gridPlane->initialize();
-  gridPlane->setMaterial(defaultMaterial.get());
+  grid = std::make_unique<Grid>(100.0f, 100.0f, 4.0f);
+  grid->initialize();
+  grid->color = glm::vec3(0.0f, 1.0f, 0.0f);
 
   /*Initialize the squares center which must be empty because the path*/
   auto OneOverDetail = 1.0 / float(100.0 - 1.0);
@@ -473,7 +486,7 @@ int main()
   {
     auto t = i * OneOverDetail;
     glm::vec3 point;
-    auto found = gridPlane->getCenter(path.getPositionAndTangent(t).first, point);
+    auto found = grid->getCenter(path.getPositionAndTangent(t).first, point);
 
     if (found)
     {
@@ -536,6 +549,10 @@ int main()
       }
     }
 
+    shaderProgram3->use();
+    shaderProgram3->setUniformValue("viewProjection",
+                                    projection * camera.m_viewMatrix);
+    grid->draw(*shaderProgram3);
 
     shaderProgram1->use();
     shaderProgram1->setUniformValue("MVP", projection * camera.m_viewMatrix);

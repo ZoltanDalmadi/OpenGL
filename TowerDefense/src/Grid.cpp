@@ -1,35 +1,32 @@
-#include "GridPlane.h"
+#include "Grid.h"
 #include <iostream>
 
 
 
-GridPlane::GridPlane()
+Grid::Grid()
 {
 }
 
-GridPlane::GridPlane(float width, float height, float squareSize)
+Grid::Grid(float width, float height, float squareSize)
 {
   m_width = width;
   m_height = height;
-  m_plane = std::make_unique<GLTools::GLPlane>(m_width, m_height);
   m_small_square = squareSize;
 }
 
-void GridPlane::draw()
+void Grid::draw(const GLTools::GLShaderProgram& shaderProgram)
 {
-  m_plane->draw();
-}
-
-void GridPlane::drawLines()
-{
+  shaderProgram.setUniformValue("gridColor", glm::vec4(color, alpha));
   m_VAO.bind();
   glDrawArrays(GL_LINES, 0, m_line_size);
   m_VAO.unbind();
 }
 
-void GridPlane::initialize()
+void Grid::initialize()
 {
-  m_plane->initialize();
+  color = glm::vec3(0.0f);
+  alpha = 1.0f;
+
   uploadGrid();
 
   std::vector<glm::vec3> linePoints;
@@ -39,17 +36,17 @@ void GridPlane::initialize()
 
   for (float i = -pieceX; i <= pieceX; i += m_small_square)
   {
-    glm::vec3 left(i, -pieceY, 0.0f);
+    glm::vec3 left(i, 0.0f, -pieceY);
     linePoints.emplace_back(left);
-    glm::vec3 upRight(i, pieceY, 0.0f);
+    glm::vec3 upRight(i, 0.0f, pieceY);
     linePoints.emplace_back(upRight);
   }
 
   for (float i = -pieceY; i <= pieceY; i += m_small_square)
   {
-    glm::vec3 left(-pieceX, i, 0.0f);
+    glm::vec3 left(-pieceX, 0.0f, i);
     linePoints.emplace_back(left);
-    glm::vec3 upRight(pieceX, i, 0.0f);
+    glm::vec3 upRight(pieceX, 0.0f, i);
     linePoints.emplace_back(upRight);
   }
 
@@ -68,7 +65,7 @@ void GridPlane::initialize()
   m_VAO.unbind();
 }
 
-void GridPlane::uploadGrid()
+void Grid::uploadGrid()
 {
   auto pieceX = m_width / 2;
   auto pieceY = m_height / 2;
@@ -87,7 +84,7 @@ void GridPlane::uploadGrid()
   }
 }
 
-bool GridPlane::getCenter(const glm::vec3& position, glm::vec3& out)
+bool Grid::getCenter(const glm::vec3& position, glm::vec3& out)
 {
   bool ret = false;
   out = position;
@@ -110,11 +107,6 @@ bool GridPlane::getCenter(const glm::vec3& position, glm::vec3& out)
   return ret;
 }
 
-void GridPlane::setMaterial(GLTools::GLMaterial *material)
-{
-  m_plane->m_material = material;
-}
-
-GridPlane::~GridPlane()
+Grid::~Grid()
 {
 }
