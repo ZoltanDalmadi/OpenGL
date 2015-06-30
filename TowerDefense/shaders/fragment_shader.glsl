@@ -9,6 +9,7 @@ out vec4 fragColor;
 uniform vec3 camPos;
 uniform bool lines;
 uniform bool transparent;
+uniform bool forbiddenTower;
 
 struct Material
 {
@@ -86,6 +87,11 @@ void main()
   else
   {
     color = calcPointLight(pointLight, norm, fragPos, camDir);
+  }
+  
+  if(forbiddenTower)
+  {
+	color *= vec3(2.0f, 0.0f, 0.0f);
   }
   
   fragColor = vec4(color, alpha);

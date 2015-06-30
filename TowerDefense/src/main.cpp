@@ -18,6 +18,7 @@
 #include "Tower.h"
 #include "Enemy.h"
 #include <Windows.h>
+#include <algorithm>
 #include "GridPlane.h"
 
 //constants
@@ -50,6 +51,8 @@ std::unique_ptr<GridPlane> gridPlane;
 std::shared_ptr<GLTools::GLModel> base;
 std::shared_ptr<GLTools::GLModel> cannon;
 std::shared_ptr<GLTools::GLModel> missile;
+std::vector<glm::vec3> closeSquares;
+auto forbiddenPlace = false;
 
 GLTools::GLCurvePath path;
 bool exploding = false;
@@ -88,7 +91,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if (key == GLFW_KEY_N && action == GLFW_PRESS)
   {
     exploding = true;
-    PlaySound("explosion.WAV", NULL, SND_ASYNC);
+    PlaySound("sfx/explosion.WAV", NULL, SND_ASYNC);
     timeToExplode = glfwGetTime();
   }
 
@@ -196,13 +199,21 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mod)
 {
+  /*Curve */
   if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE
       && actualTower < maxTower)
   {
-    if (actualTower + 1 != maxTower)
-      towers.emplace_back(base.get(), cannon.get(), missile.get());
+    if (forbiddenPlace)
+    {
+      PlaySound("sfx/error.WAV", NULL, SND_ASYNC);
+    }
+    else
+    {
+      if (actualTower + 1 != maxTower)
+        towers.emplace_back(base.get(), cannon.get(), missile.get());
 
-    actualTower++;
+      actualTower++;
+    }
   }
 }
 
@@ -347,6 +358,19 @@ std::pair<glm::vec3, glm::vec3> calcBoundingBox
   return std::make_pair(center, size);
 }
 
+bool contains(const std::vector<glm::vec3>& vec, const glm::vec3& point)
+{
+  for (auto& v : vec)
+  {
+    if (v == point)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
 
@@ -372,10 +396,26 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 
   if (actualTower < maxTower)
   {
-    towers.back().setPosition(gridPlane->getCenter(temp));
+    glm::vec3 temp2;
+    auto found = gridPlane->getCenter(temp, temp2);
+    towers.back().setPosition(temp2);
+
+    /*Itt a pirosítást végzem a towereken, ahol nem szabad lerakni.*/
+    forbiddenPlace = false;
+
+    if (!found
+        || std::find(closeSquares.begin(), closeSquares.end(),
+                     temp2) != closeSquares.end())
+    {
+      forbiddenPlace = true;
+      shaderProgram.setUniformValue("forbiddenTower", true);
+    }
+
+    /*itt vége.*/
     shaderProgram.setUniformValue("transparent", true);
     towers.back().draw(shaderProgram, glfwGetTime());
     shaderProgram.setUniformValue("transparent", false);
+    shaderProgram.setUniformValue("forbiddenTower", false);
     towerSize -= 1;
   }
 
@@ -385,6 +425,7 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
   }
 
 }
+
 
 int main()
 {
@@ -424,6 +465,28 @@ int main()
   gridPlane = std::make_unique<GridPlane>(100.0f, 100.0f, 4.0f);
   gridPlane->initialize();
   gridPlane->setMaterial(defaultMaterial.get());
+
+  /*Initialize the squares center which must be empty because the path*/
+  auto OneOverDetail = 1.0 / float(100.0 - 1.0);
+
+  for (int i = 0; i < 100; i++)
+  {
+    auto t = i * OneOverDetail;
+    glm::vec3 point;
+    auto found = gridPlane->getCenter(path.getPositionAndTangent(t).first, point);
+
+    if (found)
+    {
+      if (std::find(closeSquares.begin(), closeSquares.end(),
+                    point) == closeSquares.end())
+      {
+        closeSquares.push_back(point);
+        std::cout << point.x << " " << point.y << " " << point.z << std::endl;
+      }
+    }
+  }
+
+  /*end initialize*/
 
   towers.emplace_back(base.get(), cannon.get(), missile.get());
 

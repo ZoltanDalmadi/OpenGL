@@ -15,7 +15,7 @@ public:
   void draw();
   void drawLines();
   void initialize();
-  glm::vec3 GridPlane::getCenter(glm::vec3 position);
+  bool GridPlane::getCenter(const glm::vec3& position, glm::vec3& out);
 
   void setMaterial(GLTools::GLMaterial *material);
 

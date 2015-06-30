@@ -142,7 +142,8 @@ copy $(SolutionDir)..\lib\$(PlatformShortName)\assimp.dll $(OutDir)</Command>
       <AdditionalDependencies>Winmm.lib;$(PlatformShortName)\SOIL.lib;$(PlatformShortName)\assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy $(ProjectDir)shaders $(OutDir)shaders /Y /C /R /I /E
+      <Command>xcopy $(ProjectDir)sfx $(OutDir)sfx /Y /C /R /I /E
+xcopy $(ProjectDir)shaders $(OutDir)shaders /Y /C /R /I /E
 xcopy $(ProjectDir)textures $(OutDir)textures /Y /C /R /I /E
 xcopy $(ProjectDir)models $(OutDir)models /Y /C /R /I /E
 copy $(SolutionDir)..\lib\$(PlatformShortName)\assimp.dll $(OutDir)</Command>

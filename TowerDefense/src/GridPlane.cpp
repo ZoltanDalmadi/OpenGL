@@ -87,9 +87,10 @@ void GridPlane::uploadGrid()
   }
 }
 
-glm::vec3 GridPlane::getCenter(glm::vec3 position)
+bool GridPlane::getCenter(const glm::vec3& position, glm::vec3& out)
 {
-  glm::vec3 ret = position;
+  bool ret = false;
+  out = position;
 
   for (auto& i : m_grid)
   {
@@ -99,7 +100,8 @@ glm::vec3 GridPlane::getCenter(glm::vec3 position)
       {
         glm::vec2 tangent = (i.second - i.first) / 2.0f;
         glm::vec2 center = i.first + tangent;
-        ret = glm::vec3(center.x, position.y, center.y);
+        ret = true;
+        out = glm::vec3(center.x, position.y, center.y);
         break;
       }
     }
