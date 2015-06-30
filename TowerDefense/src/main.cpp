@@ -12,6 +12,7 @@
 #include "GLModel.h"
 #include "GLPointLight.h"
 #include "GLPlane.h"
+#include "GLCurvePath.h"
 #include "Tower.h"
 #include "Enemy.h"
 
@@ -37,23 +38,16 @@ double lastX = WIDTH / 2.0f;
 double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
 
+GLTools::GLCurvePath enemyPath;
+
 std::unique_ptr<Enemy> targetShip;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
+std::unique_ptr<GLTools::GLModel> enemy;
 
-void setTowerTargets(glm::vec3& target)
+void addNewEnemy(GLTools::GLModel *enemyModel)
 {
-  for (auto& tower : towers)
-  {
-    tower.setTarget(&target);
-  }
-}
-
-void clearTowerTargets()
-{
-  for (auto& tower : towers)
-  {
-    tower.clearTarget();
-  }
+  auto startVectors = enemyPath.getPositionAndTangent(0.0f);
+  enemies.emplace_back(enemyModel, startVectors.first, startVectors.second);
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -67,11 +61,14 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
 
-  if (key == GLFW_KEY_C && action == GLFW_PRESS)
-    clearTowerTargets();
+  //if (key == GLFW_KEY_C && action == GLFW_PRESS)
+  //  clearTowerTargets();
 
-  if (key == GLFW_KEY_V && action == GLFW_PRESS)
-    setTowerTargets(target);
+  //if (key == GLFW_KEY_V && action == GLFW_PRESS)
+  //  setTowerTargets(target);
+
+  if (key == GLFW_KEY_E && action == GLFW_PRESS)
+    addNewEnemy(enemy.get());
 }
 
 void moveCamera()
@@ -175,7 +172,8 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 }
 
 // SHADERS --------------------------------------------------------------------
-void setupShaders(GLTools::GLShaderProgram& shaderProgram)
+void setupShaders(GLTools::GLShaderProgram& shaderProgram,
+                  GLTools::GLShaderProgram& pathProgram)
 {
   auto vertexShader =
     std::make_shared<GLTools::GLShader>
@@ -194,6 +192,31 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram)
   shaderProgram.addShader(fragmentShader);
   shaderProgram.link();
   std::cout << shaderProgram.log() << std::endl;
+
+  auto pathVertexShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/path_vertex_shader.glsl");
+  std::cout << pathVertexShader->log() << std::endl;
+
+  auto pathGeometryShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::GEOMETRY_SHADER,
+     "shaders/path_geometry_shader.glsl");
+  std::cout << pathGeometryShader->log() << std::endl;
+
+  auto pathFragmentShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/path_fragment_shader.glsl");
+  std::cout << pathFragmentShader->log() << std::endl;
+
+  pathProgram.create();
+  pathProgram.addShader(pathVertexShader);
+  pathProgram.addShader(pathGeometryShader);
+  pathProgram.addShader(pathFragmentShader);
+  pathProgram.link();
+  std::cout << pathProgram.log() << std::endl;
 }
 
 void init()
@@ -243,41 +266,59 @@ std::pair<glm::vec3, glm::vec3> calcBoundingBox
 
 void checkHitsAndCleanupMissiles()
 {
-  for (auto& tower : towers)
+  for (auto& enemy : enemies)
   {
-    auto& missiles = tower.m_missiles;
-
-    for (auto it = missiles.begin(); it != missiles.end();)
+    for (auto& tower : towers)
     {
-      if (targetShip->isColliding(it->getPosition()))
-      {
-        it = missiles.erase(it);
-        targetShip->damage(tower.getDamage());
-        std::cout << "Hit! Damage: " << tower.getDamage() <<
-                  " Ship HP: " << targetShip->m_hitPoints << std::endl;
+      auto& missiles = tower.m_missiles;
 
-        if (targetShip->isDestroyed())
+      for (auto it = missiles.begin(); it != missiles.end();)
+      {
+        if (enemy.isColliding(it->getPosition()))
         {
-          clearTowerTargets();
-          targetShip.reset();
+          it = missiles.erase(it);
+          enemy.damage(tower.getDamage());
+        }
+        else if (length2(it->getPosition()) > 25.0f * 25.0f)
+        {
+          it = missiles.erase(it);
+        }
+        else
+        {
+          ++it;
         }
       }
-      else if (length2(it->getPosition()) > 25.0f * 25.0f)
-      {
-        it = missiles.erase(it);
-      }
-      else
-      {
-        ++it;
-      }
+    }
+  }
+}
+
+void cleanupEnemies()
+{
+  for (auto it = enemies.begin(); it != enemies.end();)
+  {
+    if (it->isDestroyed() || it->m_progress >= 1.0f)
+    {
+      it = enemies.erase(it);
+    }
+    else
+    {
+      ++it;
     }
   }
 }
 
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
-  if (targetShip)
-    targetShip->draw(shaderProgram);
+  if (!enemies.empty())
+  {
+    for (auto& enemy : enemies)
+    {
+      auto vectors = enemyPath.getPositionAndTangent(enemy.m_progress);
+      enemy.setPosition(vectors.first);
+      enemy.setDirection(vectors.second);
+      enemy.draw(shaderProgram);
+    }
+  }
 
   auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
                       0.0f, 0.0f));
@@ -290,28 +331,53 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
     tower.draw(shaderProgram, glfwGetTime());
 }
 
+void setupEnemyPath()
+{
+  std::array<glm::vec3, 4> p1 =
+  {
+    glm::vec3(25.0f, 0.0f, -25.0f),
+    glm::vec3(14.0f, 0.0f, -10.0f),
+    glm::vec3(6.0f, 0.0f, 1.0f),
+    glm::vec3(-10.0f, 0.0f, -8.0f)
+  };
+
+  std::array<glm::vec3, 2> p2 =
+  {
+    glm::vec3(0.0f, 0.0f, 20.0f), glm::vec3(-25.0f, 0.0f, 25.0f)
+  };
+
+  GLTools::GLCurves c1(p1);
+  GLTools::GLCurves c2(c1, p2);
+
+  c1.initialize();
+  c2.initialize();
+
+  enemyPath.m_data.push_back(c1);
+  enemyPath.m_data.push_back(c2);
+}
+
 int main()
 {
   init();
+  setupEnemyPath();
 
   auto shaderProgram = std::make_unique<GLTools::GLShaderProgram>();
-  setupShaders(*shaderProgram);
-
-  shaderProgram->use();
+  auto pathProgram = std::make_unique<GLTools::GLShaderProgram>();
+  setupShaders(*shaderProgram, *pathProgram);
 
   auto defaultMaterial = std::make_unique<GLTools::GLMaterial>();
 
   auto base = std::make_unique<GLTools::GLModel>("models/turret_base.obj");
   auto cannon = std::make_unique<GLTools::GLModel>("models/turret_cannon.obj");
   auto missile = std::make_unique<GLTools::GLModel>("models/missile.obj");
-  auto enemy = std::make_unique<GLTools::GLModel>("models/enemyship.obj");
+  enemy = std::make_unique<GLTools::GLModel>("models/enemyship.obj");
 
   base->m_materials[0] = *defaultMaterial;
   cannon->m_materials[0] = *defaultMaterial;
 
   targetShip = std::make_unique<Enemy>(enemy.get(), target, targetDir);
 
-  floorPlane = std::make_unique<GLTools::GLPlane>(100.0f, 100.0f);
+  floorPlane = std::make_unique<GLTools::GLPlane>(50.0f, 50.0f);
   floorPlane->initialize();
   floorPlane->m_material = defaultMaterial.get();
 
@@ -324,7 +390,7 @@ int main()
   pointLight.setEnergy(2.0f);
 
   auto projection =
-    glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
+    glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 100.0f);
 
   while (!glfwWindowShouldClose(window))
   {
@@ -334,17 +400,26 @@ int main()
     moveCamera();
     moveTarget();
 
-    shaderProgram->setUniformValue("viewProjection",
-                                   projection * camera.m_viewMatrix);
+    auto VP = projection * camera.m_viewMatrix;
+
+    shaderProgram->use();
+    shaderProgram->setUniformValue("viewProjection", VP);
     shaderProgram->setUniformValue("camPos", camera.m_position);
     pointLight.setShaderUniform(*shaderProgram);
 
     renderScene(*shaderProgram);
 
+    pathProgram->use();
+    pathProgram->setUniformValue("VP", VP);
+    enemyPath.draw();
+
     glfwSwapBuffers(window);
 
-    if (targetShip)
+    if (!enemies.empty())
+    {
       checkHitsAndCleanupMissiles();
+      cleanupEnemies();
+    }
   }
 
   glfwTerminate();
