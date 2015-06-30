@@ -3,7 +3,7 @@
 in vec3 normal;
 in vec3 fragPos;
 in vec2 texCoords;
-in float Time;
+//in float Time;
 
 out vec4 fragColor;
 
@@ -73,5 +73,5 @@ void main()
   vec3 camDir = normalize(camPos - fragPos);
 
   fragColor = vec4(calcPointLight(pointLight, norm, fragPos, camDir),
-			 1/Time);
+			 1.0f);
 }

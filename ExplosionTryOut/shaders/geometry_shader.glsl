@@ -5,15 +5,15 @@ layout (triangle_strip, max_vertices = 3) out;
 in vec2 texCoords[];
 
 out vec2 TexCoords; 
-out float Time;
+//out float Time;
 
 uniform float time;
-uniform bool explosion;
 
 vec4 explode(vec4 position, vec3 normal)
 {
     float magnitude = 2.0f;
     vec3 direction = normal * time * magnitude; 
+    //return position + vec4(vec3(0.0f,0.0f,0.0f), 0.0f);
 	return position + vec4(direction, 0.0f);
 }
 
@@ -24,31 +24,18 @@ vec3 GetNormal()
     return normalize(cross(a, b));
 }
 
-void main() {
-	Time = time;
+void main() {    
+	//Time = time;
+    vec3 normal = GetNormal();
 
-	if(explosion)
-	{
-		vec3 normal = GetNormal();
-		gl_Position = explode(gl_in[0].gl_Position, normal);
-		TexCoords = texCoords[0];
-		EmitVertex();
-		gl_Position = explode(gl_in[1].gl_Position, normal);
-		TexCoords = texCoords[1];
-		EmitVertex();
-		gl_Position = explode(gl_in[2].gl_Position, normal);
-		TexCoords = texCoords[2];
-		EmitVertex();
-		EndPrimitive();
-	}
-	else
-	{
-		gl_Position = gl_in[0].gl_Position;
-		EmitVertex();
-		gl_Position = gl_in[1].gl_Position;
-		EmitVertex();
-		gl_Position = gl_in[2].gl_Position;
-		EmitVertex();
-		EndPrimitive();
-	}
+    gl_Position = explode(gl_in[0].gl_Position, normal);
+    TexCoords = texCoords[0];
+    EmitVertex();
+    gl_Position = explode(gl_in[1].gl_Position, normal);
+    TexCoords = texCoords[1];
+    EmitVertex();
+    gl_Position = explode(gl_in[2].gl_Position, normal);
+    TexCoords = texCoords[2];
+    EmitVertex();
+    EndPrimitive();
 }
