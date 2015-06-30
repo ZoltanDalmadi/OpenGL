@@ -103,9 +103,9 @@ bool Enemy::isColliding(const glm::vec3& point)
 bool Enemy::isColliding(const std::pair<glm::vec3, glm::vec3>& aabb,
                         const glm::vec3& point)
 {
-  if (point.x < aabb.first.x || point.y < aabb.first.y || point.z < aabb.first.z
-      || point.x > aabb.second.x || point.y > aabb.second.y
-      || point.z > aabb.second.z)
+  if (point.x < aabb.first.x || point.y < aabb.first.y ||
+      point.z < aabb.first.z || point.x > aabb.second.x ||
+      point.y > aabb.second.y || point.z > aabb.second.z)
     return false;
 
   return true;
