@@ -176,8 +176,9 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mod)
     }
     else if (inTower > -1)
     {
-      towers[inTower].shoot(towers[inTower].getPosition(),
-                            target1);
+      auto towerPos = towers[inTower].getPosition();
+      towers[inTower].shoot(towerPos,
+                            glm::normalize(target1 - towerPos));
     }
   }
 }
@@ -386,8 +387,6 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
   auto temp = -camera.m_front * d;
   temp.y = 0.0f;
 
-  auto towerSize = towers.size();
-
   if (actualTower < maxTower)
   {
     glm::vec3 temp2;
@@ -410,7 +409,6 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
     towers.back().draw(shaderProgram, glfwGetTime());
     shaderProgram.setUniformValue("transparent", false);
     shaderProgram.setUniformValue("forbiddenTower", false);
-    towerSize -= 1;
   }
 
   for (auto tower : towers)
