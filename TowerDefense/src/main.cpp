@@ -36,7 +36,7 @@ glm::vec3 target(5.0f, 5.0f, 5.0f);
 glm::vec3 target1(5.0f, 5.0f, 5.0f);
 glm::vec3 targetDir(0.01f, 0.0f, 1.0f);
 
-std::vector<Tower> towers;
+std::list<Tower> towers;
 std::list<Enemy> enemies;
 
 bool keys[1024];
@@ -52,7 +52,7 @@ bool exploding = false;
 float timeToExplode;
 GLTools::GLCurvePath path;
 
-auto maxTower = 1;
+auto maxTower = 5;
 auto actualTower = 0;
 std::unique_ptr<Enemy> targetShip;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
@@ -108,13 +108,67 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     timeToExplode = glfwGetTime();
   }
 
-  if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+  if (key == GLFW_KEY_6 && action == GLFW_PRESS)
   {
-    camera.m_position = towers.front().getPosition() + glm::vec3(0.0f, 2.0f, 0.0f);
-    inTower = 0;
-    towers[inTower].setTarget(&target1);
+    std::cout << "asd";
+    auto front = towers.begin();
+
+    std::advance(front, inTower);
+
+    front->clearTarget();
+    inTower = -1;
   }
 
+  if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+  {
+    inTower = 0;
+    camera.m_position = towers.front().getPosition() + glm::vec3(0.0f, 2.0f, 0.0f);
+    towers.front().setTarget(&target1);
+  }
+
+  if (key == GLFW_KEY_2 && action == GLFW_PRESS)
+  {
+    inTower = 1;
+    auto front = towers.begin();
+
+    std::advance(front, inTower);
+
+    camera.m_position = front->getPosition() + glm::vec3(0.0f, 2.0f, 0.0f);
+    front->setTarget(&target1);
+  }
+
+  if (key == GLFW_KEY_3 && action == GLFW_PRESS)
+  {
+    inTower = 2;
+    auto front = towers.begin();
+
+    std::advance(front, inTower);
+
+    camera.m_position = front->getPosition() + glm::vec3(0.0f, 2.0f, 0.0f);
+    front->setTarget(&target1);
+  }
+
+  if (key == GLFW_KEY_4 && action == GLFW_PRESS)
+  {
+    inTower = 3;
+    auto front = towers.begin();
+
+    std::advance(front, inTower);
+
+    camera.m_position = front->getPosition() + glm::vec3(0.0f, 2.0f, 0.0f);
+    front->setTarget(&target1);
+  }
+
+  if (key == GLFW_KEY_5 && action == GLFW_PRESS)
+  {
+    inTower = 4;
+    auto front = towers.begin();
+
+    std::advance(front, inTower);
+
+    camera.m_position = front->getPosition() + glm::vec3(0.0f, 2.0f, 0.0f);
+    front->setTarget(&target1);
+  }
 }
 
 void moveCamera()
@@ -176,9 +230,9 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mod)
     }
     else if (inTower > -1)
     {
-      auto towerPos = towers[inTower].getPosition();
+      /*auto towerPos = towers[inTower].getPosition();
       towers[inTower].shoot(towerPos,
-                            glm::normalize(target1 - towerPos));
+                            glm::normalize(target1 - towerPos));*/
     }
   }
 }
