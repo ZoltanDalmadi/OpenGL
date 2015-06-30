@@ -98,13 +98,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if (key == GLFW_KEY_V && action == GLFW_PRESS)
     setTowerTargets(target);
 
-  {
-    for (auto& tower : towers)
-    {
-      tower.setTarget(&target);
-    }
-  }
-
   if (key == GLFW_KEY_B && action == GLFW_PRESS)
     enabled = true;
 
@@ -119,7 +112,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   {
     camera.m_position = towers.front().getPosition() + glm::vec3(0.0f, 2.0f, 0.0f);
     inTower = 0;
-
     towers[inTower].setTarget(&target1);
   }
 
@@ -166,19 +158,26 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mod)
 {
   /*Curve */
-  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE
-      && actualTower < maxTower)
+  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
   {
-    if (forbiddenPlace)
+    if (actualTower < maxTower)
     {
-      PlaySound("sfx/error.WAV", NULL, SND_ASYNC);
-    }
-    else
-    {
-      if (actualTower + 1 != maxTower)
-        towers.emplace_back(base.get(), cannon.get(), missile.get());
+      if (forbiddenPlace)
+      {
+        PlaySound("sfx/error.WAV", NULL, SND_ASYNC);
+      }
+      else
+      {
+        if (actualTower + 1 != maxTower)
+          towers.emplace_back(base.get(), cannon.get(), missile.get());
 
-      actualTower++;
+        actualTower++;
+      }
+    }
+    else if (inTower > -1)
+    {
+      towers[inTower].shoot(towers[inTower].getPosition(),
+                            target1);
     }
   }
 }
@@ -510,10 +509,8 @@ int main()
       moveCamera();
     else
     {
-      target1 *= glm::vec3(100.0f);
-      std::cout << target1.x << target1.y << target1.z <<
-                std::endl;
       target1 = camera.m_front;
+      target1 *= glm::vec3(-100.0f);
     }
 
     shaderProgram->use();

@@ -111,7 +111,6 @@ void Tower::update(double time)
   if (!m_target)
     return;
 
-  std::cout << "iitttvann" << std::endl;
   auto v = *m_target - m_position;
   m_baseAngle = -glm::atan(v.z, v.x);
 
