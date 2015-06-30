@@ -1,20 +1,21 @@
 #include "GLCurves.h"
 
-
 GLTools::GLCurves::GLCurves()
-{
-}
+{}
+
+GLTools::GLCurves::~GLCurves()
+{}
 
 /*
-C1 incessant.
+C1 continous connection.
 */
-GLTools::GLCurves::GLCurves(GLCurves& firstCurve,
-                            std::array<glm::vec3, 2> controlPoints)
+GLTools::GLCurves::GLCurves
+(GLCurves& firstCurve, std::array<glm::vec3, 2>& controlPoints)
 {
-  glm::vec3 midPoint = (firstCurve.getControlPoints().at(2) +
-                        firstCurve.getControlPoints().at(3)) / glm::vec3(2.0f);
+  auto midPoint = (firstCurve.m_controlPoints[2] +
+                   firstCurve.m_controlPoints[3]) / 2.0f;
 
-  m_controlPoints[1] = firstCurve.getControlPoints().at(3);
+  m_controlPoints[1] = firstCurve.m_controlPoints[3];
   firstCurve.m_controlPoints[3] = midPoint;
 
   m_controlPoints[0] = midPoint;
@@ -22,23 +23,17 @@ GLTools::GLCurves::GLCurves(GLCurves& firstCurve,
   m_controlPoints[3] = controlPoints[1];
 }
 
-GLTools::GLCurves::GLCurves(std::array<glm::vec3, 4> controlPoints)
+GLTools::GLCurves::GLCurves(const std::array<glm::vec3, 4>& controlPoints)
+  : m_controlPoints(controlPoints)
+{}
+
+void GLTools::GLCurves::setControlPoints
+(const std::array<glm::vec3, 4>& controlPoints)
 {
-  for (int i = 0; i < controlPoints.size(); i++)
-  {
-    m_controlPoints[i] = controlPoints[i];
-  }
+  m_controlPoints = controlPoints;
 }
 
-void GLTools::GLCurves::setControlPoints(std::array<glm::vec3, 4> controlPoints)
-{
-  for (int i = 0; i < controlPoints.size(); i++)
-  {
-    m_controlPoints[i] = controlPoints[i];
-  }
-}
-
-std::array<glm::vec3, 4> GLTools::GLCurves::getControlPoints()
+std::array<glm::vec3, 4>& GLTools::GLCurves::getControlPoints()
 {
   return m_controlPoints;
 }
@@ -58,48 +53,6 @@ void GLTools::GLCurves::initialize()
   m_VAO.unbind();
 }
 
-/*
-Get position in T;
-*/
-glm::vec3 GLTools::GLCurves::getPosition(double t)
-{
-  return evaluateBezierPosition(t);
-}
-
-/*
-Get position with the class t.
-*/
-glm::vec3 GLTools::GLCurves::getPosition()
-{
-  return getPosition(this->t);
-}
-
-/*
-Return the tangent of the t.
-*/
-glm::vec3 GLTools::GLCurves::getTangent(double t)
-{
-  return glm::vec3(1.0f);
-}
-
-/*
-Return the tangent of the class t.
-*/
-glm::vec3 GLTools::GLCurves::getTangent()
-{
-  return getTangent(this->t);
-}
-
-void GLTools::GLCurves::setT(double t)
-{
-  this->t = t;
-}
-
-double GLTools::GLCurves::getT()
-{
-  return this->t;
-}
-
 void GLTools::GLCurves::draw()
 {
   m_VAO.bind();
@@ -116,39 +69,32 @@ void GLTools::GLCurves::drawPoints()
 
 glm::vec3 GLTools::GLCurves::evaluateBezierPosition(float t)
 {
-  float OneMinusT = 1.0 - t;
+  auto OneMinusT = 1.0f - t;
 
-  float b0 = OneMinusT * OneMinusT * OneMinusT;
-  float b1 = 3.0 * t * OneMinusT * OneMinusT;
-  float b2 = 3.0 * t * t * OneMinusT;
-  float b3 = t * t * t;
-  return b0 * m_controlPoints.at(0) + b1 * m_controlPoints.at(
-           1) + b2 * m_controlPoints.at(2) + b3 * m_controlPoints.at(3);
+  auto b0 = OneMinusT * OneMinusT * OneMinusT;
+  auto b1 = 3.0f * t * OneMinusT * OneMinusT;
+  auto b2 = 3.0f * t * t * OneMinusT;
+  auto b3 = t * t * t;
+
+  return b0 * m_controlPoints[0] + b1 * m_controlPoints[1] +
+         b2 * m_controlPoints[2] + b3 * m_controlPoints[3];
 }
 
 glm::vec3 GLTools::GLCurves::evaluateBezierTangent(float t)
 {
-  float OneMinusT = 1.0 - t;
+  auto OneMinusT = 1.0f - t;
 
-  float b0 = 3 * OneMinusT * OneMinusT;
-  float b1 = 6 * t * OneMinusT;
-  float b2 = 3 * t * t;
+  auto b0 = 3.0f * OneMinusT * OneMinusT;
+  auto b1 = 6.0f * t * OneMinusT;
+  auto b2 = 3.0f * t * t;
 
-  return b0 * (m_controlPoints.at(1) - m_controlPoints.at(0)) +
-         b1 * (m_controlPoints.at(2) - m_controlPoints.at(1)) +
-         b2 * (m_controlPoints.at(3) - m_controlPoints.at(2));
+  return b0 * (m_controlPoints[1] - m_controlPoints[0]) +
+         b1 * (m_controlPoints[2] - m_controlPoints[1]) +
+         b2 * (m_controlPoints[3] - m_controlPoints[2]);
 }
 
-std::pair<glm::vec3, glm::vec3> GLTools::GLCurves::getPositionAndTangent(
-  float t)
+std::pair<glm::vec3, glm::vec3> GLTools::GLCurves::getPositionAndTangent
+(float t)
 {
-  std::pair<glm::vec3, glm::vec3> ret;
-  ret.first = evaluateBezierPosition(t);
-  ret.second = evaluateBezierTangent(t);
-
-  return ret;
-}
-
-GLTools::GLCurves::~GLCurves()
-{
+  return std::make_pair(evaluateBezierPosition(t), evaluateBezierTangent(t));
 }
