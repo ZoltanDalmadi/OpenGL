@@ -76,12 +76,15 @@ void moveCamera()
 		camera.move(GLTools::GLFPSCamera::Direction::DOWN);
 	/*if (keys[GLFW_KEY_M])
 	{
-		time += 0.01;
-		std::cout << time << std::endl;
+		if (time2<1.0)
+		time2 += 0.01;
+		std::cout << time2 << std::endl;
 	}
 	if (keys[GLFW_KEY_N])
 	{
-		time -= 0.01;
+		if (time2>0.0)
+		time2 -= 0.01;
+		std::cout << time2 << std::endl;
 	}*/
 }
 
@@ -154,6 +157,8 @@ void init()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_POLYGON_OFFSET_FILL);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glPolygonOffset(1, 0);
 	glLineWidth(2);
 	glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
@@ -181,6 +186,7 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 	auto normalMatrix = glm::mat3(model);
 	shaderProgram.setUniformValue("model", model);
 	shaderProgram.setUniformValue("normalMatrix", normalMatrix);
+	shaderProgram.setUniformValue("explosion", explosion);
 
 	if (glfwGetTime() - time < 3 && explosion)
 	{
