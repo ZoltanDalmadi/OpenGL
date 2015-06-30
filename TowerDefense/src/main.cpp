@@ -42,7 +42,7 @@ bool enabled = false;
 
 auto maxTower = 5;
 auto actualTower = 0;
-std::vector<Tower> towers;
+std::list<Tower> towers;
 std::unique_ptr<Enemy> targetShip;
 std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
@@ -51,12 +51,9 @@ std::shared_ptr<GLTools::GLModel> base;
 std::shared_ptr<GLTools::GLModel> cannon;
 std::shared_ptr<GLTools::GLModel> missile;
 
-
 GLTools::GLCurvePath path;
 bool exploding = false;
 float timeToExplode = 0.0f;
-
-
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
@@ -71,17 +68,17 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 
   if (key == GLFW_KEY_C && action == GLFW_PRESS)
   {
-    for (size_t i = 0; i < towers.size(); i++)
+    for (auto& tower : towers)
     {
-      towers[i].clearTarget();
+      tower.clearTarget();
     }
   }
 
   if (key == GLFW_KEY_V && action == GLFW_PRESS)
   {
-    for (size_t i = 0; i < towers.size(); i++)
+    for (auto& tower : towers)
     {
-      towers[i].setTarget(&target);
+      tower.setTarget(&target);
     }
   }
 
@@ -93,15 +90,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     exploding = true;
     PlaySound("explosion.WAV", NULL, SND_ASYNC);
     timeToExplode = glfwGetTime();
-  }
-
-  if (key == GLFW_KEY_M && action == GLFW_PRESS
-      && actualTower < maxTower)
-  {
-    if (actualTower + 1 != maxTower)
-      towers.push_back(Tower(base.get(), cannon.get(), missile.get()));
-
-    actualTower++;
   }
 
 }
@@ -205,16 +193,18 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
   lastY = ypos;
   camera.rotate(static_cast<float>(xoffset), static_cast<float>(yoffset));
 }
-/*
+
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mod)
 {
   if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE
       && actualTower < maxTower)
   {
-    towers.emplace_back(base.get(), cannon.get(), missile.get());
+    if (actualTower + 1 != maxTower)
+      towers.emplace_back(base.get(), cannon.get(), missile.get());
+
     actualTower++;
   }
-} */
+}
 
 // SHADERS --------------------------------------------------------------------
 void setupShaders(GLTools::GLShaderProgram& shaderProgram)
@@ -309,7 +299,7 @@ void init()
 
   glfwSetKeyCallback(window, key_callback);
   glfwSetCursorPosCallback(window, mouse_callback);
-  //glfwSetMouseButtonCallback(window, mouse_button_callback);
+  glfwSetMouseButtonCallback(window, mouse_button_callback);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   glewExperimental = GL_TRUE;
@@ -382,16 +372,16 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 
   if (actualTower < maxTower)
   {
-    towers[actualTower].setPosition(gridPlane->getCenter(temp));
+    towers.back().setPosition(gridPlane->getCenter(temp));
     shaderProgram.setUniformValue("transparent", true);
-    towers[actualTower].draw(shaderProgram, glfwGetTime());
+    towers.back().draw(shaderProgram, glfwGetTime());
     shaderProgram.setUniformValue("transparent", false);
     towerSize -= 1;
   }
 
-  for (size_t i = 0; i < towerSize; i++)
+  for (auto tower : towers)
   {
-    towers[i].draw(shaderProgram, glfwGetTime());
+    tower.draw(shaderProgram, glfwGetTime());
   }
 
 }
@@ -435,7 +425,7 @@ int main()
   gridPlane->initialize();
   gridPlane->setMaterial(defaultMaterial.get());
 
-  towers.push_back(Tower(base.get(), cannon.get(), missile.get()));
+  towers.emplace_back(base.get(), cannon.get(), missile.get());
 
   pointLight.setEnergy(2.0f);
 
