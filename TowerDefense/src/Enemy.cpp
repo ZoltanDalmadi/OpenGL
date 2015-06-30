@@ -57,7 +57,7 @@ void Enemy::draw(const GLTools::GLShaderProgram& shaderProgram)
   m_model->draw(shaderProgram);
 }
 
-std::pair<glm::vec3, glm::vec3> Enemy::calculate_AABB()
+std::pair<glm::vec3, glm::vec3> Enemy::calculate_AABB() const
 {
   float min_x, min_y, min_z, max_x, max_y, max_z;
 
@@ -94,14 +94,14 @@ std::pair<glm::vec3, glm::vec3> Enemy::calculate_AABB()
                         glm::vec3(max_x, max_y, max_z));
 }
 
-bool Enemy::isColliding(const glm::vec3& point)
+bool Enemy::isColliding(const glm::vec3& point) const
 {
   auto aabb = calculate_AABB();
   return isColliding(aabb, point);
 }
 
 bool Enemy::isColliding(const std::pair<glm::vec3, glm::vec3>& aabb,
-                        const glm::vec3& point)
+                        const glm::vec3& point) const
 {
   if (point.x < aabb.first.x || point.y < aabb.first.y ||
       point.z < aabb.first.z || point.x > aabb.second.x ||
