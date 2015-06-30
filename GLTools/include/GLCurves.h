@@ -3,56 +3,33 @@
 #include <glm\glm.hpp>
 #include "GLVertexArrayObject.h"
 #include "GLBufferObject.h"
-#include "GLShaderProgram.h"
 
 namespace GLTools
 {
 
 class GLCurves
 {
+  using iter2 = std::array<glm::vec3, 2>::iterator;
+  using iter4 = std::array<glm::vec3, 4>::iterator;
 public:
   GLCurves();
-  GLCurves(GLCurves&, std::array<glm::vec3, 2>);
-  GLCurves(std::array<glm::vec3, 4>);
-  void setControlPoints(std::array<glm::vec3, 4>);
-  std::array<glm::vec3, 4> getControlPoints();
-
-  void initialize();
-  /*
-  Get position in T;
-  */
-  glm::vec3 getPosition(double);
-
-  /*
-  Get position with the class t.
-  */
-  glm::vec3 getPosition();
-
-  /*
-  Return the tangent of the t.
-  */
-  glm::vec3 getTangent(double);
-
-  /*
-  Return the tangent of the class t.
-  */
-  glm::vec3 getTangent();
-
-  void setT(double);
-  double getT();
-  void draw();
-
-  void drawPoints();
-
-  std::pair<glm::vec3, glm::vec3> getPositionAndTangent(float t);
-
+  GLCurves(GLCurves&, std::array<glm::vec3, 2>&);
+  explicit GLCurves(const std::array<glm::vec3, 4>&);
   virtual ~GLCurves();
 
-private:
-  double t;
-  std::array<glm::vec3, 4> m_controlPoints;
+  void setControlPoints(const std::array<glm::vec3, 4>&);
+  std::array<glm::vec3, 4>& getControlPoints();
+
+  void initialize();
+  void draw();
+  void drawPoints();
+
   glm::vec3 evaluateBezierPosition(float);
   glm::vec3 evaluateBezierTangent(float);
+  std::pair<glm::vec3, glm::vec3> getPositionAndTangent(float t);
+
+private:
+  std::array<glm::vec3, 4> m_controlPoints;
 
   GLVertexArrayObject m_VAO;
   GLBufferObject m_VBO;

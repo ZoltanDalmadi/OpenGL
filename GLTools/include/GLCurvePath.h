@@ -12,8 +12,7 @@ public:
   ~GLCurvePath();
   std::vector<GLCurves> m_data;
 
-  std::pair<glm::vec3, glm::vec3> getPositionAndTangent(
-    float t);
+  std::pair<glm::vec3, glm::vec3> getPositionAndTangent(float t);
 
   void draw();
 };

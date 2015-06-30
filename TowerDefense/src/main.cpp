@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/intersect.hpp>
+#include <glm/gtx/norm.hpp>
 #include <memory>
 #include <iostream>
 
@@ -33,6 +34,9 @@ GLTools::GLPointLight pointLight(glm::vec3(0.0f, 10.0f, 0.0f));
 glm::vec3 target(5.0f, 5.0f, 5.0f);
 glm::vec3 targetDir(0.01f, 0.0f, 1.0f);
 
+std::list<Tower> towers;
+std::list<Enemy> enemies;
+
 bool keys[1024];
 
 // for mouse
@@ -41,11 +45,14 @@ double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
 bool enabled = false;
 
+
+bool exploding = false;
+float timeToExplode;
+GLTools::GLCurvePath path;
+
 auto maxTower = 5;
 auto actualTower = 0;
-std::list<Tower> towers;
 std::unique_ptr<Enemy> targetShip;
-std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
 std::unique_ptr<Grid> grid;
 std::shared_ptr<GLTools::GLModel> base;
@@ -54,9 +61,21 @@ std::shared_ptr<GLTools::GLModel> missile;
 std::vector<glm::vec3> closeSquares;
 auto forbiddenPlace = false;
 
-GLTools::GLCurvePath path;
-bool exploding = false;
-float timeToExplode = 0.0f;
+void setTowerTargets(glm::vec3& target)
+{
+  for (auto& tower : towers)
+  {
+    tower.setTarget(&target);
+  }
+}
+
+void clearTowerTargets()
+{
+  for (auto& tower : towers)
+  {
+    tower.clearTarget();
+  }
+}
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods)
@@ -70,14 +89,11 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     glfwSetWindowShouldClose(window, GL_TRUE);
 
   if (key == GLFW_KEY_C && action == GLFW_PRESS)
-  {
-    for (auto& tower : towers)
-    {
-      tower.clearTarget();
-    }
-  }
+    clearTowerTargets();
 
   if (key == GLFW_KEY_V && action == GLFW_PRESS)
+    setTowerTargets(target);
+
   {
     for (auto& tower : towers)
     {
@@ -379,21 +395,45 @@ std::pair<glm::vec3, glm::vec3> calcBoundingBox
   return std::make_pair(center, size);
 }
 
-bool contains(const std::vector<glm::vec3>& vec, const glm::vec3& point)
+void checkHitsAndCleanupMissiles()
 {
-  for (auto& v : vec)
+  for (auto& tower : towers)
   {
-    if (v == point)
+    auto& missiles = tower.m_missiles;
+
+    for (auto it = missiles.begin(); it != missiles.end();)
     {
-      return true;
+      if (targetShip->isColliding(it->getPosition()))
+      {
+        it = missiles.erase(it);
+        targetShip->damage(tower.getDamage());
+        std::cout << "Hit! Damage: " << tower.getDamage() <<
+                  " Ship HP: " << targetShip->m_hitPoints << std::endl;
+
+        if (targetShip->isDestroyed())
+        {
+          clearTowerTargets();
+          targetShip.reset();
+        }
+      }
+      else if (length2(it->getPosition()) > 25.0f * 25.0f)
+      {
+        it = missiles.erase(it);
+      }
+      else
+      {
+        ++it;
+      }
     }
   }
-
-  return false;
 }
 
 void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
+  targetShip->draw(shaderProgram);
+  auto aabb = targetShip->calculate_AABB();
+  auto bounding = calcBoundingBox(aabb);
+  boundingBox->draw(shaderProgram, bounding.first, bounding.second);
 
 
   float d = 0.0f;
@@ -468,9 +508,6 @@ int main()
   cannon->m_materials[0] = *defaultMaterial;
 
   targetShip = std::make_unique<Enemy>(enemy.get(), target, targetDir);
-
-  boundingBox = std::make_unique<GLTools::GLBoundingBox>();
-  boundingBox->initialize();
 
   floorPlane = std::make_unique<GLTools::GLPlane>(100.0f, 100.0f);
   floorPlane->initialize();
@@ -575,6 +612,9 @@ int main()
     }
 
     glfwSwapBuffers(window);
+
+    if (targetShip)
+      checkHitsAndCleanupMissiles();
   }
 
   glfwTerminate();

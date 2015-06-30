@@ -10,6 +10,8 @@ public:
                  GLTools::GLModel *missile);
   virtual ~Tower();
 
+  std::list<Missile> m_missiles;
+
   const glm::vec3& getPosition() const;
   void setPosition(const glm::vec3& pos);
 
@@ -38,7 +40,6 @@ private:
   GLTools::GLModel *m_cannon;
   GLTools::GLModel *m_missile;
 
-  std::list<Missile> m_missiles;
 
   glm::vec3 m_position;
   glm::vec3 *m_target;
