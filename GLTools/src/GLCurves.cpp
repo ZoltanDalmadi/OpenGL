@@ -21,10 +21,15 @@ GLTools::GLCurves::GLCurves
   m_controlPoints[0] = midPoint;
   m_controlPoints[2] = controlPoints[0];
   m_controlPoints[3] = controlPoints[1];
+
+  detail = 1000;
+
+  firstCurve.update();
+  update();
 }
 
 GLTools::GLCurves::GLCurves(const std::array<glm::vec3, 4>& controlPoints)
-  : m_controlPoints(controlPoints)
+  : m_controlPoints(controlPoints), detail(1000)
 {}
 
 void GLTools::GLCurves::setControlPoints
@@ -46,8 +51,8 @@ void GLTools::GLCurves::initialize()
   m_VAO.bind();
 
   m_VBO.bind();
-  m_VBO.upload(m_controlPoints.data(),
-               m_controlPoints.size() * sizeof(glm::vec3));
+  m_VBO.upload(curvePoints.data(),
+               curvePoints.size() * sizeof(glm::vec3));
 
   m_VAO.setAttributeArray(0, 3, sizeof(glm::vec3));
   m_VAO.unbind();
@@ -56,7 +61,7 @@ void GLTools::GLCurves::initialize()
 void GLTools::GLCurves::draw()
 {
   m_VAO.bind();
-  glDrawArrays(GL_LINES_ADJACENCY, 0, m_controlPoints.size());
+  glDrawArrays(GL_POINTS, 0, curvePoints.size());
   m_VAO.unbind();
 }
 
@@ -97,4 +102,16 @@ std::pair<glm::vec3, glm::vec3> GLTools::GLCurves::getPositionAndTangent
 (float t)
 {
   return std::make_pair(evaluateBezierPosition(t), evaluateBezierTangent(t));
+}
+
+
+void GLTools::GLCurves::update()
+{
+  float OneOverDetail = 1.0 / float(detail - 1.0);
+
+  for (int i = 0; i < detail; i++)
+  {
+    float t = i * OneOverDetail;
+    curvePoints.emplace_back(evaluateBezierPosition(t));
+  }
 }

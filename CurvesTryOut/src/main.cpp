@@ -33,14 +33,14 @@ GLTools::GLFPSCamera camera(glm::vec3(0.0f, 1.0f, -5.0f));
 
 glm::vec3 target(5.0f, 5.0f, 5.0f);
 
-std::array<glm::vec3, 4> temp = { glm::vec3(0.0f, 0.0f, 0.0f),
-                                  glm::vec3(10.0f, 0.0f, 30.0f),
-                                  glm::vec3(17.0f, 30.0f, -34.0f),
-                                  glm::vec3(40.0f, 0.0f, 40.0f)
+std::array<glm::vec3, 4> temp = { glm::vec3(0.0f, 0.01f, 0.0f),
+                                  glm::vec3(10.0f, 0.01f, 30.0f),
+                                  glm::vec3(17.0f, 0.01f, -34.0f),
+                                  glm::vec3(40.0f, 0.01f, 40.0f)
                                 };
 GLTools::GLCurves curve(temp);
-std::array<glm::vec3, 2> temp1 = { glm::vec3(50.0f, 30.0f, -50.0f),
-                                   glm::vec3(100.0f, 0.0f, 100.0f)
+std::array<glm::vec3, 2> temp1 = { glm::vec3(50.0f, 0.01f, -50.0f),
+                                   glm::vec3(100.0f, 0.01f, 100.0f)
                                  };
 GLTools::GLCurves curve1(curve, temp1);
 

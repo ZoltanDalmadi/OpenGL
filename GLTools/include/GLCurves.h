@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <vector>
 #include <glm\glm.hpp>
 #include "GLVertexArrayObject.h"
 #include "GLBufferObject.h"
@@ -23,6 +24,7 @@ public:
   void initialize();
   void draw();
   void drawPoints();
+  void update();
 
   glm::vec3 evaluateBezierPosition(float);
   glm::vec3 evaluateBezierTangent(float);
@@ -30,6 +32,8 @@ public:
 
 private:
   std::array<glm::vec3, 4> m_controlPoints;
+  std::vector<glm::vec3> curvePoints;
+  int detail;
 
   GLVertexArrayObject m_VAO;
   GLBufferObject m_VBO;

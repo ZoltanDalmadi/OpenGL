@@ -1,6 +1,31 @@
 ﻿#version 330 core
-layout (lines_adjacency) in;
-layout (line_strip, max_vertices = 100) out;
+layout (points) in;
+layout (triangle_strip, max_vertices = 4) out;
+
+uniform mat4 MVP;
+
+void main() {    
+  		
+	gl_Position = MVP * (gl_in[0].gl_Position + vec4(-0.05, 0.0, -0.1, 0.0));
+    EmitVertex();
+	gl_Position = MVP * (gl_in[0].gl_Position + vec4(-0.05, 0.0, 0.1, 0.0));
+    EmitVertex();
+	gl_Position = MVP * (gl_in[0].gl_Position + vec4(0.05, 0.0, -0.1, 0.0));
+    EmitVertex();
+	gl_Position = MVP * (gl_in[0].gl_Position + vec4(0.05, 0.0, 0.1, 0.0));
+    EmitVertex();
+
+
+	EndPrimitive();	
+} 
+
+
+
+
+/*layout (lines_adjacency) in;
+layout (lines_strip, max_vertices = 256) out;
+
+int detail = 45;
 
 uniform mat4 MVP;
 
@@ -24,14 +49,18 @@ void main() {
     cPoints[2] = vec3(gl_in[2].gl_Position); 
     cPoints[3] = vec3(gl_in[3].gl_Position);
 
-    float OneOverDetail = 1.0 / float(100.0-1.0);
-    for( int i=0; i< 100; i++ )
+    float OneOverDetail = 1.0 / float(detail-1.0);
+	vec3 prev;
+    for( int i=1; i< detail; i++ )
     {
+
         float t = i * OneOverDetail;
-        vec3 p = evaluateBezierPosition( cPoints, t );
-        gl_Position = MVP * vec4( p, 1.0 );
+		vec3 p = evaluateBezierPosition( cPoints, t );
+		
+		gl_Position = MVP * vec4( p, 1.0 );
         EmitVertex();
+
     }
 
 	EndPrimitive();	
-}  
+} */ 
