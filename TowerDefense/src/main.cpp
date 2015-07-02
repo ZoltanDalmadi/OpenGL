@@ -18,6 +18,7 @@
 #include "Enemy.h"
 #include "Grid.h"
 #include <GLSkyBox.h>
+#include "Laser.h"
 
 //constants
 const GLuint WIDTH = 1920;
@@ -58,6 +59,7 @@ std::unique_ptr<GLTools::GLModel> base;
 std::unique_ptr<GLTools::GLModel> cannon;
 std::unique_ptr<GLTools::GLModel> missile;
 
+Laser laserObject;
 
 auto maxTower = 10;
 auto actualTower = 1;
@@ -166,6 +168,12 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mod)
   if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
   {
     lezer = true;
+
+    auto actual = towers.begin();
+
+    std::advance(actual, inTower);
+
+    laserObject.m_data[0] = actual->getPosition();
   }
 
   if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
@@ -322,10 +330,12 @@ void init()
 
   glViewport(0, 0, WIDTH, HEIGHT);
   glEnable(GL_DEPTH_TEST);
-  //glEnable(GL_CULL_FACE);
+  glEnable(GL_CULL_FACE);
   glEnable(GL_POLYGON_OFFSET_FILL);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_LINE_SMOOTH);
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   glPolygonOffset(1, 0);
   glLineWidth(2);
   glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
@@ -518,7 +528,7 @@ void setupEnemyPath()
 
   std::array<glm::vec3, 2> p2 =
   {
-    glm::vec3(0.0f, 0.0f, 20.0f), glm::vec3(-25.0f, 0.0f, 25.0f)
+    glm::vec3(0.0f, 10.0f, 20.0f), glm::vec3(-25.0f, 0.0f, 25.0f)
   };
 
   GLTools::GLCurves c1(p1);
@@ -552,11 +562,6 @@ void initGrid()
         closeSquares.push_back(point);
     }
   }
-}
-
-void drawLeser()
-{
-
 }
 
 int main()
@@ -593,6 +598,9 @@ int main()
   auto projection =
     glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 100.0f);
 
+  laserObject = Laser();
+  laserObject.initialize();
+
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
@@ -623,7 +631,12 @@ int main()
     grid->draw(*gridProgram);
 
     if (lezer)
-      drawLeser();
+    {
+      gridProgram->setUniformValue("gridColor", glm::vec4(1.0f, 0.0f, 0.0f, 0.5f));
+      laserObject.m_data[1] = target1;
+      laserObject.commitDataChange();
+      laserObject.draw(*gridProgram);
+    }
 
     pathProgram->use();
 
