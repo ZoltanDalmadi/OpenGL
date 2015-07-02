@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/norm.hpp>
 #include <memory>
 #include <iostream>
@@ -90,69 +89,6 @@ void moveCamera()
 
   if (keys[GLFW_KEY_LEFT_CONTROL])
     camera.move(GLTools::GLFPSCamera::Direction::DOWN);
-}
-
-void moveTarget()
-{
-  if (keys[GLFW_KEY_UP])
-  {
-    target += glm::vec3(0.0f, 0.2f, 0.0f);
-    targetShip->setPosition(target);
-  }
-
-  if (keys[GLFW_KEY_DOWN])
-  {
-    target -= glm::vec3(0.0f, 0.2f, 0.0f);
-    targetShip->setPosition(target);
-  }
-
-  if (keys[GLFW_KEY_LEFT])
-  {
-    target += glm::vec3(0.2f, 0.0f, 0.0f);
-    targetShip->setPosition(target);
-  }
-
-  if (keys[GLFW_KEY_RIGHT])
-  {
-    target -= glm::vec3(0.2f, 0.0f, 0.0f);
-    targetShip->setPosition(target);
-  }
-
-  if (keys[GLFW_KEY_PAGE_UP])
-  {
-    target += glm::vec3(0.0f, 0.0f, 0.2f);
-    targetShip->setPosition(target);
-  }
-
-  if (keys[GLFW_KEY_PAGE_DOWN])
-  {
-    target -= glm::vec3(0.0f, 0.0f, 0.2f);
-    targetShip->setPosition(target);
-  }
-
-  if (keys[GLFW_KEY_I])
-  {
-    targetDir = rotateX(targetDir, glm::radians(-1.0f));
-    targetShip->setDirection(targetDir);
-  }
-
-  if (keys[GLFW_KEY_K])
-  {
-    targetDir = rotateX(targetDir, glm::radians(1.0f));
-    targetShip->setDirection(targetDir);
-  }
-
-  if (keys[GLFW_KEY_J])
-  {
-    targetDir = rotateY(targetDir, glm::radians(-1.0f));
-    targetShip->setDirection(targetDir);
-  }
-
-  if (keys[GLFW_KEY_L])
-  {
-    targetDir = rotateY(targetDir, glm::radians(1.0f));
-    targetShip->setDirection(targetDir);
-  }
 }
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
@@ -264,30 +200,48 @@ std::pair<glm::vec3, glm::vec3> calcBoundingBox
   return std::make_pair(center, size);
 }
 
+void scanForTarget(Tower& tower)
+{
+  for (auto& enemy : enemies)
+  {
+    auto enemyPos = enemy.m_position;
+    auto d = tower.getPosition() - enemyPos;
+    auto rangeSquared = tower.getRange() * tower.getRange();
+
+    if (length2(d) <= rangeSquared)
+    {
+      tower.setTarget(&enemy.m_position);
+      break;
+    }
+  }
+
+}
+
 void checkHitsAndCleanupMissiles()
 {
   for (auto& enemy : enemies)
   {
     for (auto& tower : towers)
     {
-      auto& missiles = tower.m_missiles;
-
-      for (auto it = missiles.begin(); it != missiles.end();)
+      if (tower.m_target)
       {
-        if (enemy.isColliding(it->getPosition()))
+        auto& missiles = tower.m_missiles;
+
+        for (auto it = missiles.begin(); it != missiles.end();)
         {
-          it = missiles.erase(it);
-          enemy.damage(tower.getDamage());
-        }
-        else if (length2(it->getPosition()) > 25.0f * 25.0f)
-        {
-          it = missiles.erase(it);
-        }
-        else
-        {
-          ++it;
+          if (enemy.isColliding(it->getPosition()))
+          {
+            it = missiles.erase(it);
+            enemy.damage(tower.getDamage());
+          }
+          else if (length2(it->getPosition()) > 25.0f * 25.0f)
+            it = missiles.erase(it);
+          else
+            ++it;
         }
       }
+      else
+        scanForTarget(tower);
     }
   }
 }
@@ -298,12 +252,16 @@ void cleanupEnemies()
   {
     if (it->isDestroyed() || it->m_progress >= 1.0f)
     {
+      for (auto& tower : towers)
+      {
+        if (tower.m_target == &it->m_position)
+          tower.clearTarget();
+      }
+
       it = enemies.erase(it);
     }
     else
-    {
       ++it;
-    }
   }
 }
 
@@ -314,8 +272,8 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
     for (auto& enemy : enemies)
     {
       auto vectors = enemyPath.getPositionAndTangent(enemy.m_progress);
-      enemy.setPosition(vectors.first);
-      enemy.setDirection(vectors.second);
+      enemy.m_position = vectors.first;
+      enemy.m_direction = normalize(vectors.second);
       enemy.draw(shaderProgram);
     }
   }
@@ -398,7 +356,6 @@ int main()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     moveCamera();
-    moveTarget();
 
     auto VP = projection * camera.m_viewMatrix;
 
