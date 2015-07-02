@@ -23,6 +23,9 @@
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
 const GLuint MAX_TOWERS = 5;
+const float ENEMY_FREQUENCY = 0.005f;
+
+float enemyCounter = 0.0f;
 
 GLFWwindow *window;
 
@@ -373,6 +376,8 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
       shaderProgram.setUniformValue("invalidPlacement", false);
     }
   }
+  else
+    towerPlacementMode = false;
 
   if (!enemies.empty())
   {
@@ -540,6 +545,15 @@ int main()
     {
       checkHitsAndCleanupMissiles();
       cleanupEnemies();
+    }
+
+    if (towers.size() == MAX_TOWERS)
+      enemyCounter += ENEMY_FREQUENCY;
+
+    if (enemyCounter >= 1.0f)
+    {
+      addNewEnemy(enemy.get());
+      enemyCounter = 0.0f;
     }
   }
 
