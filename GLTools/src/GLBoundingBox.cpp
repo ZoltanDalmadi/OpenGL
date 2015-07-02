@@ -47,9 +47,10 @@ void GLTools::GLBoundingBox::initialize()
 
 void GLTools::GLBoundingBox::draw
 (const GLShaderProgram& shaderProgram, const glm::vec3& center,
- const glm::vec3& size)
+ const glm::vec3& size, const glm::mat4& modelMatrix)
 {
   this->update(center, size);
+  m_modelMatrix = modelMatrix * m_modelMatrix;
   shaderProgram.setUniformValue("model", m_modelMatrix);
   this->draw();
 }
