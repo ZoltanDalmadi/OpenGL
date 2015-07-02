@@ -7,6 +7,8 @@ in vec2 texCoords;
 out vec4 fragColor;
 
 uniform vec3 camPos;
+uniform bool placementMode;
+uniform bool invalidPlacement;
 
 struct Material
 {
@@ -71,5 +73,23 @@ void main()
   vec3 norm = normalize(normal);
   vec3 camDir = normalize(camPos - fragPos);
 
-  fragColor = vec4(calcPointLight(pointLight, norm, fragPos, camDir), 1.0);
+  vec3 color;
+  float alpha;
+
+  if (placementMode)
+  {
+    alpha = 0.25f;
+
+    if (invalidPlacement)
+      color = vec3(1.0f, 0.0f, 0.0f);
+    else
+      color = vec3(0.0f, 1.0f, 0.0f);
+  }
+  else
+  {
+    alpha = 1.0f;
+    color = calcPointLight(pointLight, norm, fragPos, camDir);
+  }
+
+  fragColor = vec4(color, alpha);
 }
