@@ -66,20 +66,10 @@ std::unique_ptr<GLTools::GLModel> enemy;
 
 auto inTower = -1;
 
-void setTowerTargets(glm::vec3& target)
+void addNewEnemy(GLTools::GLModel *enemyModel)
 {
-  for (auto& tower : towers)
-  {
-    tower.setTarget(&target);
-  }
-}
-
-void clearTowerTargets()
-{
-  for (auto& tower : towers)
-  {
-    tower.clearTarget();
-  }
+  auto startVectors = path.getPositionAndTangent(0.0f);
+  enemies.emplace_back(enemyModel, startVectors.first, startVectors.second);
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -93,12 +83,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
 
-  //if (key == GLFW_KEY_C && action == GLFW_PRESS)
-  //  clearTowerTargets();
-
-  if (key == GLFW_KEY_V && action == GLFW_PRESS)
-    setTowerTargets(target);
-
   if (key == GLFW_KEY_B && action == GLFW_PRESS)
     enabled = true;
 
@@ -107,12 +91,11 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     exploding = true;
     PlaySound("sfx/explosion.WAV", NULL, SND_ASYNC);
     timeToExplode = glfwGetTime();
-    //if (key == GLFW_KEY_V && action == GLFW_PRESS)
-    //  setTowerTargets(target);
 
-    if (key == GLFW_KEY_E && action == GLFW_PRESS)
-      addNewEnemy(enemy.get());
   }
+
+  if (key == GLFW_KEY_E && action == GLFW_PRESS)
+    addNewEnemy(enemy.get());
 
   if (key == GLFW_KEY_6 && action == GLFW_PRESS)
   {
@@ -614,10 +597,16 @@ int main()
 
     if (!exploding)
     {
-      targetShip->draw(*shaderProgram);
-      auto aabb = targetShip->calculate_AABB();
-      auto bounding = calcBoundingBox(aabb);
-      //boundingBox->draw(*shaderProgram, bounding.first, bounding.second);
+      if (!enemies.empty())
+      {
+        for (auto& enemy : enemies)
+        {
+          auto vectors = path.getPositionAndTangent(enemy.m_progress);
+          enemy.m_position = vectors.first;
+          enemy.m_direction = glm::normalize(vectors.second);
+          enemy.draw(*shaderProgram);
+        }
+      }
     }
     else
     {
@@ -633,6 +622,7 @@ int main()
       }
     }
 
+
     shaderProgram3->use();
     shaderProgram3->setUniformValue("viewProjection",
                                     projection * camera.m_viewMatrix);
@@ -640,13 +630,7 @@ int main()
 
     shaderProgram1->use();
     shaderProgram1->setUniformValue("MVP", projection * camera.m_viewMatrix);
-
     path.draw();
-    std::pair<glm::vec3, glm::vec3> temp = path.getPositionAndTangent(t);
-    targetShip->setPosition(temp.first);
-    target = temp.first;
-    auto targetDir1 = glm::normalize(temp.second);
-    targetShip->setDirection(targetDir1);
 
     if (t < 1.0f)
     {
