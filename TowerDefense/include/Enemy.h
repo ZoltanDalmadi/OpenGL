@@ -22,23 +22,23 @@ public:
 
   void draw(const GLTools::GLShaderProgram& shaderProgram);
 
-  std::pair<glm::vec3, glm::vec3> calculate_AABB();
-  bool isColliding(const glm::vec3& point);
+  std::pair<glm::vec3, glm::vec3> calculate_AABB() const;
+  bool isColliding(const glm::vec3& point) const;
   bool isColliding(const std::pair<glm::vec3, glm::vec3>& aabb,
-                   const glm::vec3& point);
+                   const glm::vec3& point) const;
 
+  glm::vec3 m_position;
+  glm::vec3 m_direction;
+  float m_progress = 0.0f;
   glm::mat4 getModelMatrx();
 
   float m_hitPoints = 100.0f;
 private:
   void update();
   GLTools::GLModel *m_model;
-  glm::vec3 m_position;
-  glm::vec3 m_direction;
 
   glm::mat4 m_modelMatrix;
 
-  float m_progress = 0.0f;
   float m_velocity = 0.001f;
   bool m_destroyed = false;
 };

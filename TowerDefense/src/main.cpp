@@ -62,6 +62,7 @@ std::shared_ptr<GLTools::GLModel> cannon;
 std::shared_ptr<GLTools::GLModel> missile;
 std::vector<glm::vec3> closeSquares;
 auto forbiddenPlace = false;
+std::unique_ptr<GLTools::GLModel> enemy;
 
 auto inTower = -1;
 
@@ -92,8 +93,8 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
 
-  if (key == GLFW_KEY_C && action == GLFW_PRESS)
-    clearTowerTargets();
+  //if (key == GLFW_KEY_C && action == GLFW_PRESS)
+  //  clearTowerTargets();
 
   if (key == GLFW_KEY_V && action == GLFW_PRESS)
     setTowerTargets(target);
@@ -106,6 +107,11 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     exploding = true;
     PlaySound("sfx/explosion.WAV", NULL, SND_ASYNC);
     timeToExplode = glfwGetTime();
+    //if (key == GLFW_KEY_V && action == GLFW_PRESS)
+    //  setTowerTargets(target);
+
+    if (key == GLFW_KEY_E && action == GLFW_PRESS)
+      addNewEnemy(enemy.get());
   }
 
   if (key == GLFW_KEY_6 && action == GLFW_PRESS)
@@ -399,36 +405,68 @@ std::pair<glm::vec3, glm::vec3> calcBoundingBox
   return std::make_pair(center, size);
 }
 
+void scanForTarget(Tower& tower)
+{
+  for (auto& enemy : enemies)
+  {
+    auto enemyPos = enemy.m_position;
+    auto d = tower.getPosition() - enemyPos;
+    auto rangeSquared = tower.getRange() * tower.getRange();
+
+    if (length2(d) <= rangeSquared)
+    {
+      tower.setTarget(&enemy.m_position);
+      break;
+    }
+  }
+
+}
+
 void checkHitsAndCleanupMissiles()
 {
-  for (auto& tower : towers)
+  for (auto& enemy : enemies)
   {
-    auto& missiles = tower.m_missiles;
-
-    for (auto it = missiles.begin(); it != missiles.end();)
+    for (auto& tower : towers)
     {
-      if (targetShip->isColliding(it->getPosition()))
+      if (tower.m_target)
       {
-        it = missiles.erase(it);
-        targetShip->damage(tower.getDamage());
-        std::cout << "Hit! Damage: " << tower.getDamage() <<
-                  " Ship HP: " << targetShip->m_hitPoints << std::endl;
+        auto& missiles = tower.m_missiles;
 
-        if (targetShip->isDestroyed())
+        for (auto it = missiles.begin(); it != missiles.end();)
         {
-          clearTowerTargets();
-          targetShip.reset();
+          if (enemy.isColliding(it->getPosition()))
+          {
+            it = missiles.erase(it);
+            enemy.damage(tower.getDamage());
+          }
+          else if (length2(it->getPosition()) > 25.0f * 25.0f)
+            it = missiles.erase(it);
+          else
+            ++it;
         }
       }
-      else if (length2(it->getPosition()) > 25.0f * 25.0f)
-      {
-        it = missiles.erase(it);
-      }
       else
-      {
-        ++it;
-      }
+        scanForTarget(tower);
     }
+  }
+}
+
+void cleanupEnemies()
+{
+  for (auto it = enemies.begin(); it != enemies.end();)
+  {
+    if (it->isDestroyed() || it->m_progress >= 1.0f)
+    {
+      for (auto& tower : towers)
+      {
+        if (tower.m_target == &it->m_position)
+          tower.clearTarget();
+      }
+
+      it = enemies.erase(it);
+    }
+    else
+      ++it;
   }
 }
 
@@ -541,6 +579,7 @@ int main()
   /*end initialize*/
 
   towers.emplace_back(base.get(), cannon.get(), missile.get());
+  towers.back().setPosition(glm::vec3(-10.0f, 0.0f, 1.0f));
 
   pointLight.setEnergy(2.0f);
 
@@ -621,8 +660,11 @@ int main()
 
     glfwSwapBuffers(window);
 
-    if (targetShip)
+    if (!enemies.empty())
+    {
       checkHitsAndCleanupMissiles();
+      cleanupEnemies();
+    }
   }
 
   glfwTerminate();
