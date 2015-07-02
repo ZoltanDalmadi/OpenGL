@@ -15,6 +15,7 @@
 #include "Tower.h"
 #include "Enemy.h"
 #include "Grid.h"
+#include <GLSkyBox.h>
 
 //constants
 const GLuint WIDTH = 1280;
@@ -31,6 +32,8 @@ glm::vec3 targetDir(0.01f, 0.0f, 1.0f);
 std::list<Tower> towers;
 std::list<Enemy> enemies;
 
+std::vector<const char *> skyBoxFaces;
+
 std::vector<glm::vec3> closeSquares;
 bool keys[1024];
 
@@ -44,6 +47,8 @@ GLTools::GLCurvePath enemyPath;
 std::unique_ptr<Grid> grid;
 std::unique_ptr<GLTools::GLModel> enemy;
 std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
+std::unique_ptr<GLTools::GLSkyBox> skyBox;
+std::unique_ptr<GLTools::GLTexture> cubemapTexture;
 
 bool drawBoundingBox = false;
 
@@ -111,7 +116,8 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 // SHADERS --------------------------------------------------------------------
 void setupShaders(GLTools::GLShaderProgram& shaderProgram,
                   GLTools::GLShaderProgram& pathProgram,
-                  GLTools::GLShaderProgram& gridProgram)
+                  GLTools::GLShaderProgram& gridProgram,
+                  GLTools::GLShaderProgram& skyBoxProgram)
 {
   auto vertexShader =
     std::make_shared<GLTools::GLShader>
@@ -174,6 +180,23 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram,
   gridProgram.link();
   std::cout << gridProgram.log() << std::endl;
 
+  auto skyBoxVertexShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/skybox_vertex_shader.glsl");
+  std::cout << skyBoxVertexShader->log() << std::endl;
+
+  auto skyBoxFragmentShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/skybox_fragment_shader.glsl");
+  std::cout << skyBoxFragmentShader->log() << std::endl;
+
+  skyBoxProgram.create();
+  skyBoxProgram.addShader(skyBoxVertexShader);
+  skyBoxProgram.addShader(skyBoxFragmentShader);
+  skyBoxProgram.link();
+  std::cout << skyBoxProgram.log() << std::endl;
 }
 
 void init()
@@ -312,6 +335,36 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
     tower.draw(shaderProgram, glfwGetTime());
 }
 
+void renderSkyBox(const GLTools::GLShaderProgram& shaderProgram,
+                  const glm::mat4& projMatrix)
+{
+  glDepthFunc(GL_LEQUAL);
+  shaderProgram.use();
+  auto skyBoxView = glm::mat4(glm::mat3(camera.m_viewMatrix));
+  shaderProgram.setUniformValue("view", skyBoxView);
+  shaderProgram.setUniformValue("projection", projMatrix);
+  cubemapTexture->bind();
+  skyBox->draw();
+  cubemapTexture->unbind();
+  glDepthFunc(GL_LESS);
+}
+
+void setupSkyBox()
+{
+  //cubemap textures
+  skyBoxFaces.push_back("textures/nebula_right.png");
+  skyBoxFaces.push_back("textures/nebula_left.png");
+  skyBoxFaces.push_back("textures/nebula_top.png");
+  skyBoxFaces.push_back("textures/nebula_bottom.png");
+  skyBoxFaces.push_back("textures/nebula_back.png");
+  skyBoxFaces.push_back("textures/nebula_front.png");
+
+  skyBox = std::make_unique<GLTools::GLSkyBox>();
+  skyBox->initialize();
+
+  cubemapTexture = std::make_unique<GLTools::GLTexture>(skyBoxFaces.data());
+}
+
 void setupEnemyPath()
 {
   std::array<glm::vec3, 4> p1 =
@@ -363,13 +416,15 @@ void initGrid()
 int main()
 {
   init();
+  setupSkyBox();
   setupEnemyPath();
   initGrid();
 
   auto shaderProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto pathProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto gridProgram = std::make_unique<GLTools::GLShaderProgram>();
-  setupShaders(*shaderProgram, *pathProgram, *gridProgram);
+  auto skyBoxProgram = std::make_unique<GLTools::GLShaderProgram>();
+  setupShaders(*shaderProgram, *pathProgram, *gridProgram, *skyBoxProgram);
 
   auto defaultMaterial = std::make_unique<GLTools::GLMaterial>();
 
@@ -418,6 +473,8 @@ int main()
     pathProgram->use();
     pathProgram->setUniformValue("VP", VP);
     enemyPath.draw();
+
+    renderSkyBox(*skyBoxProgram, projection);
 
     glfwSwapBuffers(window);
 
