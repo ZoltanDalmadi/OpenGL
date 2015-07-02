@@ -11,12 +11,6 @@ public:
 
   virtual ~Enemy();
 
-  const glm::vec3& getPosition() const;
-  void setPosition(const glm::vec3& pos);
-
-  const glm::vec3& getDirection() const;
-  void setDirection(const glm::vec3& dir);
-
   void damage(float damage);
   bool isDestroyed() const;
 
@@ -27,13 +21,13 @@ public:
   bool isColliding(const std::pair<glm::vec3, glm::vec3>& aabb,
                    const glm::vec3& point) const;
 
+  glm::vec3 m_position;
+  glm::vec3 m_direction;
   float m_progress = 0.0f;
   float m_hitPoints = 100.0f;
 private:
   void update();
   GLTools::GLModel *m_model;
-  glm::vec3 m_position;
-  glm::vec3 m_direction;
 
   glm::mat4 m_modelMatrix;
 

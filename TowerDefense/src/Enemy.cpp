@@ -15,26 +15,6 @@ Enemy::Enemy(GLTools::GLModel *model, const glm::vec3& pos,
 Enemy::~Enemy()
 {}
 
-const glm::vec3& Enemy::getPosition() const
-{
-  return m_position;
-}
-
-void Enemy::setPosition(const glm::vec3& pos)
-{
-  m_position = pos;
-}
-
-const glm::vec3& Enemy::getDirection() const
-{
-  return m_direction;
-}
-
-void Enemy::setDirection(const glm::vec3& dir)
-{
-  m_direction = normalize(dir);
-}
-
 void Enemy::damage(float damage)
 {
   m_hitPoints -= damage;
