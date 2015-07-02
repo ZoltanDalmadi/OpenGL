@@ -11,6 +11,7 @@ public:
   virtual ~Tower();
 
   std::list<Missile> m_missiles;
+  glm::vec3 *m_target;
 
   const glm::vec3& getPosition() const;
   void setPosition(const glm::vec3& pos);
@@ -40,9 +41,7 @@ private:
   GLTools::GLModel *m_cannon;
   GLTools::GLModel *m_missile;
 
-
   glm::vec3 m_position;
-  glm::vec3 *m_target;
   glm::vec3 m_offset = glm::vec3(0.33183f, 0.93760f, 0.0f);
   float m_cannonLength = 2.9f;
 
@@ -52,7 +51,7 @@ private:
   glm::mat4 m_modelMatrix;
   glm::mat4 m_cannonMatrix;
 
-  float m_range = 10.0f;
+  float m_range = 20.0f;
   float m_damage = 25.0f;
 
   double m_coolDown = 100.0f;
