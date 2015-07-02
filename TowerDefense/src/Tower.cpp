@@ -10,9 +10,7 @@ Tower::Tower(GLTools::GLModel *base, GLTools::GLModel *cannon,
     m_cannon(cannon),
     m_missile(missile),
     m_baseAngle(0.0f),
-    m_cannonAngle(0.0f),
-    m_modelMatrix(translate(glm::mat4(), m_position)),
-    m_cannonMatrix(translate(m_modelMatrix, m_offset))
+    m_cannonAngle(0.0f)
 {}
 
 Tower::~Tower()
