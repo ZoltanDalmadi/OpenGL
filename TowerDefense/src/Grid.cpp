@@ -1,26 +1,16 @@
 #include "Grid.h"
-#include <iostream>
-
-
 
 Grid::Grid()
-{
-}
+{}
 
 Grid::Grid(float width, float height, float squareSize)
-{
-  m_width = width;
-  m_height = height;
-  m_small_square = squareSize;
-}
+  : m_width(width),
+    m_height(height),
+    m_small_square(squareSize)
+{}
 
-void Grid::draw(const GLTools::GLShaderProgram& shaderProgram)
-{
-  shaderProgram.setUniformValue("gridColor", glm::vec4(color, alpha));
-  m_VAO.bind();
-  glDrawArrays(GL_LINES, 0, m_line_size);
-  m_VAO.unbind();
-}
+Grid::~Grid()
+{}
 
 void Grid::initialize()
 {
@@ -34,7 +24,7 @@ void Grid::initialize()
   auto pieceX = m_width / 2;
   auto pieceY = m_height / 2;
 
-  for (float i = -pieceX; i <= pieceX; i += m_small_square)
+  for (auto i = -pieceX; i <= pieceX; i += m_small_square)
   {
     glm::vec3 left(i, 0.0f, -pieceY);
     linePoints.emplace_back(left);
@@ -42,7 +32,7 @@ void Grid::initialize()
     linePoints.emplace_back(upRight);
   }
 
-  for (float i = -pieceY; i <= pieceY; i += m_small_square)
+  for (auto i = -pieceY; i <= pieceY; i += m_small_square)
   {
     glm::vec3 left(-pieceX, 0.0f, i);
     linePoints.emplace_back(left);
@@ -70,9 +60,9 @@ void Grid::uploadGrid()
   auto pieceX = m_width / 2;
   auto pieceY = m_height / 2;
 
-  for (float i = -pieceX; i < pieceX; i += m_small_square)
+  for (auto i = -pieceX; i < pieceX; i += m_small_square)
   {
-    for (float j = -pieceY; j < pieceY; j += m_small_square)
+    for (auto j = -pieceY; j < pieceY; j += m_small_square)
     {
       glm::vec2 left(i, j);
       glm::vec2 upRight(i + m_small_square, j + m_small_square);
@@ -84,9 +74,16 @@ void Grid::uploadGrid()
   }
 }
 
+glm::vec3 Grid::getCenter(const glm::vec3& position)
+{
+  glm::vec3 result;
+  getCenter(position, result);
+  return result;
+}
+
 bool Grid::getCenter(const glm::vec3& position, glm::vec3& out)
 {
-  bool ret = false;
+  auto ret = false;
   out = position;
 
   for (auto& i : m_grid)
@@ -95,8 +92,8 @@ bool Grid::getCenter(const glm::vec3& position, glm::vec3& out)
     {
       if (i.first.y <= position.z && i.second.y >= position.z)
       {
-        glm::vec2 tangent = (i.second - i.first) / 2.0f;
-        glm::vec2 center = i.first + tangent;
+        auto tangent = (i.second - i.first) / 2.0f;
+        auto center = i.first + tangent;
         ret = true;
         out = glm::vec3(center.x, position.y, center.y);
         break;
@@ -107,6 +104,10 @@ bool Grid::getCenter(const glm::vec3& position, glm::vec3& out)
   return ret;
 }
 
-Grid::~Grid()
+void Grid::draw(const GLTools::GLShaderProgram& shaderProgram)
 {
+  shaderProgram.setUniformValue("gridColor", glm::vec4(color, alpha));
+  m_VAO.bind();
+  glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(m_line_size));
+  m_VAO.unbind();
 }

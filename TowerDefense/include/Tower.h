@@ -11,7 +11,7 @@ public:
   virtual ~Tower();
 
   std::list<Missile> m_missiles;
-  glm::vec3 *m_target;
+  glm::vec3 *m_target = nullptr;
 
   const glm::vec3& getPosition() const;
   void setPosition(const glm::vec3& pos);

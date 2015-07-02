@@ -3,17 +3,21 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/intersect.hpp>
 #include <glm/gtx/norm.hpp>
 #include <memory>
 #include <iostream>
+#include <Windows.h>
 
 #include "GLFPSCamera.h"
 #include "GLModel.h"
 #include "GLPointLight.h"
-#include "GLPlane.h"
 #include "GLCurvePath.h"
+#include "GLBoundingBox.h"
 #include "Tower.h"
 #include "Enemy.h"
+#include "Grid.h"
+#include <GLSkyBox.h>
 
 //constants
 const GLuint WIDTH = 1280;
@@ -30,6 +34,9 @@ glm::vec3 targetDir(0.01f, 0.0f, 1.0f);
 std::list<Tower> towers;
 std::list<Enemy> enemies;
 
+std::vector<const char *> skyBoxFaces;
+
+std::vector<glm::vec3> closeSquares;
 bool keys[1024];
 
 // for mouse
@@ -39,14 +46,41 @@ bool firstMouse = true;
 
 GLTools::GLCurvePath enemyPath;
 
-std::unique_ptr<Enemy> targetShip;
-std::unique_ptr<GLTools::GLPlane> floorPlane;
+std::unique_ptr<Grid> grid;
 std::unique_ptr<GLTools::GLModel> enemy;
+std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
+std::unique_ptr<GLTools::GLSkyBox> skyBox;
+std::unique_ptr<GLTools::GLTexture> cubemapTexture;
+
+std::unique_ptr<GLTools::GLModel> base;
+std::unique_ptr<GLTools::GLModel> cannon;
+std::unique_ptr<GLTools::GLModel> missile;
+
+
+auto maxTower = 10;
+auto actualTower = 1;
+auto forbiddenPlace = false;
+auto inTower = -1;
+glm::vec3 target1(5.0f, 5.0f, 5.0f);
+
+bool drawBoundingBox = false;
 
 void addNewEnemy(GLTools::GLModel *enemyModel)
 {
   auto startVectors = enemyPath.getPositionAndTangent(0.0f);
   enemies.emplace_back(enemyModel, startVectors.first, startVectors.second);
+}
+
+void clearPreviousTarget()
+{
+  if (inTower > -1)
+  {
+    auto front = towers.begin();
+
+    std::advance(front, inTower);
+
+    front->clearTarget();
+  }
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -60,14 +94,63 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
 
-  //if (key == GLFW_KEY_C && action == GLFW_PRESS)
-  //  clearTowerTargets();
-
-  //if (key == GLFW_KEY_V && action == GLFW_PRESS)
-  //  setTowerTargets(target);
-
   if (key == GLFW_KEY_E && action == GLFW_PRESS)
     addNewEnemy(enemy.get());
+
+  if (key == GLFW_KEY_B && action == GLFW_PRESS)
+    drawBoundingBox = !drawBoundingBox;
+
+  if (key == GLFW_KEY_R && action == GLFW_PRESS)
+  {
+    clearPreviousTarget();
+    inTower = -1;
+  }
+
+  if (key == GLFW_KEY_T && action == GLFW_PRESS)
+  {
+    clearPreviousTarget();
+
+    if (inTower == towers.size() - 1)
+      inTower = -1;
+
+    inTower++;
+
+    auto front = towers.begin();
+
+    std::advance(front, inTower);
+
+    camera.m_position = front->getPosition() + glm::vec3(0.0f, 2.0f, 0.0f);
+    front->setTarget(&target1);
+  }
+
+}
+
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mod)
+{
+  /*Curve */
+  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+  {
+    if (actualTower < maxTower)
+    {
+      if (forbiddenPlace)
+      {
+        PlaySound("sfx/error.WAV", NULL, SND_ASYNC);
+      }
+      else
+      {
+        if (actualTower + 1 != maxTower)
+          towers.emplace_back(base.get(), cannon.get(), missile.get());
+
+        actualTower++;
+      }
+    }
+    else if (inTower > -1)
+    {
+      /*auto towerPos = towers[inTower].getPosition();
+      towers[inTower].shoot(towerPos,
+                            glm::normalize(target1 - towerPos));*/
+    }
+  }
 }
 
 void moveCamera()
@@ -109,7 +192,9 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 
 // SHADERS --------------------------------------------------------------------
 void setupShaders(GLTools::GLShaderProgram& shaderProgram,
-                  GLTools::GLShaderProgram& pathProgram)
+                  GLTools::GLShaderProgram& pathProgram,
+                  GLTools::GLShaderProgram& gridProgram,
+                  GLTools::GLShaderProgram& skyBoxProgram)
 {
   auto vertexShader =
     std::make_shared<GLTools::GLShader>
@@ -153,6 +238,42 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram,
   pathProgram.addShader(pathFragmentShader);
   pathProgram.link();
   std::cout << pathProgram.log() << std::endl;
+
+  auto gridVertexShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/grid_vertex_shader.glsl");
+  std::cout << gridVertexShader->log() << std::endl;
+
+  auto gridFragmentShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/grid_fragment_shader.glsl");
+  std::cout << gridFragmentShader->log() << std::endl;
+
+  gridProgram.create();
+  gridProgram.addShader(gridVertexShader);
+  gridProgram.addShader(gridFragmentShader);
+  gridProgram.link();
+  std::cout << gridProgram.log() << std::endl;
+
+  auto skyBoxVertexShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/skybox_vertex_shader.glsl");
+  std::cout << skyBoxVertexShader->log() << std::endl;
+
+  auto skyBoxFragmentShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/skybox_fragment_shader.glsl");
+  std::cout << skyBoxFragmentShader->log() << std::endl;
+
+  skyBoxProgram.create();
+  skyBoxProgram.addShader(skyBoxVertexShader);
+  skyBoxProgram.addShader(skyBoxFragmentShader);
+  skyBoxProgram.link();
+  std::cout << skyBoxProgram.log() << std::endl;
 }
 
 void init()
@@ -171,6 +292,7 @@ void init()
   glfwSetKeyCallback(window, key_callback);
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetMouseButtonCallback(window, mouse_button_callback);
 
   glewExperimental = GL_TRUE;
   glewInit();
@@ -179,20 +301,22 @@ void init()
   glEnable(GL_DEPTH_TEST);
   //glEnable(GL_CULL_FACE);
   glEnable(GL_POLYGON_OFFSET_FILL);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glPolygonOffset(1, 0);
   glLineWidth(2);
   glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
 }
 
 std::pair<glm::vec3, glm::vec3> calcBoundingBox
-(const std::pair<glm::vec3, glm::vec3>& input)
+(const glm::vec3& minPoint, const glm::vec3& maxPoint)
 {
-  auto& minX = input.first.x;
-  auto& minY = input.first.y;
-  auto& minZ = input.first.z;
-  auto& maxX = input.second.x;
-  auto& maxY = input.second.y;
-  auto& maxZ = input.second.z;
+  auto& minX = minPoint.x;
+  auto& minY = minPoint.y;
+  auto& minZ = minPoint.z;
+  auto& maxX = maxPoint.x;
+  auto& maxY = maxPoint.y;
+  auto& maxZ = maxPoint.z;
 
   auto center =
     glm::vec3((minX + maxX) / 2.0f, (minY + maxY) / 2.0f, (minZ + maxZ) / 2.0f);
@@ -275,18 +399,79 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
       enemy.m_position = vectors.first;
       enemy.m_direction = normalize(vectors.second);
       enemy.draw(shaderProgram);
+
+      if (drawBoundingBox)
+      {
+        auto bb = calcBoundingBox(enemy.m_minPoint, enemy.m_maxPoint);
+        boundingBox->draw(shaderProgram, bb.first,
+                          bb.second, enemy.m_modelMatrix);
+      }
     }
   }
 
-  auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
-                      0.0f, 0.0f));
-  auto normalMatrix = glm::mat3(model);
-  shaderProgram.setUniformValue("model", model);
-  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
-  floorPlane->draw(shaderProgram);
+  float d = 0.0f;
+  bool intersect = glm::intersectRayPlane(camera.m_position, -camera.m_front,
+                                          glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), d);
+
+  auto temp = -camera.m_front * d;
+  temp.y = 0.0f;
+
+  if (actualTower < maxTower)
+  {
+    glm::vec3 temp2;
+    auto found = grid->getCenter(temp, temp2);
+    towers.back().setPosition(temp2);
+
+    /*Itt a pirosítást végzem a towereken, ahol nem szabad lerakni.*/
+    forbiddenPlace = false;
+
+    if (!found
+        || std::find(closeSquares.begin(), closeSquares.end(),
+                     temp2) != closeSquares.end())
+    {
+      forbiddenPlace = true;
+      shaderProgram.setUniformValue("forbiddenTower", true);
+    }
+
+    /*itt vége.*/
+    shaderProgram.setUniformValue("transparent", true);
+    towers.back().draw(shaderProgram, glfwGetTime());
+    shaderProgram.setUniformValue("transparent", false);
+    shaderProgram.setUniformValue("forbiddenTower", false);
+  }
 
   for (auto& tower : towers)
     tower.draw(shaderProgram, glfwGetTime());
+}
+
+void renderSkyBox(const GLTools::GLShaderProgram& shaderProgram,
+                  const glm::mat4& projMatrix)
+{
+  glDepthFunc(GL_LEQUAL);
+  shaderProgram.use();
+  auto skyBoxView = glm::mat4(glm::mat3(camera.m_viewMatrix));
+  shaderProgram.setUniformValue("view", skyBoxView);
+  shaderProgram.setUniformValue("projection", projMatrix);
+  cubemapTexture->bind();
+  skyBox->draw();
+  cubemapTexture->unbind();
+  glDepthFunc(GL_LESS);
+}
+
+void setupSkyBox()
+{
+  //cubemap textures
+  skyBoxFaces.push_back("textures/nebula_right.png");
+  skyBoxFaces.push_back("textures/nebula_left.png");
+  skyBoxFaces.push_back("textures/nebula_top.png");
+  skyBoxFaces.push_back("textures/nebula_bottom.png");
+  skyBoxFaces.push_back("textures/nebula_back.png");
+  skyBoxFaces.push_back("textures/nebula_front.png");
+
+  skyBox = std::make_unique<GLTools::GLSkyBox>();
+  skyBox->initialize();
+
+  cubemapTexture = std::make_unique<GLTools::GLTexture>(skyBoxFaces.data());
 }
 
 void setupEnemyPath()
@@ -314,36 +499,57 @@ void setupEnemyPath()
   enemyPath.m_data.push_back(c2);
 }
 
+void initGrid()
+{
+  grid = std::make_unique<Grid>(50.0f, 50.0f, 5.0f);
+  grid->initialize();
+  grid->color = glm::vec3(0.0f, 1.0f, 1.0f);
+  grid->alpha = 0.2f;
+
+  auto OneOverDetail = 1.0f / float(100.0f - 1.0f);
+
+  for (auto i = 0; i < 100; i++)
+  {
+    auto t = i * OneOverDetail;
+    glm::vec3 point;
+
+    if (grid->getCenter(enemyPath.getPositionAndTangent(t).first, point))
+    {
+      if (find(closeSquares.begin(), closeSquares.end(), point)
+          == closeSquares.end())
+        closeSquares.push_back(point);
+    }
+  }
+}
+
 int main()
 {
   init();
+  setupSkyBox();
   setupEnemyPath();
+  initGrid();
 
   auto shaderProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto pathProgram = std::make_unique<GLTools::GLShaderProgram>();
-  setupShaders(*shaderProgram, *pathProgram);
+  auto gridProgram = std::make_unique<GLTools::GLShaderProgram>();
+  auto skyBoxProgram = std::make_unique<GLTools::GLShaderProgram>();
+  setupShaders(*shaderProgram, *pathProgram, *gridProgram, *skyBoxProgram);
 
   auto defaultMaterial = std::make_unique<GLTools::GLMaterial>();
 
-  auto base = std::make_unique<GLTools::GLModel>("models/turret_base.obj");
-  auto cannon = std::make_unique<GLTools::GLModel>("models/turret_cannon.obj");
-  auto missile = std::make_unique<GLTools::GLModel>("models/missile.obj");
   enemy = std::make_unique<GLTools::GLModel>("models/enemyship.obj");
+  base = std::make_unique<GLTools::GLModel>("models/turret_base.obj");
+  cannon = std::make_unique<GLTools::GLModel>("models/turret_cannon.obj");
+  missile = std::make_unique<GLTools::GLModel>("models/missile.obj");
+
+  boundingBox = std::make_unique<GLTools::GLBoundingBox>();
+  boundingBox->initialize();
 
   base->m_materials[0] = *defaultMaterial;
   cannon->m_materials[0] = *defaultMaterial;
 
-  targetShip = std::make_unique<Enemy>(enemy.get(), target, targetDir);
-
-  floorPlane = std::make_unique<GLTools::GLPlane>(50.0f, 50.0f);
-  floorPlane->initialize();
-  floorPlane->m_material = defaultMaterial.get();
-
   towers.emplace_back(base.get(), cannon.get(), missile.get());
-  towers.back().setPosition(glm::vec3(10.0f, 0.0f, 1.0f));
-
-  towers.emplace_back(base.get(), cannon.get(), missile.get());
-  towers.back().setPosition(glm::vec3(-10.0f, 0.0f, 1.0f));
+  towers.back().setPosition(grid->getCenter(glm::vec3(10.0f, 0.0f, 1.0f)));
 
   pointLight.setEnergy(2.0f);
 
@@ -355,7 +561,16 @@ int main()
     glfwPollEvents();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    moveCamera();
+
+    if (inTower < 0)
+      moveCamera();
+    else
+    {
+      target1 = camera.m_front;
+      target1 *= glm::vec3(-100.0f);
+    }
+
+    //moveCamera();
 
     auto VP = projection * camera.m_viewMatrix;
 
@@ -366,9 +581,15 @@ int main()
 
     renderScene(*shaderProgram);
 
+    gridProgram->use();
+    gridProgram->setUniformValue("viewProjection", VP);
+    grid->draw(*gridProgram);
+
     pathProgram->use();
     pathProgram->setUniformValue("MVP", VP);
     enemyPath.draw();
+
+    renderSkyBox(*skyBoxProgram, projection);
 
     glfwSwapBuffers(window);
 

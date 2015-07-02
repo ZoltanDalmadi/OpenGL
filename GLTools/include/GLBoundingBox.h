@@ -16,7 +16,8 @@ public:
   void initialize();
 
   void draw(const GLShaderProgram& shaderProgram,
-            const glm::vec3& center, const glm::vec3& size);
+            const glm::vec3& center, const glm::vec3& size,
+            const glm::mat4& modelMatrix);
   void draw();
 
   void update(const glm::vec3& center, const glm::vec3& size);

@@ -6,11 +6,15 @@
 
 Enemy::Enemy(GLTools::GLModel *model, const glm::vec3& pos,
              const glm::vec3& dir)
-  : m_model(model),
-    m_position(pos),
+  : m_position(pos),
     m_direction(normalize(dir)),
-    m_modelMatrix(glm::mat4())
-{}
+    m_modelMatrix(glm::mat4()),
+    m_model(model)
+{
+  auto aabb = calculate_AABB();
+  m_minPoint = aabb.first;
+  m_maxPoint = aabb.second;
+}
 
 Enemy::~Enemy()
 {}
@@ -76,16 +80,11 @@ std::pair<glm::vec3, glm::vec3> Enemy::calculate_AABB() const
 
 bool Enemy::isColliding(const glm::vec3& point) const
 {
-  auto aabb = calculate_AABB();
-  return isColliding(aabb, point);
-}
+  auto pointInModelSpace = inverse(m_modelMatrix) * glm::vec4(point, 1.0f);
 
-bool Enemy::isColliding(const std::pair<glm::vec3, glm::vec3>& aabb,
-                        const glm::vec3& point) const
-{
-  if (point.x < aabb.first.x || point.y < aabb.first.y ||
-      point.z < aabb.first.z || point.x > aabb.second.x ||
-      point.y > aabb.second.y || point.z > aabb.second.z)
+  if (pointInModelSpace.x < m_minPoint.x || pointInModelSpace.y < m_minPoint.y ||
+      pointInModelSpace.z < m_minPoint.z || pointInModelSpace.x > m_maxPoint.x ||
+      pointInModelSpace.y > m_maxPoint.y || pointInModelSpace.z > m_maxPoint.z)
     return false;
 
   return true;

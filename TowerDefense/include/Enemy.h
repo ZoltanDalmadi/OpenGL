@@ -24,8 +24,6 @@ public:
 
   std::pair<glm::vec3, glm::vec3> calculate_AABB() const;
   bool isColliding(const glm::vec3& point) const;
-  bool isColliding(const std::pair<glm::vec3, glm::vec3>& aabb,
-                   const glm::vec3& point) const;
 
   glm::vec3 m_position;
   glm::vec3 m_direction;
@@ -33,11 +31,13 @@ public:
   glm::mat4 getModelMatrx();
 
   float m_hitPoints = 100.0f;
+  glm::vec3 m_minPoint;
+  glm::vec3 m_maxPoint;
+  glm::mat4 m_modelMatrix;
 private:
   void update();
   GLTools::GLModel *m_model;
 
-  glm::mat4 m_modelMatrix;
 
   float m_velocity = 0.001f;
   bool m_destroyed = false;
