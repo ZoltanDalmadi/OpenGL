@@ -8,6 +8,10 @@ class Tower
 public:
   explicit Tower(GLTools::GLModel *base, GLTools::GLModel *cannon,
                  GLTools::GLModel *missile);
+
+  explicit Tower(GLTools::GLModel *base, GLTools::GLModel *cannon,
+                 GLTools::GLModel *missile, const glm::vec3& pos);
+
   virtual ~Tower();
 
   std::list<Missile> m_missiles;
@@ -32,6 +36,7 @@ public:
   void setDamage(float damage);
 
   void shoot(const glm::vec3& pos, const glm::vec3& dir);
+  void draw(const GLTools::GLShaderProgram& shaderProgram);
   void draw(const GLTools::GLShaderProgram& shaderProgram, double time);
 
 private:

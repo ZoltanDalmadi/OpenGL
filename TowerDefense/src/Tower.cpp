@@ -11,7 +11,16 @@ Tower::Tower(GLTools::GLModel *base, GLTools::GLModel *cannon,
     m_missile(missile),
     m_baseAngle(0.0f),
     m_cannonAngle(0.0f)
-{}
+{
+  this->clearTarget();
+}
+
+Tower::Tower(GLTools::GLModel *base, GLTools::GLModel *cannon,
+             GLTools::GLModel *missile, const glm::vec3& pos)
+  : Tower(base, cannon, missile)
+{
+  setPosition(pos);
+}
 
 Tower::~Tower()
 {}
@@ -56,8 +65,6 @@ void Tower::setTarget(glm::vec3 *target)
 void Tower::clearTarget()
 {
   m_target = nullptr;
-  m_modelMatrix = translate(glm::mat4(), m_position);
-  m_cannonMatrix = translate(m_modelMatrix, m_offset);
 }
 
 float Tower::getRange() const
@@ -83,6 +90,19 @@ void Tower::setDamage(float damage)
 void Tower::shoot(const glm::vec3& pos, const glm::vec3& dir)
 {
   m_missiles.emplace_back(m_missile, pos, dir);
+}
+
+void Tower::draw(const GLTools::GLShaderProgram& shaderProgram)
+{
+  shaderProgram.setUniformValue("model", m_modelMatrix);
+  auto normalMatrix = glm::mat3(m_modelMatrix);
+  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
+  m_base->draw(shaderProgram);
+
+  shaderProgram.setUniformValue("model", m_cannonMatrix);
+  normalMatrix = glm::mat3(m_cannonMatrix);
+  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
+  m_cannon->draw(shaderProgram);
 }
 
 void Tower::draw(const GLTools::GLShaderProgram& shaderProgram, double time)
