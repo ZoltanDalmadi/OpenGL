@@ -10,11 +10,11 @@
 #include "GLFPSCamera.h"
 #include "GLModel.h"
 #include "GLPointLight.h"
-#include "GLPlane.h"
 #include "GLCurvePath.h"
 #include "GLBoundingBox.h"
 #include "Tower.h"
 #include "Enemy.h"
+#include "Grid.h"
 
 //constants
 const GLuint WIDTH = 1280;
@@ -31,6 +31,7 @@ glm::vec3 targetDir(0.01f, 0.0f, 1.0f);
 std::list<Tower> towers;
 std::list<Enemy> enemies;
 
+std::vector<glm::vec3> closeSquares;
 bool keys[1024];
 
 // for mouse
@@ -40,7 +41,7 @@ bool firstMouse = true;
 
 GLTools::GLCurvePath enemyPath;
 
-std::unique_ptr<GLTools::GLPlane> floorPlane;
+std::unique_ptr<Grid> grid;
 std::unique_ptr<GLTools::GLModel> enemy;
 std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
 
@@ -62,12 +63,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 
   if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
-
-  //if (key == GLFW_KEY_C && action == GLFW_PRESS)
-  //  clearTowerTargets();
-
-  //if (key == GLFW_KEY_V && action == GLFW_PRESS)
-  //  setTowerTargets(target);
 
   if (key == GLFW_KEY_E && action == GLFW_PRESS)
     addNewEnemy(enemy.get());
@@ -115,7 +110,8 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 
 // SHADERS --------------------------------------------------------------------
 void setupShaders(GLTools::GLShaderProgram& shaderProgram,
-                  GLTools::GLShaderProgram& pathProgram)
+                  GLTools::GLShaderProgram& pathProgram,
+                  GLTools::GLShaderProgram& gridProgram)
 {
   auto vertexShader =
     std::make_shared<GLTools::GLShader>
@@ -159,6 +155,25 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram,
   pathProgram.addShader(pathFragmentShader);
   pathProgram.link();
   std::cout << pathProgram.log() << std::endl;
+
+  auto gridVertexShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/grid_vertex_shader.glsl");
+  std::cout << gridVertexShader->log() << std::endl;
+
+  auto gridFragmentShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/grid_fragment_shader.glsl");
+  std::cout << gridFragmentShader->log() << std::endl;
+
+  gridProgram.create();
+  gridProgram.addShader(gridVertexShader);
+  gridProgram.addShader(gridFragmentShader);
+  gridProgram.link();
+  std::cout << gridProgram.log() << std::endl;
+
 }
 
 void init()
@@ -185,6 +200,8 @@ void init()
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glEnable(GL_POLYGON_OFFSET_FILL);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glPolygonOffset(1, 0);
   glLineWidth(2);
   glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
@@ -291,13 +308,6 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
     }
   }
 
-  auto model = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,
-                      0.0f, 0.0f));
-  auto normalMatrix = glm::mat3(model);
-  shaderProgram.setUniformValue("model", model);
-  shaderProgram.setUniformValue("normalMatrix", normalMatrix);
-  floorPlane->draw(shaderProgram);
-
   for (auto& tower : towers)
     tower.draw(shaderProgram, glfwGetTime());
 }
@@ -327,14 +337,39 @@ void setupEnemyPath()
   enemyPath.m_data.push_back(c2);
 }
 
+void initGrid()
+{
+  grid = std::make_unique<Grid>(50.0f, 50.0f, 5.0f);
+  grid->initialize();
+  grid->color = glm::vec3(0.0f, 1.0f, 1.0f);
+  grid->alpha = 0.2f;
+
+  auto OneOverDetail = 1.0f / float(100.0f - 1.0f);
+
+  for (auto i = 0; i < 100; i++)
+  {
+    auto t = i * OneOverDetail;
+    glm::vec3 point;
+
+    if (grid->getCenter(enemyPath.getPositionAndTangent(t).first, point))
+    {
+      if (find(closeSquares.begin(), closeSquares.end(), point)
+          == closeSquares.end())
+        closeSquares.push_back(point);
+    }
+  }
+}
+
 int main()
 {
   init();
   setupEnemyPath();
+  initGrid();
 
   auto shaderProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto pathProgram = std::make_unique<GLTools::GLShaderProgram>();
-  setupShaders(*shaderProgram, *pathProgram);
+  auto gridProgram = std::make_unique<GLTools::GLShaderProgram>();
+  setupShaders(*shaderProgram, *pathProgram, *gridProgram);
 
   auto defaultMaterial = std::make_unique<GLTools::GLMaterial>();
 
@@ -349,15 +384,11 @@ int main()
   base->m_materials[0] = *defaultMaterial;
   cannon->m_materials[0] = *defaultMaterial;
 
-  floorPlane = std::make_unique<GLTools::GLPlane>(50.0f, 50.0f);
-  floorPlane->initialize();
-  floorPlane->m_material = defaultMaterial.get();
+  towers.emplace_back(base.get(), cannon.get(), missile.get());
+  towers.back().setPosition(grid->getCenter(glm::vec3(10.0f, 0.0f, 1.0f)));
 
   towers.emplace_back(base.get(), cannon.get(), missile.get());
-  towers.back().setPosition(glm::vec3(10.0f, 0.0f, 1.0f));
-
-  towers.emplace_back(base.get(), cannon.get(), missile.get());
-  towers.back().setPosition(glm::vec3(-10.0f, 0.0f, 1.0f));
+  towers.back().setPosition(grid->getCenter(glm::vec3(-10.0f, 0.0f, 1.0f)));
 
   pointLight.setEnergy(2.0f);
 
@@ -379,6 +410,10 @@ int main()
     pointLight.setShaderUniform(*shaderProgram);
 
     renderScene(*shaderProgram);
+
+    gridProgram->use();
+    gridProgram->setUniformValue("viewProjection", VP);
+    grid->draw(*gridProgram);
 
     pathProgram->use();
     pathProgram->setUniformValue("VP", VP);
