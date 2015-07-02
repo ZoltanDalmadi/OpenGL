@@ -31,6 +31,8 @@ public:
 
   void draw(const GLTools::GLShaderProgram& shaderProgram);
 
+  glm::mat4 m_modelMatrix;
+
 private:
   void update();
   GLTools::GLModel *m_model;
@@ -39,7 +41,6 @@ private:
   glm::vec3 m_position;
   glm::vec3 m_direction;
 
-  glm::mat4 m_modelMatrix;
 
   float m_velocity;
   float m_maxVelocity;

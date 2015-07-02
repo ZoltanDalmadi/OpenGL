@@ -6,7 +6,7 @@ layout (location = 1) in float StartTime;    // Particle "birth" time
 out float Transp;  // Transparency of the particle
 
 uniform float Time;  // Animation time
-uniform vec3 Gravity = vec3(0.0,-0.05,0.0);  // world coords
+uniform vec3 Gravity = vec3(0.0,0.0,0.0);  // world coords
 uniform float ParticleLifetime;  // Max particle lifetime
 
 uniform mat4 MVP;

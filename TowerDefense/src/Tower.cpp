@@ -101,8 +101,8 @@ void Tower::draw(const GLTools::GLShaderProgram& shaderProgram, double time)
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   m_cannon->draw(shaderProgram);
 
-  for (auto& missile : m_missiles)
-    missile.draw(shaderProgram);
+  /*for (auto& missile : m_missiles)
+    missile.draw(shaderProgram);*/
 }
 
 void Tower::update(double time)

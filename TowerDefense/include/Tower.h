@@ -31,6 +31,7 @@ public:
   void shoot(const glm::vec3& pos, const glm::vec3& dir);
   void draw(const GLTools::GLShaderProgram& shaderProgram, double time);
 
+  std::list<Missile> m_missiles;
 private:
   void update(double time);
 
@@ -38,7 +39,6 @@ private:
   GLTools::GLModel *m_cannon;
   GLTools::GLModel *m_missile;
 
-  std::list<Missile> m_missiles;
 
   glm::vec3 m_position;
   glm::vec3 *m_target;

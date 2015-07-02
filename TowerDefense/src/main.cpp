@@ -14,6 +14,13 @@
 #include "GLBoundingBox.h"
 #include "Tower.h"
 #include "Enemy.h"
+#include "GLTexture.h"
+
+#define PI 3.141592653589793
+#define TWOPI 6.2831853071795862
+
+GLTools::GLVertexArrayObject fire_VAO;
+GLuint nParticles = 8000;
 
 //constants
 const GLuint WIDTH = 1280;
@@ -179,6 +186,27 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram)
   std::cout << shaderProgram.log() << std::endl;
 }
 
+void setupShaders2(GLTools::GLShaderProgram& shaderProgram)
+{
+	auto vertexShader =
+		std::make_shared<GLTools::GLShader>
+		(GLTools::GLShader::shaderType::VERTEX_SHADER,
+		"shaders/fire_vertex_shader.glsl");
+	std::cout << vertexShader->log() << std::endl;
+
+	auto fragmentShader =
+		std::make_shared<GLTools::GLShader>
+		(GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+		"shaders/fire_fragment_shader.glsl");
+	std::cout << fragmentShader->log() << std::endl;
+
+	shaderProgram.create();
+	shaderProgram.addShader(vertexShader);
+	shaderProgram.addShader(fragmentShader);
+	shaderProgram.link();
+	std::cout << shaderProgram.log() << std::endl;
+}
+
 void init()
 {
   glfwInit();
@@ -201,7 +229,12 @@ void init()
 
   glViewport(0, 0, WIDTH, HEIGHT);
   glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
+  
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glPointSize(10.0f);
+
   glEnable(GL_POLYGON_OFFSET_FILL);
   glPolygonOffset(1, 0);
   glLineWidth(2);
@@ -241,12 +274,72 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
   tower->draw(shaderProgram, glfwGetTime());
 }
 
+float randFloat() {
+	return ((float)rand() / RAND_MAX);
+}
+
+void initBuffer()
+{
+	fire_VAO.create();
+	GLTools::GLBufferObject initVel;
+	GLTools::GLBufferObject startTime;
+	initVel.create();
+	startTime.create();
+
+	fire_VAO.bind();
+
+	glm::vec3 v(0.0f);
+	float velocity, theta, phi;
+	GLfloat *data = new GLfloat[nParticles * 3];
+	for (unsigned int i = 0; i < nParticles; i++) {
+
+		theta = glm::mix(0.0f, (float)PI / .0f, randFloat());
+		phi = glm::mix(0.0f, (float)TWOPI, randFloat());
+
+		v.x = sinf(theta) * cosf(phi);
+		v.y = cosf(theta);
+		v.z = sinf(theta) * sinf(phi);
+
+		//velocity = glm::mix(1.25f, 1.5f, randFloat());
+
+		v = glm::normalize(v) * velocity;
+
+		data[3 * i] = v.x;
+		data[3 * i + 1] = v.y;
+		data[3 * i + 2] = v.z;
+	}
+
+	initVel.bind();
+	initVel.upload(data, nParticles * sizeof(glm::vec3));
+
+	delete[] data;
+	data = new GLfloat[nParticles];
+	float time = 0.0f;
+	float rate = 0.00075f;
+	for (unsigned int i = 0; i < nParticles; i++) {
+		data[i] = time;
+		time += rate;
+	}
+
+	startTime.bind();
+	startTime.upload(data, nParticles * sizeof(float));
+
+	fire_VAO.setAttributeArray(0, 3, sizeof(glm::vec3));
+	fire_VAO.setAttributeArray(1, 1, sizeof(float), sizeof(glm::vec3));
+
+	fire_VAO.unbind();
+}
+
 int main()
 {
   init();
+  initBuffer();
 
   auto shaderProgram = std::make_unique<GLTools::GLShaderProgram>();
   setupShaders(*shaderProgram);
+
+  auto shaderProgram2 = std::make_unique<GLTools::GLShaderProgram>();
+  setupShaders2(*shaderProgram2);
 
   shaderProgram->use();
 
@@ -256,6 +349,9 @@ int main()
   auto cannon = std::make_unique<GLTools::GLModel>("models/turret_cannon.obj");
   auto missile = std::make_unique<GLTools::GLModel>("models/missile.obj");
   auto enemy = std::make_unique<GLTools::GLModel>("models/enemyship.obj");
+
+  glActiveTexture(GL_TEXTURE0);
+  auto fireTexture = std::make_unique<GLTools::GLTexture>("textures/fire.png");
 
   base->m_materials[0] = *defaultMaterial;
   cannon->m_materials[0] = *defaultMaterial;
@@ -277,6 +373,12 @@ int main()
   auto projection =
     glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 50.0f);
 
+  shaderProgram2->use();
+
+  //shaderProgram2->setUniformValue("ParticleTex", (int)fireTexture->m_id);
+  shaderProgram2->setUniformValue("ParticleLifetime", 3.5f);
+  shaderProgram2->setUniformValue("Gravity", glm::vec3(0.0f, -0.2f, 0.0f));
+
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
@@ -285,6 +387,7 @@ int main()
     moveCamera();
     moveTarget();
 
+	shaderProgram->use();
     shaderProgram->setUniformValue("viewProjection",
                                    projection * camera.m_viewMatrix);
     shaderProgram->setUniformValue("camPos", camera.m_position);
@@ -292,6 +395,19 @@ int main()
 
     renderScene(*shaderProgram);
 
+	for (auto& missile : tower->m_missiles){
+		missile.draw(*shaderProgram);
+
+		shaderProgram2->use();
+		shaderProgram2->setUniformValue("Time", (float)glfwGetTime());
+		shaderProgram2->setUniformValue("MVP", projection * camera.m_viewMatrix * missile.m_modelMatrix);
+
+		fireTexture->bind(0);
+
+		fire_VAO.bind();
+		glDrawArrays(GL_POINTS, 0, nParticles);
+		fire_VAO.unbind();
+	}
     glfwSwapBuffers(window);
   }
 
