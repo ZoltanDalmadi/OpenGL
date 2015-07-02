@@ -61,7 +61,7 @@ void GLTools::GLCurves::initialize()
 void GLTools::GLCurves::draw()
 {
   m_VAO.bind();
-  glDrawArrays(GL_LINES_ADJACENCY, 0, m_controlPoints.size());
+  glDrawArrays(GL_POINTS, 0, curvePoints.size());
   m_VAO.unbind();
 }
 
