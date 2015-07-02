@@ -12,6 +12,7 @@
 #include "GLPointLight.h"
 #include "GLPlane.h"
 #include "GLCurvePath.h"
+#include "GLBoundingBox.h"
 #include "Tower.h"
 #include "Enemy.h"
 
@@ -39,9 +40,11 @@ bool firstMouse = true;
 
 GLTools::GLCurvePath enemyPath;
 
-std::unique_ptr<Enemy> targetShip;
 std::unique_ptr<GLTools::GLPlane> floorPlane;
 std::unique_ptr<GLTools::GLModel> enemy;
+std::unique_ptr<GLTools::GLBoundingBox> boundingBox;
+
+bool drawBoundingBox = false;
 
 void addNewEnemy(GLTools::GLModel *enemyModel)
 {
@@ -68,6 +71,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 
   if (key == GLFW_KEY_E && action == GLFW_PRESS)
     addNewEnemy(enemy.get());
+
+  if (key == GLFW_KEY_B && action == GLFW_PRESS)
+    drawBoundingBox = !drawBoundingBox;
 }
 
 void moveCamera()
@@ -185,14 +191,14 @@ void init()
 }
 
 std::pair<glm::vec3, glm::vec3> calcBoundingBox
-(const std::pair<glm::vec3, glm::vec3>& input)
+(const glm::vec3& minPoint, const glm::vec3& maxPoint)
 {
-  auto& minX = input.first.x;
-  auto& minY = input.first.y;
-  auto& minZ = input.first.z;
-  auto& maxX = input.second.x;
-  auto& maxY = input.second.y;
-  auto& maxZ = input.second.z;
+  auto& minX = minPoint.x;
+  auto& minY = minPoint.y;
+  auto& minZ = minPoint.z;
+  auto& maxX = maxPoint.x;
+  auto& maxY = maxPoint.y;
+  auto& maxZ = maxPoint.z;
 
   auto center =
     glm::vec3((minX + maxX) / 2.0f, (minY + maxY) / 2.0f, (minZ + maxZ) / 2.0f);
@@ -275,6 +281,13 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
       enemy.m_position = vectors.first;
       enemy.m_direction = normalize(vectors.second);
       enemy.draw(shaderProgram);
+
+      if (drawBoundingBox)
+      {
+        auto bb = calcBoundingBox(enemy.m_minPoint, enemy.m_maxPoint);
+        boundingBox->draw(shaderProgram, bb.first,
+                          bb.second, enemy.m_modelMatrix);
+      }
     }
   }
 
@@ -330,10 +343,11 @@ int main()
   auto missile = std::make_unique<GLTools::GLModel>("models/missile.obj");
   enemy = std::make_unique<GLTools::GLModel>("models/enemyship.obj");
 
+  boundingBox = std::make_unique<GLTools::GLBoundingBox>();
+  boundingBox->initialize();
+
   base->m_materials[0] = *defaultMaterial;
   cannon->m_materials[0] = *defaultMaterial;
-
-  targetShip = std::make_unique<Enemy>(enemy.get(), target, targetDir);
 
   floorPlane = std::make_unique<GLTools::GLPlane>(50.0f, 50.0f);
   floorPlane->initialize();
