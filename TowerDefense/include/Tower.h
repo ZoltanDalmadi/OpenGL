@@ -32,10 +32,11 @@ public:
   void setDamage(float damage);
 
   void shoot(const glm::vec3& pos, const glm::vec3& dir);
-  void draw(const GLTools::GLShaderProgram& shaderProgram, double time);
+  void draw(const GLTools::GLShaderProgram& shaderProgram, double time,
+            bool inTower);
 
 private:
-  void update(double time);
+  void update(double time, bool inTower);
 
   GLTools::GLModel *m_base;
   GLTools::GLModel *m_cannon;

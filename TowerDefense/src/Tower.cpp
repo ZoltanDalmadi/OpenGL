@@ -86,9 +86,10 @@ void Tower::shoot(const glm::vec3& pos, const glm::vec3& dir)
   m_missiles.emplace_back(m_missile, pos, dir);
 }
 
-void Tower::draw(const GLTools::GLShaderProgram& shaderProgram, double time)
+void Tower::draw(const GLTools::GLShaderProgram& shaderProgram, double time,
+                 bool inTower)
 {
-  this->update(time);
+  this->update(time, inTower);
 
   shaderProgram.setUniformValue("model", m_modelMatrix);
   auto normalMatrix = glm::mat3(m_modelMatrix);
@@ -101,10 +102,12 @@ void Tower::draw(const GLTools::GLShaderProgram& shaderProgram, double time)
   m_cannon->draw(shaderProgram);
 
   for (auto& missile : m_missiles)
+  {
     missile.draw(shaderProgram);
+  }
 }
 
-void Tower::update(double time)
+void Tower::update(double time, bool inTower)
 {
   if (!m_target)
     return;
@@ -122,15 +125,19 @@ void Tower::update(double time)
   m_cannonMatrix = translate(m_modelMatrix, m_offset);
   m_cannonMatrix = rotate(m_cannonMatrix, m_cannonAngle, Z_AXIS);
 
-  m_deltaTime += time - m_lastShotTime;
-
-  if (m_deltaTime >= m_coolDown)
+  if (!inTower)
   {
-    auto missilePos =
-      glm::vec3(m_cannonMatrix * glm::vec4(m_cannonLength, 0.0f, 0.0f, 1.0f));
-    auto missileDir = normalize(*m_target - missilePos);
-    shoot(missilePos, missileDir);
-    m_deltaTime = 0.0f;
-    m_lastShotTime = time;
+    m_deltaTime += time - m_lastShotTime;
+
+    if (m_deltaTime >= m_coolDown)
+    {
+      auto missilePos =
+        glm::vec3(m_cannonMatrix * glm::vec4(m_cannonLength, 0.0f, 0.0f, 1.0f));
+      auto missileDir = normalize(*m_target - missilePos);
+      shoot(missilePos, missileDir);
+      m_deltaTime = 0.0f;
+      m_lastShotTime = time;
+    }
+
   }
 }

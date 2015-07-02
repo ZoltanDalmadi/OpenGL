@@ -20,8 +20,8 @@
 #include <GLSkyBox.h>
 
 //constants
-const GLuint WIDTH = 1280;
-const GLuint HEIGHT = 720;
+const GLuint WIDTH = 1920;
+const GLuint HEIGHT = 1080;
 
 GLFWwindow *window;
 
@@ -44,6 +44,8 @@ double lastX = WIDTH / 2.0f;
 double lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
 
+std::vector<glm::vec3> leserPoints;
+
 GLTools::GLCurvePath enemyPath;
 
 std::unique_ptr<Grid> grid;
@@ -62,6 +64,8 @@ auto actualTower = 1;
 auto forbiddenPlace = false;
 auto inTower = -1;
 glm::vec3 target1(5.0f, 5.0f, 5.0f);
+
+bool lezer = false;
 
 bool drawBoundingBox = false;
 
@@ -139,18 +143,36 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mod)
       else
       {
         if (actualTower + 1 != maxTower)
+        {
+          closeSquares.emplace_back(towers.back().getPosition());
           towers.emplace_back(base.get(), cannon.get(), missile.get());
+        }
 
         actualTower++;
       }
     }
     else if (inTower > -1)
     {
-      /*auto towerPos = towers[inTower].getPosition();
-      towers[inTower].shoot(towerPos,
-                            glm::normalize(target1 - towerPos));*/
+      auto actual = towers.begin();
+
+      std::advance(actual, inTower);
+
+      auto towerPos = actual->getPosition();
+      actual->shoot(towerPos,
+                    glm::normalize(target1 - towerPos));
     }
   }
+
+  if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+  {
+    lezer = true;
+  }
+
+  if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+  {
+    lezer = false;
+  }
+
 }
 
 void moveCamera()
@@ -285,7 +307,8 @@ void init()
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   glfwWindowHint(GLFW_SAMPLES, 8);
 
-  window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense", nullptr, nullptr);
+  window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense",
+                            glfwGetPrimaryMonitor(), nullptr);
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
 
@@ -435,13 +458,22 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 
     /*itt vége.*/
     shaderProgram.setUniformValue("transparent", true);
-    towers.back().draw(shaderProgram, glfwGetTime());
+    towers.back().draw(shaderProgram, glfwGetTime(), false);
     shaderProgram.setUniformValue("transparent", false);
     shaderProgram.setUniformValue("forbiddenTower", false);
   }
 
+  int ciklusi = 0;
+
   for (auto& tower : towers)
-    tower.draw(shaderProgram, glfwGetTime());
+  {
+    if (ciklusi == inTower)
+      tower.draw(shaderProgram, glfwGetTime(), true);
+    else
+      tower.draw(shaderProgram, glfwGetTime(), false);
+
+    ciklusi++;
+  }
 }
 
 void renderSkyBox(const GLTools::GLShaderProgram& shaderProgram,
@@ -522,6 +554,11 @@ void initGrid()
   }
 }
 
+void drawLeser()
+{
+
+}
+
 int main()
 {
   init();
@@ -585,7 +622,11 @@ int main()
     gridProgram->setUniformValue("viewProjection", VP);
     grid->draw(*gridProgram);
 
+    if (lezer)
+      drawLeser();
+
     pathProgram->use();
+
     pathProgram->setUniformValue("MVP", VP);
     enemyPath.draw();
 
