@@ -2,6 +2,7 @@
 #include <list>
 #include "GLModel.h"
 #include "Missile.h"
+#include <GLFW/glfw3.h>
 
 class Tower
 {
@@ -29,7 +30,9 @@ public:
   void setDamage(float damage);
 
   void shoot(const glm::vec3& pos, const glm::vec3& dir);
-  void draw(const GLTools::GLShaderProgram& shaderProgram, double time);
+  void draw(const GLTools::GLShaderProgram& shaderProgram,
+	  const GLTools::GLShaderProgram& shaderProgram2, GLTools::GLVertexArrayObject fire_VAO,
+	  GLTools::GLBufferObject initVel, GLuint nParticles,  double time);
 
   std::list<Missile> m_missiles;
 private:

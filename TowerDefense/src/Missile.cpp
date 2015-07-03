@@ -11,7 +11,7 @@ Missile::Missile(GLTools::GLModel *model, const glm::vec3& position,
     m_direction(direction),
     m_velocity(0.0f),
     m_maxVelocity(1.0f),
-    m_acceleration(0.05f),
+    m_acceleration(0.0005f),
     m_spin(0.0f),
     m_spinSpeed(glm::radians(2.0f))
 {}

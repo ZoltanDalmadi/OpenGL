@@ -87,7 +87,9 @@ void Tower::shoot(const glm::vec3& pos, const glm::vec3& dir)
   m_missiles.emplace_back(m_missile, pos, dir);
 }
 
-void Tower::draw(const GLTools::GLShaderProgram& shaderProgram, double time)
+void Tower::draw(const GLTools::GLShaderProgram& shaderProgram,
+	const GLTools::GLShaderProgram& shaderProgram2, GLTools::GLVertexArrayObject fire_VAO, GLTools::GLBufferObject initVel,
+	GLuint nParticles, double time)
 {
   this->update(time);
 
@@ -101,8 +103,37 @@ void Tower::draw(const GLTools::GLShaderProgram& shaderProgram, double time)
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   m_cannon->draw(shaderProgram);
 
-  /*for (auto& missile : m_missiles)
-    missile.draw(shaderProgram);*/
+  for (auto& missile : m_missiles)
+  {
+	shaderProgram.use();
+	missile.draw(shaderProgram);
+
+	glDisable(GL_DEPTH_TEST);
+	shaderProgram2.use();
+	shaderProgram2.setUniformValue("Time", (float)glfwGetTime());
+	shaderProgram2.setUniformValue("initPoint", missile.getPosition()- (missile.getDirection())/2.0f);
+
+	glm::vec3 v(0.0f);
+	glm::vec4 temp;
+	float theta, phi;
+	GLfloat *data = new GLfloat[nParticles * 3];
+	for (unsigned int i = 0; i < nParticles; i++) {
+
+		v += missile.getPosition() - (missile.getDirection() / 2.0f);
+
+		data[3 * i] = v.x;
+		data[3 * i + 1] = v.y;
+		data[3 * i + 2] = v.z;
+	}
+	initVel.bind();
+	initVel.write(0, data, nParticles * sizeof(glm::vec3));
+	initVel.unbind();
+
+	fire_VAO.bind();
+	glDrawArrays(GL_POINTS, 0, nParticles);
+	fire_VAO.unbind();
+	glEnable(GL_DEPTH_TEST);
+  }
 }
 
 void Tower::update(double time)
