@@ -20,8 +20,6 @@
 #define TWOPI 6.2831853071795862
 
 GLTools::GLVertexArrayObject fire_VAO;
-GLTools::GLBufferObject initVel;
-GLTools::GLBufferObject startTime;
 GLuint nParticles = 8000;
 
 //constants
@@ -259,7 +257,7 @@ std::pair<glm::vec3, glm::vec3> calcBoundingBox
   return std::make_pair(center, size);
 }
 
-void renderScene(const GLTools::GLShaderProgram& shaderProgram, const GLTools::GLShaderProgram& shaderProgram2)
+void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 {
   targetShip->draw(shaderProgram);
   auto aabb = targetShip->calculate_AABB();
@@ -273,7 +271,7 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram, const GLTools::G
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   floorPlane->draw(shaderProgram);
 
-  tower->draw(shaderProgram,shaderProgram2,fire_VAO, initVel,nParticles, glfwGetTime());
+  tower->draw(shaderProgram, glfwGetTime());
 }
 
 float randFloat() {
@@ -283,16 +281,28 @@ float randFloat() {
 void initBuffer()
 {
 	fire_VAO.create();
+	GLTools::GLBufferObject initVel;
+	GLTools::GLBufferObject startTime;
 	initVel.create();
 	startTime.create();
 
 	fire_VAO.bind();
 
 	glm::vec3 v(0.0f);
+	float velocity, theta, phi;
 	GLfloat *data = new GLfloat[nParticles * 3];
 	for (unsigned int i = 0; i < nParticles; i++) {
 
-		v = glm::vec3(0.0f,0.0f,0.0f);
+		theta = glm::mix(0.0f, (float)PI / .0f, randFloat());
+		phi = glm::mix(0.0f, (float)TWOPI, randFloat());
+
+		v.x = sinf(theta) * cosf(phi);
+		v.y = cosf(theta);
+		v.z = sinf(theta) * sinf(phi);
+
+		//velocity = glm::mix(1.25f, 1.5f, randFloat());
+
+		v = glm::normalize(v) * velocity;
 
 		data[3 * i] = v.x;
 		data[3 * i + 1] = v.y;
@@ -365,6 +375,7 @@ int main()
 
   shaderProgram2->use();
 
+  //shaderProgram2->setUniformValue("ParticleTex", (int)fireTexture->m_id);
   shaderProgram2->setUniformValue("ParticleLifetime", 3.5f);
   shaderProgram2->setUniformValue("Gravity", glm::vec3(0.0f, -0.2f, 0.0f));
 
@@ -382,24 +393,21 @@ int main()
     shaderProgram->setUniformValue("camPos", camera.m_position);
     pointLight.setShaderUniform(*shaderProgram);
 
-	fireTexture->bind(0);
-    renderScene(*shaderProgram, *shaderProgram2);
-	shaderProgram2->setUniformValue("MVP", projection * camera.m_viewMatrix);
+    renderScene(*shaderProgram);
 
-	/*for (auto& missile : tower->m_missiles){
-		shaderProgram->use();
+	for (auto& missile : tower->m_missiles){
 		missile.draw(*shaderProgram);
 
 		shaderProgram2->use();
 		shaderProgram2->setUniformValue("Time", (float)glfwGetTime());
 		shaderProgram2->setUniformValue("MVP", projection * camera.m_viewMatrix * missile.m_modelMatrix);
 
-		
+		fireTexture->bind(0);
 
 		fire_VAO.bind();
 		glDrawArrays(GL_POINTS, 0, nParticles);
 		fire_VAO.unbind();
-	}*/
+	}
     glfwSwapBuffers(window);
   }
 
