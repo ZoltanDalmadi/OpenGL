@@ -105,7 +105,10 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mod)
         if (cannotPlaceHere)
           PlaySound("sfx/error.wav", nullptr, SND_ASYNC);
         else
+        {
           towers.emplace_back(base.get(), cannon.get(), missile.get(), placeHere);
+          lockedSquares.push_back(placeHere);
+        }
       }
     }
   }
@@ -461,7 +464,7 @@ void initGrid()
   grid = std::make_unique<Grid>(50.0f, 50.0f, 5.0f);
   grid->initialize();
   grid->color = glm::vec3(0.0f, 1.0f, 1.0f);
-  grid->alpha = 0.1;
+  grid->alpha = 0.1f;
 
   auto OneOverDetail = 1.0f / float(100.0f - 1.0f);
 
