@@ -72,7 +72,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(SolutionDir)..\freetype\;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -162,6 +164,7 @@
     <ClInclude Include="include\GLSphere.h" />
     <ClInclude Include="include\GLSpotLight.h" />
     <ClInclude Include="include\GLTargetCamera.h" />
+    <ClInclude Include="include\GLText.h" />
     <ClInclude Include="include\GLTexture.h" />
     <ClInclude Include="include\GLVertexArrayObject.h" />
   </ItemGroup>
@@ -188,6 +191,7 @@
     <ClCompile Include="src\GLSphere.cpp" />
     <ClCompile Include="src\GLSpotLight.cpp" />
     <ClCompile Include="src\GLTargetCamera.cpp" />
+    <ClCompile Include="src\GLText.cpp" />
     <ClCompile Include="src\GLTexture.cpp" />
     <ClCompile Include="src\GLVertexArrayObject.cpp" />
   </ItemGroup>

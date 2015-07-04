@@ -83,6 +83,9 @@
     <ClInclude Include="include\GLCurvePath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\GLText.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GLShader.cpp">
@@ -155,6 +158,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\GLCurvePath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GLText.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
