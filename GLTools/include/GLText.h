@@ -10,7 +10,8 @@
 #include "GLVertexArrayObject.h"
 #include "GLBufferObject.h"
 #include "GLShaderProgram.h"
-
+namespace GLTools
+{
 class GLText
 {
 public:
@@ -39,4 +40,6 @@ private:
 
   std::map<GLchar, Character> Characters;
 };
+
+}
 

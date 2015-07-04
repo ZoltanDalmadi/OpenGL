@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/norm.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include <memory>
 #include <iostream>
 #include <Windows.h>
@@ -18,11 +19,12 @@
 #include "Enemy.h"
 #include "Grid.h"
 #include <GLSkyBox.h>
+#include "GLText.h"
 #include "Laser.h"
 
 //constants
-const GLuint WIDTH = 1920;
-const GLuint HEIGHT = 1080;
+const GLuint WIDTH = 1280;
+const GLuint HEIGHT = 720;
 
 GLFWwindow *window;
 
@@ -70,6 +72,8 @@ glm::vec3 target1(5.0f, 5.0f, 5.0f);
 bool lezer = false;
 
 bool drawBoundingBox = false;
+
+GLTools::GLText text("fonts/arial.ttf");
 
 void addNewEnemy(GLTools::GLModel *enemyModel)
 {
@@ -224,7 +228,8 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 void setupShaders(GLTools::GLShaderProgram& shaderProgram,
                   GLTools::GLShaderProgram& pathProgram,
                   GLTools::GLShaderProgram& gridProgram,
-                  GLTools::GLShaderProgram& skyBoxProgram)
+                  GLTools::GLShaderProgram& skyBoxProgram,
+                  GLTools::GLShaderProgram& textProgram)
 {
   auto vertexShader =
     std::make_shared<GLTools::GLShader>
@@ -304,6 +309,24 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram,
   skyBoxProgram.addShader(skyBoxFragmentShader);
   skyBoxProgram.link();
   std::cout << skyBoxProgram.log() << std::endl;
+
+  auto textVertexShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/text_vertex_shader.glsl");
+  std::cout << textVertexShader->log() << std::endl;
+
+  auto textFragmentShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/text_fragment_shader.glsl");
+  std::cout << textFragmentShader->log() << std::endl;
+
+  textProgram.create();
+  textProgram.addShader(textVertexShader);
+  textProgram.addShader(textFragmentShader);
+  textProgram.link();
+  std::cout << textProgram.log() << std::endl;
 }
 
 void init()
@@ -315,7 +338,7 @@ void init()
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   glfwWindowHint(GLFW_SAMPLES, 8);
 
-  window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense",
+  window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense", //nullptr
                             glfwGetPrimaryMonitor(), nullptr);
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
@@ -330,7 +353,7 @@ void init()
 
   glViewport(0, 0, WIDTH, HEIGHT);
   glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
+  //glEnable(GL_CULL_FACE);
   glEnable(GL_POLYGON_OFFSET_FILL);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -528,7 +551,7 @@ void setupEnemyPath()
 
   std::array<glm::vec3, 2> p2 =
   {
-    glm::vec3(0.0f, 10.0f, 20.0f), glm::vec3(-25.0f, 0.0f, 25.0f)
+    glm::vec3(0.0f, 0.0f, 20.0f), glm::vec3(-25.0f, 0.0f, 25.0f)
   };
 
   GLTools::GLCurves c1(p1);
@@ -575,7 +598,9 @@ int main()
   auto pathProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto gridProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto skyBoxProgram = std::make_unique<GLTools::GLShaderProgram>();
-  setupShaders(*shaderProgram, *pathProgram, *gridProgram, *skyBoxProgram);
+  auto textProgram = std::make_unique<GLTools::GLShaderProgram>();
+  setupShaders(*shaderProgram, *pathProgram, *gridProgram, *skyBoxProgram,
+               *textProgram);
 
   auto defaultMaterial = std::make_unique<GLTools::GLMaterial>();
 
@@ -600,6 +625,9 @@ int main()
 
   laserObject = Laser();
   laserObject.initialize();
+
+  text.initialize();
+  glm::mat4 projection2 = glm::ortho(0.0f, (float)WIDTH, 0.0f, (float)HEIGHT);
 
   while (!glfwWindowShouldClose(window))
   {
@@ -644,6 +672,16 @@ int main()
     enemyPath.draw();
 
     renderSkyBox(*skyBoxProgram, projection);
+
+    auto model = enemies.front().getModelMatrx();
+    model *= glm::rotate(glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    textProgram->use();
+    textProgram->setUniformValue("projection",
+                                 projection * camera.m_viewMatrix *
+                                 model/*projection2*/);
+    //text.color = glm::vec3(0.5, 0.8f, 0.2f);
+    std::string percent = std::to_string((int)enemies.front().m_hitPoints) + "%";
+    text.draw(*textProgram, percent, -1.0f, 1.1f, 0.01f);
 
     glfwSwapBuffers(window);
 

@@ -18,7 +18,7 @@
 #include "GLText.h"
 
 //A görbe kipróbálása, illettve tárgyak görbe mentén lévõ mozgatásának kipróbálására készült project
-GLText text("fonts/arial.ttf");
+GLTools::GLText text("fonts/arial.ttf");
 
 using namespace GLTools;
 

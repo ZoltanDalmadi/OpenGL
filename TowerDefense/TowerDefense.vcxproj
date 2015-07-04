@@ -69,7 +69,9 @@
     <Import Project="..\settings.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(SolutionDir)..\freetype;$(SolutionDir)..\include;$(SolutionDir)GLTools\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -139,10 +141,10 @@ copy $(SolutionDir)..\lib\$(PlatformShortName)\assimp.dll $(OutDir)</Command>
       </GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Winmm.lib;$(PlatformShortName)\SOIL.lib;$(PlatformShortName)\assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(PlatformShortName)\freetype26.lib;Winmm.lib;$(PlatformShortName)\SOIL.lib;$(PlatformShortName)\assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy $(ProjectDir)sfx $(OutDir)sfx /Y /C /R /I /E
+      <Command>xcopy $(ProjectDir)fonts $(OutDir)fonts /Y /C /R /I /E;xcopy $(ProjectDir)sfx $(OutDir)sfx /Y /C /R /I /E
 xcopy $(ProjectDir)shaders $(OutDir)shaders /Y /C /R /I /E
 xcopy $(ProjectDir)textures $(OutDir)textures /Y /C /R /I /E
 xcopy $(ProjectDir)models $(OutDir)models /Y /C /R /I /E

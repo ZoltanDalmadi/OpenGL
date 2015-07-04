@@ -1,11 +1,11 @@
 #include "GLText.h"
 
 
-GLText::GLText(const char *type) : m_type(type)
+GLTools::GLText::GLText(const char *type) : m_type(type)
 {
 }
 
-void GLText::initialize()
+void GLTools::GLText::initialize()
 {
   color = glm::vec3(1.0f);
   m_VAO.create();
@@ -25,7 +25,7 @@ void GLText::initialize()
   initCharacters();
 }
 
-void GLText::initCharacters()
+void GLTools::GLText::initCharacters()
 {
   FT_Library ft;
 
@@ -90,10 +90,11 @@ void GLText::initCharacters()
   FT_Done_FreeType(ft);
 }
 
-void GLText::draw(GLTools::GLShaderProgram& shaderProgram, std::string text,
-                  GLfloat x,
-                  GLfloat y,
-                  GLfloat scale)
+void GLTools::GLText::draw(GLTools::GLShaderProgram& shaderProgram,
+                           std::string text,
+                           GLfloat x,
+                           GLfloat y,
+                           GLfloat scale)
 {
   // Activate corresponding render state
   shaderProgram.use();
@@ -143,6 +144,6 @@ void GLText::draw(GLTools::GLShaderProgram& shaderProgram, std::string text,
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-GLText::~GLText()
+GLTools::GLText::~GLText()
 {
 }

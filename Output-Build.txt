@@ -1,0 +1,22 @@
+﻿1>------ Build started: Project: GLTools, Configuration: Release x64 ------
+1>  GLText.cpp
+1>  GLTools.vcxproj -> C:\Programs\OpenGLProject\OpenGL\bin\GLTools\x64\Release\GLTools.lib
+2>------ Build started: Project: CurvesTryOut, Configuration: Release x64 ------
+2>  main.cpp
+2>src\main.cpp(434): warning C4305: '+=' : truncation from 'double' to 'float'
+2>  CurvesTryOut.vcxproj -> C:\Programs\OpenGLProject\OpenGL\bin\CurvesTryOut\x64\Release\CurvesTryOut.exe
+2>  C:\Programs\OpenGLProject\OpenGL\CurvesTryOut\fonts\arial.ttf
+2>  C:\Programs\OpenGLProject\OpenGL\CurvesTryOut\fonts\FFF_Tusj.ttf
+2>  2 File(s) copied
+2>  C:\Programs\OpenGLProject\OpenGL\CurvesTryOut\shaders\curves_fragment_shader.glsl
+2>  C:\Programs\OpenGLProject\OpenGL\CurvesTryOut\shaders\curves_geometry_shader.glsl
+2>  C:\Programs\OpenGLProject\OpenGL\CurvesTryOut\shaders\curves_vertex_shader.glsl
+2>  C:\Programs\OpenGLProject\OpenGL\CurvesTryOut\shaders\fragment_shader.glsl
+2>  C:\Programs\OpenGLProject\OpenGL\CurvesTryOut\shaders\fragment_shader1.glsl
+2>  C:\Programs\OpenGLProject\OpenGL\CurvesTryOut\shaders\geometry_shader.glsl
+2>  C:\Programs\OpenGLProject\OpenGL\CurvesTryOut\shaders\text_fragment_shader.glsl
+2>  C:\Programs\OpenGLProject\OpenGL\CurvesTryOut\shaders\text_vertex_shader.glsl
+2>  C:\Programs\OpenGLProject\OpenGL\CurvesTryOut\shaders\vertex_shader.glsl
+2>  C:\Programs\OpenGLProject\OpenGL\CurvesTryOut\shaders\vertex_shader1.glsl
+2>  10 File(s) copied
+========== Build: 2 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========

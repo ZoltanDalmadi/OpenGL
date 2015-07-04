@@ -53,7 +53,7 @@ private:
   glm::mat4 m_cannonMatrix;
 
   float m_range = 20.0f;
-  float m_damage = 25.0f;
+  float m_damage = 10.0f;
 
   double m_coolDown = 100.0f;
   double m_deltaTime = 0.0f;
