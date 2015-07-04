@@ -14,7 +14,9 @@ Missile::Missile(GLTools::GLModel *model, const glm::vec3& position,
     m_acceleration(0.0005f),
     m_spin(0.0f),
     m_spinSpeed(glm::radians(2.0f))
-{}
+{
+	time = glfwGetTime();
+}
 
 Missile::~Missile()
 {}
@@ -109,6 +111,6 @@ void Missile::update()
   m_spin += m_spinSpeed;
 
   m_modelMatrix = translate(glm::mat4(), m_position);
-  m_modelMatrix = rotate(m_modelMatrix, m_spin, m_direction);
+  //m_modelMatrix = rotate(m_modelMatrix, m_spin, m_direction);
   m_modelMatrix *= orientation(m_direction, X_AXIS);
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "GLModel.h"
+#include <GLFW/glfw3.h>
 
 class Missile
 {
@@ -9,7 +10,7 @@ public:
 	virtual ~Missile();
 
 	const glm::vec3& getPosition() const;
-	void setPosition(const glm::vec3& pos);
+	void setPosition(const	glm::vec3& pos);
 
 	const glm::vec3& getDirection() const;
 	void setDirection(const glm::vec3& dir);
@@ -32,6 +33,7 @@ public:
 	void draw(const GLTools::GLShaderProgram& shaderProgram);
 
 	glm::mat4 m_modelMatrix;
+	float time;
 
 private:
 	void update();
@@ -41,7 +43,7 @@ private:
 	glm::vec3 m_position;
 	glm::vec3 m_direction;
 
-
+	
 	float m_velocity;
 	float m_maxVelocity;
 	float m_acceleration;

@@ -10,11 +10,15 @@ uniform vec3 Gravity = vec3(0.0,0.0,0.0);  // world coords
 uniform float ParticleLifetime;  // Max particle lifetime
 
 uniform mat4 MVP;
+uniform mat4 model;
 
 void main()
 {
     // Assume the initial position is (0,0,0).
-    vec3 pos = vec3(0.0);
+	vec4 pos = vec4(0.0f);
+    //pos = vec4(VertexInitVel,1.0);
+	//pos = model*pos;
+	vec4 pos2;
     Transp = 0.0;
 
     // Particle dosen't exist until the start time
@@ -22,11 +26,12 @@ void main()
         float t = Time - StartTime;
 
         if( t < ParticleLifetime ) {
-            pos = VertexInitVel * t + Gravity * t * t;
+            pos = vec4((VertexInitVel) * t + Gravity * t * t, 1.0);
+			pos = model * pos;
             Transp = 1.0 - t / ParticleLifetime;
         }
     }
 
     // Draw at the current position
-    gl_Position = MVP * vec4(pos, 1.0);
+    gl_Position = MVP * pos;
 }

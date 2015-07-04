@@ -3,6 +3,10 @@
 #include "GLModel.h"
 #include "Missile.h"
 
+#define PI 3.141592653589793
+#define TWOPI 6.2831853071795862
+#define X_AXIS glm::vec3(1.0f, 0.0f, 0.0f)
+
 class Tower
 {
 public:
@@ -29,7 +33,10 @@ public:
 	void setDamage(float damage);
 
 	void shoot(const glm::vec3& pos, const glm::vec3& dir);
-	void draw(const GLTools::GLShaderProgram& shaderProgram, double time);
+	void draw(const GLTools::GLShaderProgram& shaderProgram,
+		const GLTools::GLShaderProgram& shaderProgram2, double time, float nParticles,
+		GLuint initVel, GLuint particles);
+	float randFloat();
 
 	std::list<Missile> m_missiles;
 private:

@@ -19,8 +19,12 @@
 #define PI 3.141592653589793
 #define TWOPI 6.2831853071795862
 
+GLuint initVel, startTime, particles;
+float time;
+
+
 GLTools::GLVertexArrayObject fire_VAO;
-GLuint nParticles = 800;
+GLuint nParticles;
 
 //constants
 const GLuint WIDTH = 1280;
@@ -233,7 +237,7 @@ void init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glPointSize(10.0f);
+	glPointSize(3.0f);
 
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1, 0);
@@ -257,7 +261,8 @@ std::pair<glm::vec3, glm::vec3> calcBoundingBox
 	return std::make_pair(center, size);
 }
 
-void renderScene(const GLTools::GLShaderProgram& shaderProgram)
+void renderScene(const GLTools::GLShaderProgram& shaderProgram,
+	const GLTools::GLShaderProgram& shaderProgram2)
 {
 	targetShip->draw(shaderProgram);
 	auto aabb = targetShip->calculate_AABB();
@@ -271,7 +276,7 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
 	shaderProgram.setUniformValue("normalMatrix", normalMatrix);
 	floorPlane->draw(shaderProgram);
 
-	tower->draw(shaderProgram, glfwGetTime());
+	tower->draw(shaderProgram, shaderProgram2, glfwGetTime(), nParticles, initVel, particles);
 }
 
 float randFloat() {
@@ -280,39 +285,33 @@ float randFloat() {
 
 void initBuffer()
 {
-	fire_VAO.create();
-	GLTools::GLBufferObject initVel;
-	GLTools::GLBufferObject startTime;
-	initVel.create();
-	startTime.create();
+	nParticles = 8000;
 
-	fire_VAO.bind();
+	// Generate the buffers
+	glGenBuffers(1, &initVel);   // Initial velocity buffer
+	glGenBuffers(1, &startTime); // Start time buffer
 
-	glm::vec3 v(0.0f);
+	// Allocate space for all buffers
+	int size = nParticles * 3 * sizeof(float);
+	glBindBuffer(GL_ARRAY_BUFFER, initVel);
+	glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, startTime);
+	glBufferData(GL_ARRAY_BUFFER, nParticles * sizeof(float), NULL, GL_STATIC_DRAW);
+
+	// Fill the first velocity buffer with random velocities
+	glm::vec3 v(0.0f, 0.0f, 0.0f);
 	float velocity, theta, phi;
 	GLfloat *data = new GLfloat[nParticles * 3];
 	for (unsigned int i = 0; i < nParticles; i++) {
-
-		theta = glm::mix(0.0f, (float)PI / 10.0f, randFloat());
-		phi = glm::mix(0.0f, (float)TWOPI, randFloat());
-
-		v.x = sinf(theta) * cosf(phi);
-		v.y = cosf(theta);
-		v.z = sinf(theta) * sinf(phi);
-		//v += glm::vec3(0.0f, 1.0f, 0.0f);
-
-		velocity = glm::mix(1.25f, 1.5f, randFloat());
-
-		v = glm::normalize(-v) * velocity;
 
 		data[3 * i] = v.x;
 		data[3 * i + 1] = v.y;
 		data[3 * i + 2] = v.z;
 	}
+	glBindBuffer(GL_ARRAY_BUFFER, initVel);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 
-	initVel.bind();
-	initVel.upload(data, nParticles * sizeof(glm::vec3));
-
+	// Fill the start time buffer
 	delete[] data;
 	data = new GLfloat[nParticles];
 	float time = 0.0f;
@@ -321,14 +320,25 @@ void initBuffer()
 		data[i] = time;
 		time += rate;
 	}
+	glBindBuffer(GL_ARRAY_BUFFER, startTime);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, nParticles * sizeof(float), data);
 
-	startTime.bind();
-	startTime.upload(data, nParticles * sizeof(float));
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	delete[] data;
 
-	fire_VAO.setAttributeArray(0, 3, sizeof(float));
-	fire_VAO.setAttributeArray(1, 1, sizeof(float));
+	// Attach these to the torus's vertex array
+	glGenVertexArrays(1, &particles);
+	glBindVertexArray(particles);
+	glBindBuffer(GL_ARRAY_BUFFER, initVel);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(0);
 
-	fire_VAO.unbind();
+	glBindBuffer(GL_ARRAY_BUFFER, startTime);
+	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
+
 }
 
 int main()
@@ -376,7 +386,7 @@ int main()
 
 	shaderProgram2->use();
 
-	shaderProgram2->setUniformValue("ParticleLifetime", 1003.5f);
+	shaderProgram2->setUniformValue("ParticleLifetime", 1.5f);
 	shaderProgram2->setUniformValue("Gravity", glm::vec3(0.0f, 0.0f, 0.0f));
 
 	while (!glfwWindowShouldClose(window))
@@ -393,22 +403,28 @@ int main()
 		shaderProgram->setUniformValue("camPos", camera.m_position);
 		pointLight.setShaderUniform(*shaderProgram);
 
-		renderScene(*shaderProgram);
+		shaderProgram2->use();
+		shaderProgram2->setUniformValue("MVP", projection * camera.m_viewMatrix);
+		shaderProgram->use();
+
+		renderScene(*shaderProgram, *shaderProgram2);
 
 		fireTexture->bind(0);
 
-		for (auto& missile : tower->m_missiles){
-			shaderProgram->use();
-			missile.draw(*shaderProgram);
+		//for (auto& missile : tower->m_missiles){
+		//	shaderProgram->use();
+		//	missile.draw(*shaderProgram);
 
-			shaderProgram2->use();
-			shaderProgram2->setUniformValue("Time", (float)glfwGetTime());
-			shaderProgram2->setUniformValue("MVP", projection * camera.m_viewMatrix *missile.m_modelMatrix);
+		//	shaderProgram2->use();
+		//	shaderProgram2->setUniformValue("Time", (float)glfwGetTime());
+		//	shaderProgram2->setUniformValue("MVP", projection * camera.m_viewMatrix);
+		//	shaderProgram2->setUniformValue("model", glm::rotate(missile.m_modelMatrix,120.0f,glm::vec3(0.0f,0.0f,1.0f)));
+		//	shaderProgram2->setUniformValue("initPoint", missile.getPosition() - (missile.getDirection()) * 20.0f);
+		//	//shaderProgram2->setUniformValue("direction", missile.getPosition() - (missile.getDirection()) / 2.0f);
 
-			fire_VAO.bind();
-			glDrawArrays(GL_POINTS, 0, nParticles);
-			fire_VAO.unbind();
-		}
+		//	glBindVertexArray(particles);
+		//	glDrawArrays(GL_POINTS, 0, nParticles);
+		//}
 		glfwSwapBuffers(window);
 	}
 
