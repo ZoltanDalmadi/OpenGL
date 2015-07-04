@@ -2,62 +2,59 @@
 #include <list>
 #include "GLModel.h"
 #include "Missile.h"
-#include <GLFW/glfw3.h>
 
 class Tower
 {
 public:
-  explicit Tower(GLTools::GLModel *base, GLTools::GLModel *cannon,
-                 GLTools::GLModel *missile);
-  virtual ~Tower();
+	explicit Tower(GLTools::GLModel *base, GLTools::GLModel *cannon,
+		GLTools::GLModel *missile);
+	virtual ~Tower();
 
-  const glm::vec3& getPosition() const;
-  void setPosition(const glm::vec3& pos);
+	const glm::vec3& getPosition() const;
+	void setPosition(const glm::vec3& pos);
 
-  const glm::vec3& getOffset() const;
-  void setOffset(const glm::vec3& offset);
+	const glm::vec3& getOffset() const;
+	void setOffset(const glm::vec3& offset);
 
-  float getCannonLength() const;
-  void setCannonLength(float cannon_length);
+	float getCannonLength() const;
+	void setCannonLength(float cannon_length);
 
-  void setTarget(glm::vec3 *target);
-  void clearTarget();
+	void setTarget(glm::vec3 *target);
+	void clearTarget();
 
-  float getRange() const;
-  void setRange(float range);
+	float getRange() const;
+	void setRange(float range);
 
-  float getDamage() const;
-  void setDamage(float damage);
+	float getDamage() const;
+	void setDamage(float damage);
 
-  void shoot(const glm::vec3& pos, const glm::vec3& dir);
-  void draw(const GLTools::GLShaderProgram& shaderProgram,
-	  const GLTools::GLShaderProgram& shaderProgram2, GLTools::GLVertexArrayObject fire_VAO,
-	  GLTools::GLBufferObject initVel, GLuint nParticles,  double time);
+	void shoot(const glm::vec3& pos, const glm::vec3& dir);
+	void draw(const GLTools::GLShaderProgram& shaderProgram, double time);
 
-  std::list<Missile> m_missiles;
+	std::list<Missile> m_missiles;
 private:
-  void update(double time);
+	void update(double time);
 
-  GLTools::GLModel *m_base;
-  GLTools::GLModel *m_cannon;
-  GLTools::GLModel *m_missile;
+	GLTools::GLModel *m_base;
+	GLTools::GLModel *m_cannon;
+	GLTools::GLModel *m_missile;
 
 
-  glm::vec3 m_position;
-  glm::vec3 *m_target;
-  glm::vec3 m_offset = glm::vec3(0.33183f, 0.93760f, 0.0f);
-  float m_cannonLength = 2.9f;
+	glm::vec3 m_position;
+	glm::vec3 *m_target;
+	glm::vec3 m_offset = glm::vec3(0.33183f, 0.93760f, 0.0f);
+	float m_cannonLength = 2.9f;
 
-  float m_baseAngle;
-  float m_cannonAngle;
+	float m_baseAngle;
+	float m_cannonAngle;
 
-  glm::mat4 m_modelMatrix;
-  glm::mat4 m_cannonMatrix;
+	glm::mat4 m_modelMatrix;
+	glm::mat4 m_cannonMatrix;
 
-  float m_range = 10.0f;
-  float m_damage = 25.0f;
+	float m_range = 10.0f;
+	float m_damage = 25.0f;
 
-  double m_coolDown = 100.0f;
-  double m_deltaTime = 0.0f;
-  double m_lastShotTime;
+	double m_coolDown = 100.0f;
+	double m_deltaTime = 0.0f;
+	double m_lastShotTime;
 };

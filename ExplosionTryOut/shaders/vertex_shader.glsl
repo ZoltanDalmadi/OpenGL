@@ -1,32 +1,21 @@
-#version 400
+#version 430 core
 
-layout (location = 0) in vec3 VertexInitVel; // Particle initial velocity
-layout (location = 1) in float StartTime;    // Particle "birth" time
+layout (location = 0) in vec3 vertex_position;
+layout (location = 1) in vec3 vertex_normal;
+layout (location = 2) in vec2 vertex_texCoords;
 
-out float Transp;  // Transparency of the particle
+uniform mat4 model;
+uniform mat4 viewProjection;
+uniform mat3 normalMatrix;
 
-uniform float Time;  // Animation time
-uniform vec3 Gravity = vec3(0.0,-0.05,0.0);  // world coords
-uniform float ParticleLifetime;  // Max particle lifetime
-
-uniform mat4 MVP;
+out vec3 normal;
+out vec3 fragPos;
+out vec2 texCoords;
 
 void main()
 {
-    // Assume the initial position is (0,0,0).
-    vec3 pos = vec3(0.0);
-    Transp = 0.0;
-
-    // Particle dosen't exist until the start time
-    if( Time > StartTime ) {
-        float t = Time - StartTime;
-
-        if( t < ParticleLifetime ) {
-            pos = VertexInitVel * t + Gravity * t * t;
-            Transp = 1.0 - t / ParticleLifetime;
-        }
-    }
-
-    // Draw at the current position
-    gl_Position = MVP * vec4(pos, 1.0);
+  gl_Position = viewProjection * model * vec4(vertex_position, 1.0);
+  normal = normalMatrix * vertex_normal;
+  fragPos = vec3(model * vec4(vertex_position, 1.0));
+  texCoords = vertex_texCoords;
 }
