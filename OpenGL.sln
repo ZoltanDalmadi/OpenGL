@@ -25,6 +25,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CurvesTryOut", "CurvesTryOu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TowerDefense", "TowerDefense\TowerDefense.vcxproj", "{C9AFBF5F-1027-4426-B635-1FBBF3C7DBFF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ObjectOriented", "ObjectOriented\ObjectOriented.vcxproj", "{CD385549-1D2D-452A-9D09-3F9B0B245993}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -167,6 +169,18 @@ Global
 		{C9AFBF5F-1027-4426-B635-1FBBF3C7DBFF}.Release|Win32.Build.0 = Release|Win32
 		{C9AFBF5F-1027-4426-B635-1FBBF3C7DBFF}.Release|x64.ActiveCfg = Release|x64
 		{C9AFBF5F-1027-4426-B635-1FBBF3C7DBFF}.Release|x64.Build.0 = Release|x64
+		{CD385549-1D2D-452A-9D09-3F9B0B245993}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{CD385549-1D2D-452A-9D09-3F9B0B245993}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{CD385549-1D2D-452A-9D09-3F9B0B245993}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CD385549-1D2D-452A-9D09-3F9B0B245993}.Debug|Win32.Build.0 = Debug|Win32
+		{CD385549-1D2D-452A-9D09-3F9B0B245993}.Debug|x64.ActiveCfg = Debug|x64
+		{CD385549-1D2D-452A-9D09-3F9B0B245993}.Debug|x64.Build.0 = Debug|x64
+		{CD385549-1D2D-452A-9D09-3F9B0B245993}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{CD385549-1D2D-452A-9D09-3F9B0B245993}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{CD385549-1D2D-452A-9D09-3F9B0B245993}.Release|Win32.ActiveCfg = Release|Win32
+		{CD385549-1D2D-452A-9D09-3F9B0B245993}.Release|Win32.Build.0 = Release|Win32
+		{CD385549-1D2D-452A-9D09-3F9B0B245993}.Release|x64.ActiveCfg = Release|x64
+		{CD385549-1D2D-452A-9D09-3F9B0B245993}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
