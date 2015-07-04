@@ -1,56 +1,80 @@
-#define GLEW_STATIC
-#include <GL/glew.h>
-#include <functional>
 #include "GLFWApplication.h"
 
-GLTools::GLFWApplication::GLFWApplication()
-  : GLFWApplication(4, 3)
+GLTools::GLFWApplication::GLFWApplication(int width, int height,
+                                          const char *title)
+  : m_width(width),
+    m_height(height),
+    m_title(title)
 {
+  this->initialize();
 }
 
-GLTools::GLFWApplication::GLFWApplication(int major, int minor)
-  : m_majorVersion(major), m_minorVersion(minor)
+int GLTools::GLFWApplication::execute()
 {
+  while (!glfwWindowShouldClose(m_window))
+  {
+    glfwPollEvents();
+
+    this->renderGL();
+
+    glfwSwapBuffers(m_window);
+
+    this->update();
+  }
+
+  glfwTerminate();
+
+  return 0;
 }
 
-GLTools::GLFWApplication::~GLFWApplication()
+void GLTools::GLFWApplication::initialize()
 {
+  this->initGLFW();
+  this->initGL();
 }
 
 void GLTools::GLFWApplication::initGLFW()
 {
-  glfwInit();
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, m_majorVersion);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, m_minorVersion);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-  glfwWindowHint(GLFW_SAMPLES, 8);
-}
+  if (!GLFW_initialized)
+  {
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_SAMPLES, 8);
+    GLFW_initialized = true;
+  }
 
-void GLTools::GLFWApplication::createWindow(int width, int height,
-                                            const std::string& title)
-{
-  m_window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
-  glfwMakeContextCurrent(m_window);
+  this->m_window =
+    glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
+  glfwMakeContextCurrent(this->m_window);
+
   glfwSwapInterval(1);
 
-  glewExperimental = GL_TRUE;
-  glewInit();
+  glfwSetWindowUserPointer(this->m_window, this);
 
-  glViewport(0, 0, width, height);
+  glfwSetKeyCallback(this->m_window, &GLFWApplication::key_callback);
+  glfwSetMouseButtonCallback(this->m_window,
+                             &GLFWApplication::mouse_button_callback);
 }
 
-GLFWwindow *GLTools::GLFWApplication::getWindow() const
+void GLTools::GLFWApplication::key_callback
+(GLFWwindow *w, int key, int scd, int act, int mod)
 {
-  return m_window;
+  static_cast<GLFWApplication *>
+  (glfwGetWindowUserPointer(w))->keyFunction(key, scd, act, mod);
 }
 
-int GLTools::GLFWApplication::getMajorVersion() const
+void GLTools::GLFWApplication::mouse_button_callback
+(GLFWwindow *w, int but, int act, int mod)
 {
-  return m_majorVersion;
+  static_cast<GLFWApplication *>
+  (glfwGetWindowUserPointer(w))->mouseFunction(but, act, mod);
 }
 
-int GLTools::GLFWApplication::getMinorVersion() const
-{
-  return m_minorVersion;
-}
+void GLTools::GLFWApplication::keyFunction(int key, int scd, int act, int mod)
+{}
+
+void GLTools::GLFWApplication::mouseFunction(int but, int act, int mod)
+{}
