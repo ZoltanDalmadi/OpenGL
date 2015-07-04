@@ -5,9 +5,7 @@ GLTools::GLFWApplication::GLFWApplication(int width, int height,
   : m_width(width),
     m_height(height),
     m_title(title)
-{
-  this->initialize();
-}
+{}
 
 int GLTools::GLFWApplication::execute()
 {
@@ -35,16 +33,12 @@ void GLTools::GLFWApplication::initialize()
 
 void GLTools::GLFWApplication::initGLFW()
 {
-  if (!GLFW_initialized)
-  {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    glfwWindowHint(GLFW_SAMPLES, 8);
-    GLFW_initialized = true;
-  }
+  glfwInit();
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+  glfwWindowHint(GLFW_SAMPLES, 8);
 
   this->m_window =
     glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
@@ -73,8 +67,9 @@ void GLTools::GLFWApplication::mouse_button_callback
   (glfwGetWindowUserPointer(w))->mouseFunction(but, act, mod);
 }
 
-void GLTools::GLFWApplication::keyFunction(int key, int scd, int act, int mod)
+void GLTools::GLFWApplication::keyFunction
+(int key, int scancode, int action, int mod)
 {}
 
-void GLTools::GLFWApplication::mouseFunction(int but, int act, int mod)
+void GLTools::GLFWApplication::mouseFunction(int button, int action, int mod)
 {}

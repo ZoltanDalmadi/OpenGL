@@ -1,4 +1,6 @@
 #pragma once
+#define GLEW_STATIC
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <string>
 
@@ -13,15 +15,15 @@ public:
   void operator=(const GLFWApplication&) = delete;
   virtual ~GLFWApplication() = default;
   int execute();
+  void initialize();
 
 private:
-  void initialize();
   void initGLFW();
-  static bool GLFW_initialized;
   static void key_callback(GLFWwindow *, int, int, int, int);
   static void mouse_button_callback(GLFWwindow *, int, int, int);
 
 protected:
+  bool keys[1024];
   GLFWwindow *m_window;
   int m_width;
   int m_height;
@@ -30,8 +32,8 @@ protected:
   virtual void initGL() = 0;
   virtual void renderGL() = 0;
   virtual void update() = 0;
-  virtual void keyFunction(int, int, int, int);
-  virtual void mouseFunction(int, int, int);
+  virtual void keyFunction(int key, int scancode, int action, int mod);
+  virtual void mouseFunction(int button, int action, int mod);
 };
 
 }
