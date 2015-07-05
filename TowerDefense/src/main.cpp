@@ -63,8 +63,10 @@ std::unique_ptr<GLTools::GLModel> missile;
 
 Laser laserObject;
 
-auto maxTower = 10;
-auto actualTower = 1;
+glm::mat4 projection;
+
+auto maxTower = 1;
+auto actualTower = 0;
 auto forbiddenPlace = false;
 auto inTower = -1;
 glm::vec3 target1(5.0f, 5.0f, 5.0f);
@@ -74,6 +76,8 @@ bool lezer = false;
 bool drawBoundingBox = false;
 
 GLTools::GLText text("fonts/arial.ttf");
+
+auto atert = 0;
 
 void addNewEnemy(GLTools::GLModel *enemyModel)
 {
@@ -361,7 +365,7 @@ void init()
   glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   glPolygonOffset(1, 0);
   glLineWidth(2);
-  glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 std::pair<glm::vec3, glm::vec3> calcBoundingBox
@@ -415,7 +419,9 @@ void checkHitsAndCleanupMissiles()
             enemy.damage(tower.getDamage());
           }
           else if (length2(it->getPosition()) > 25.0f * 25.0f)
+          {
             it = missiles.erase(it);
+          }
           else
             ++it;
         }
@@ -430,6 +436,9 @@ void cleanupEnemies()
 {
   for (auto it = enemies.begin(); it != enemies.end();)
   {
+    if (it->m_progress >= 1.0f)
+      atert++;
+
     if (it->isDestroyed() || it->m_progress >= 1.0f)
     {
       for (auto& tower : towers)
@@ -445,7 +454,8 @@ void cleanupEnemies()
   }
 }
 
-void renderScene(const GLTools::GLShaderProgram& shaderProgram)
+void renderScene(const GLTools::GLShaderProgram& shaderProgram,
+                 GLTools::GLShaderProgram& textProgram)
 {
   if (!enemies.empty())
   {
@@ -455,6 +465,24 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
       enemy.m_position = vectors.first;
       enemy.m_direction = normalize(vectors.second);
       enemy.draw(shaderProgram);
+      auto targetVector = enemy.m_position - camera.m_position;
+      targetVector.y = 0.0f;
+      auto angle = glm::acos(glm::dot(glm::vec3(0.0f, 0.0f, -1.0f),
+                                      glm::normalize(targetVector)));
+
+      auto model1 = glm::mat4(1.0f);
+      model1 *= glm::translate(enemy.m_position);
+      model1 *= glm::rotate(angle, glm::vec3(0.0f, 1.0f, 0.0f));
+
+      textProgram.use();
+      textProgram.setUniformValue("projection",
+                                  projection * camera.m_viewMatrix *
+                                  model1/*projection2*/);
+      text.color = glm::vec3(0.5, 0.8f, 0.2f);
+      std::string percent = std::to_string((int)enemy.m_hitPoints) + "%";
+      text.draw(textProgram, percent, -1.0f, 1.1f, 0.005f);
+
+      shaderProgram.use();
 
       if (drawBoundingBox)
       {
@@ -620,7 +648,7 @@ int main()
 
   pointLight.setEnergy(2.0f);
 
-  auto projection =
+  projection =
     glm::perspective(45.0f, WIDTH / (HEIGHT * 1.0f), 0.1f, 100.0f);
 
   laserObject = Laser();
@@ -634,6 +662,14 @@ int main()
     glfwPollEvents();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if (atert >= 3)
+    {
+      textProgram->use();
+      textProgram->setUniformValue("projection", projection2);
+      text.color = glm::vec3(1.0, 0.0f, 0.0f);
+      text.draw(*textProgram, "You Loose", 0.5, 0.5, 4.0f);
+    }
 
     if (inTower < 0)
       moveCamera();
@@ -652,7 +688,7 @@ int main()
     shaderProgram->setUniformValue("camPos", camera.m_position);
     pointLight.setShaderUniform(*shaderProgram);
 
-    renderScene(*shaderProgram);
+    renderScene(*shaderProgram, *textProgram);
 
     gridProgram->use();
     gridProgram->setUniformValue("viewProjection", VP);
@@ -673,15 +709,6 @@ int main()
 
     renderSkyBox(*skyBoxProgram, projection);
 
-    auto model = enemies.front().getModelMatrx();
-    model *= glm::rotate(glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    textProgram->use();
-    textProgram->setUniformValue("projection",
-                                 projection * camera.m_viewMatrix *
-                                 model/*projection2*/);
-    //text.color = glm::vec3(0.5, 0.8f, 0.2f);
-    std::string percent = std::to_string((int)enemies.front().m_hitPoints) + "%";
-    text.draw(*textProgram, percent, -1.0f, 1.1f, 0.01f);
 
     glfwSwapBuffers(window);
 

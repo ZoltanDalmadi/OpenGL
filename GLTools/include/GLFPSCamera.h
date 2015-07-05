@@ -32,7 +32,6 @@ public:
 
   void move(Direction dir);
   void rotate(float xoffset, float yoffset, bool constrain = true);
-
 private:
   virtual void update() override;
 };
