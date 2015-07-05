@@ -87,7 +87,8 @@ void Tower::shoot(const glm::vec3& pos, const glm::vec3& dir)
 }
 
 void Tower::draw(const GLTools::GLShaderProgram& shaderProgram, double time,
-                 bool inTower)
+	bool inTower, const GLTools::GLShaderProgram& fireProgram, GLuint nParticles,
+	GLuint initVel, GLuint particles)
 {
   this->update(time, inTower);
 
@@ -101,9 +102,47 @@ void Tower::draw(const GLTools::GLShaderProgram& shaderProgram, double time,
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
   m_cannon->draw(shaderProgram);
 
+  int size = nParticles * 3 * sizeof(float);
   for (auto& missile : m_missiles)
   {
-    missile.draw(shaderProgram);
+	  shaderProgram.use();
+	  missile.draw(shaderProgram);
+
+	  fireProgram.use();
+	  float Time = glfwGetTime() - missile.time;
+	  fireProgram.setUniformValue("Time", Time);
+	  glm::mat4 model;
+	  model *= missile.m_modelMatrix;
+	  model = glm::translate(model, glm::vec3(-0.5f, 0.0f, 0.0f));
+	  model = glm::rotate(model, glm::radians(180.0f), Y_AXIS);
+	  fireProgram.setUniformValue("model", model);
+
+	  glm::vec3 v(0.0f, 0.0f, 0.0f);
+	  float velocity, theta, phi;
+	  GLfloat *data = new GLfloat[nParticles * 3];
+	  for (unsigned int i = 0; i < nParticles; i++) {
+
+		  theta = glm::mix(0.0f, (float)PI / 20.0f, randFloat());
+		  phi = glm::mix(0.0f, (float)TWOPI * 2, randFloat());
+
+		  v.x = cosf(theta);
+		  v.y = sinf(theta) * cosf(phi);
+		  v.z = sinf(theta) * sinf(phi);
+
+		  velocity = glm::mix(0.25f, 0.5f, randFloat());
+		  v = glm::normalize(v) * velocity;
+
+		  data[3 * i] = v.x;
+		  data[3 * i + 1] = v.y;
+		  data[3 * i + 2] = v.z;
+	  }
+
+	  glBindBuffer(GL_ARRAY_BUFFER, initVel);
+	  glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+
+	  glBindVertexArray(particles);
+	  glDrawArrays(GL_POINTS, 0, nParticles);
+	  shaderProgram.use();
   }
 }
 
@@ -140,4 +179,8 @@ void Tower::update(double time, bool inTower)
     }
 
   }
+}
+
+float Tower::randFloat() {
+	return ((float)rand() / RAND_MAX);
 }

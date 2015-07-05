@@ -3,6 +3,9 @@
 #include "GLModel.h"
 #include "Missile.h"
 
+#define PI 3.141592653589793
+#define TWOPI 6.2831853071795862
+
 class Tower
 {
 public:
@@ -33,7 +36,9 @@ public:
 
   void shoot(const glm::vec3& pos, const glm::vec3& dir);
   void draw(const GLTools::GLShaderProgram& shaderProgram, double time,
-            bool inTower);
+	  bool inTower, const GLTools::GLShaderProgram& fireProgram, GLuint nParticles,
+	  GLuint initVel, GLuint particles);
+  float randFloat();
 
 private:
   void update(double time, bool inTower);
