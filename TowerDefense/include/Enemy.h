@@ -34,11 +34,11 @@ public:
   glm::vec3 m_minPoint;
   glm::vec3 m_maxPoint;
   glm::mat4 m_modelMatrix;
+  float m_velocity = 0.001f;
 private:
   void update();
   GLTools::GLModel *m_model;
 
 
-  float m_velocity = 0.001f;
   bool m_destroyed = false;
 };
