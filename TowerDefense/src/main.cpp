@@ -65,7 +65,7 @@ Laser laserObject;
 
 glm::mat4 projection;
 
-auto maxTower = 1;
+auto maxTower = 5;
 auto actualTower = 0;
 auto forbiddenPlace = false;
 auto inTower = -1;
@@ -78,6 +78,9 @@ bool drawBoundingBox = false;
 GLTools::GLText text("fonts/arial.ttf");
 
 auto atert = 0;
+auto lelove = 0;
+float levelUp = 0.0f;
+bool lup = false;
 
 void addNewEnemy(GLTools::GLModel *enemyModel)
 {
@@ -343,7 +346,7 @@ void init()
   glfwWindowHint(GLFW_SAMPLES, 8);
 
   window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense", nullptr
-                            , nullptr);
+                            /*glfwGetPrimaryMonitor()*/, nullptr);
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
 
@@ -438,6 +441,9 @@ void cleanupEnemies()
   {
     if (it->m_progress >= 1.0f)
       atert++;
+
+    if (it->isDestroyed())
+      lelove++;
 
     if (it->isDestroyed() || it->m_progress >= 1.0f)
     {
@@ -663,14 +669,6 @@ int main()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (atert >= 3)
-    {
-      textProgram->use();
-      textProgram->setUniformValue("projection", projection2);
-      text.color = glm::vec3(1.0, 0.0f, 0.0f);
-      text.draw(*textProgram, "You Loose", 0.5, 0.5, 4.0f);
-    }
-
     if (inTower < 0)
       moveCamera();
     else
@@ -710,6 +708,46 @@ int main()
     renderSkyBox(*skyBoxProgram, projection);
 
 
+    if (atert >= 3)
+    {
+      textProgram->use();
+      textProgram->setUniformValue("projection", projection2);
+      text.color = glm::vec3(1.0, 0.0f, 0.0f);
+      text.draw(*textProgram, "You Lose!", (float)WIDTH / 5, (float)HEIGHT / 2 - 10,
+                4.0f);
+      glfwSwapBuffers(window);
+      break;
+    }
+
+    if (lelove >= 2)
+    {
+      levelUp = glfwGetTime();
+      lup = true;
+
+      for (auto& enemy : enemies)
+      {
+        enemy.m_velocity += 0.0005;
+      }
+
+      lelove = 0;
+    }
+
+    if (lup)
+    {
+      if (glfwGetTime() - levelUp <= 3.0f)
+      {
+        textProgram->use();
+        textProgram->setUniformValue("projection", projection2);
+        text.color = glm::vec3(0.0, 0.0f, 1.0f);
+        text.draw(*textProgram, "Level Up!", (float)WIDTH / 5, (float)HEIGHT / 2 - 10,
+                  4.0f);
+      }
+      else
+      {
+        lup = false;
+      }
+    }
+
     glfwSwapBuffers(window);
 
     if (!enemies.empty())
@@ -717,6 +755,11 @@ int main()
       checkHitsAndCleanupMissiles();
       cleanupEnemies();
     }
+  }
+
+  while (!glfwWindowShouldClose(window))
+  {
+    glfwPollEvents();
   }
 
   glfwTerminate();
