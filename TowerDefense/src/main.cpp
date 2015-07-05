@@ -338,8 +338,8 @@ void init()
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   glfwWindowHint(GLFW_SAMPLES, 8);
 
-  window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense", //nullptr
-                            glfwGetPrimaryMonitor(), nullptr);
+  window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense", nullptr
+                            , nullptr);
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
 
