@@ -386,7 +386,7 @@ int main()
 
 	shaderProgram2->use();
 
-	shaderProgram2->setUniformValue("ParticleLifetime", 1.5f);
+	shaderProgram2->setUniformValue("ParticleLifetime", 2.5f);
 	shaderProgram2->setUniformValue("Gravity", glm::vec3(0.0f, 0.0f, 0.0f));
 
 	while (!glfwWindowShouldClose(window))
@@ -411,20 +411,6 @@ int main()
 
 		fireTexture->bind(0);
 
-		//for (auto& missile : tower->m_missiles){
-		//	shaderProgram->use();
-		//	missile.draw(*shaderProgram);
-
-		//	shaderProgram2->use();
-		//	shaderProgram2->setUniformValue("Time", (float)glfwGetTime());
-		//	shaderProgram2->setUniformValue("MVP", projection * camera.m_viewMatrix);
-		//	shaderProgram2->setUniformValue("model", glm::rotate(missile.m_modelMatrix,120.0f,glm::vec3(0.0f,0.0f,1.0f)));
-		//	shaderProgram2->setUniformValue("initPoint", missile.getPosition() - (missile.getDirection()) * 20.0f);
-		//	//shaderProgram2->setUniformValue("direction", missile.getPosition() - (missile.getDirection()) / 2.0f);
-
-		//	glBindVertexArray(particles);
-		//	glDrawArrays(GL_POINTS, 0, nParticles);
-		//}
 		glfwSwapBuffers(window);
 	}
 

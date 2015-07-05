@@ -34,7 +34,7 @@ public:
 
 	void shoot(const glm::vec3& pos, const glm::vec3& dir);
 	void draw(const GLTools::GLShaderProgram& shaderProgram,
-		const GLTools::GLShaderProgram& shaderProgram2, double time, float nParticles,
+		const GLTools::GLShaderProgram& shaderProgram2, double time, GLuint nParticles,
 		GLuint initVel, GLuint particles);
 	float randFloat();
 

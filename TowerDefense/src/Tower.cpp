@@ -89,7 +89,7 @@ void Tower::shoot(const glm::vec3& pos, const glm::vec3& dir)
 }
 
 void Tower::draw(const GLTools::GLShaderProgram& shaderProgram,
-	const GLTools::GLShaderProgram& shaderProgram2, double time, float nParticles,
+	const GLTools::GLShaderProgram& shaderProgram2, double time, GLuint nParticles,
 	GLuint initVel, GLuint particles)
 {
 	this->update(time);
@@ -114,12 +114,6 @@ void Tower::draw(const GLTools::GLShaderProgram& shaderProgram,
 		float Time = glfwGetTime() - missile.time;
 		shaderProgram2.setUniformValue("Time", Time);
 		glm::mat4 model;
-		//glm::mat4 model = glm::translate(glm::mat4(), glm::vec3(missile.getPosition()));
-		//model = rotate(model, 90.0f, glm::vec3(missile.getDirection().y, -missile.getDirection().x, missile.getDirection().z));
-		//model = rotate(model, 90.0f, glm::vec3(missile.getDirection().x, -missile.getDirection().z, missile.getDirection().y));
-		//model *= glm::orientation(missile.getDirection(), X_AXIS);
-		/*model *= glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f,0.0f,1.0f));
-		model *= glm::translate(glm::mat4(), glm::vec3(missile.getPosition()));*/
 		model *= missile.m_modelMatrix;
 		model = glm::translate(model, glm::vec3(-0.5f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(180.0f),Y_AXIS);
