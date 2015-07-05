@@ -12,4 +12,3 @@ protected:
   virtual void update() override;
   virtual void keyFunction(int key, int scancode, int action, int mod) override;
 };
-

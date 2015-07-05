@@ -7,11 +7,6 @@ App::App(int width, int height, const char *title)
 
 void App::initGL()
 {
-  glewExperimental = GL_TRUE;
-  glewInit();
-
-  std::cout << GLEW_VERSION << std::endl;
-
   glViewport(0, 0, m_width, m_height);
   glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 }
