@@ -1,3 +1,5 @@
+#define GLEW_STATIC
+#include <GL/glew.h>
 #include "GLFWApplication.h"
 
 GLTools::GLFWApplication::GLFWApplication(int width, int height,
@@ -51,6 +53,9 @@ void GLTools::GLFWApplication::initGLFW()
   glfwSetKeyCallback(this->m_window, &GLFWApplication::key_callback);
   glfwSetMouseButtonCallback(this->m_window,
                              &GLFWApplication::mouse_button_callback);
+
+  glewExperimental = GL_TRUE;
+  glewInit();
 }
 
 void GLTools::GLFWApplication::key_callback
