@@ -129,7 +129,7 @@ void Tower::draw(const GLTools::GLShaderProgram& shaderProgram, double time,
 		  v.y = sinf(theta) * cosf(phi);
 		  v.z = sinf(theta) * sinf(phi);
 
-		  velocity = glm::mix(0.25f, 0.5f, randFloat());
+		  velocity = glm::mix(1.25f, 4.5f, randFloat());
 		  v = glm::normalize(v) * velocity;
 
 		  data[3 * i] = v.x;

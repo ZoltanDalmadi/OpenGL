@@ -23,8 +23,8 @@
 #include "Laser.h"
 
 //constants
-const GLuint WIDTH = 1280;
-const GLuint HEIGHT = 720;
+const GLuint WIDTH = 1920;
+const GLuint HEIGHT = 1080;
 
 GLFWwindow *window;
 
@@ -370,8 +370,8 @@ void init()
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   glfwWindowHint(GLFW_SAMPLES, 8);
 
-  window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense", nullptr
-                            /*glfwGetPrimaryMonitor()*/, nullptr);
+  window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense", /*nullptr*/
+                            glfwGetPrimaryMonitor(), nullptr);
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
 
