@@ -22,6 +22,9 @@
 #include "GLText.h"
 #include "Laser.h"
 
+float ENEMY_FREQUENCY = 0.005f;
+float enemyCounter = 0.0f;
+
 //constants
 const GLuint WIDTH = 1280;
 const GLuint HEIGHT = 720;
@@ -82,6 +85,7 @@ auto lelove = 0;
 float levelUp = 0.0f;
 bool lup = false;
 float velocity = 0.001f;
+auto level = 1;
 //fire
 GLuint initVel, startTime, particles;
 GLTools::GLVertexArrayObject fire_VAO;
@@ -92,7 +96,7 @@ void addNewEnemy(GLTools::GLModel *enemyModel)
 {
   auto startVectors = enemyPath.getPositionAndTangent(0.0f);
   enemies.emplace_back(enemyModel, startVectors.first, startVectors.second);
-  enemies.front().m_velocity = velocity;
+  enemies.back().m_velocity = velocity;
 }
 
 void clearPreviousTarget()
@@ -118,10 +122,10 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
 
-  if (key == GLFW_KEY_E && action == GLFW_PRESS)
+  /*if (key == GLFW_KEY_E && action == GLFW_PRESS)
   {
     addNewEnemy(enemy.get());
-  }
+  }*/
 
   if (key == GLFW_KEY_B && action == GLFW_PRESS)
     drawBoundingBox = !drawBoundingBox;
@@ -449,7 +453,7 @@ void scanForTarget(Tower& tower)
     auto d = tower.getPosition() - enemyPos;
     auto rangeSquared = tower.getRange() * tower.getRange();
 
-    if (length2(d) <= rangeSquared)
+    if (length2(d) <= rangeSquared && !enemy.isDestroyed())
     {
       tower.setTarget(&enemy.m_position);
       break;
@@ -617,6 +621,7 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram,
   }
 
   int ciklusi = 0;
+  shaderProgram.use();
 
   for (auto& tower : towers)
   {
@@ -865,13 +870,13 @@ int main()
     gridProgram->setUniformValue("viewProjection", VP);
     grid->draw(*gridProgram);
 
-    if (lezer)
+    /*if (lezer)
     {
       gridProgram->setUniformValue("gridColor", glm::vec4(1.0f, 0.0f, 0.0f, 0.5f));
       laserObject.m_data[1] = target1;
       laserObject.commitDataChange();
       laserObject.draw(*gridProgram);
-    }
+    }*/
 
     pathProgram->use();
 
@@ -880,29 +885,41 @@ int main()
 
     renderSkyBox(*skyBoxProgram, projection);
 
+    textProgram->use();
+    textProgram->setUniformValue("projection", projection2);
 
-    if (atert >= 3)
+    if (level == 10)
     {
-      textProgram->use();
-      textProgram->setUniformValue("projection", projection2);
-      text.color = glm::vec3(1.0, 0.0f, 0.0f);
-      text.draw(*textProgram, "You Lose!", (float)WIDTH / 5, (float)HEIGHT / 2 - 10,
+      text.color = glm::vec3(0.0, 1.0f, 0.0f);
+      text.draw(*textProgram, "You WIN!", (float)WIDTH / 5, (float)HEIGHT / 2 - 10,
                 4.0f);
       glfwSwapBuffers(window);
       break;
     }
 
-    if (lelove >= 2)
+    if (atert >= 3)
+    {
+      text.color = glm::vec3(1.0, 0.0f, 0.0f);
+      text.draw(*textProgram, "You Lose!", (float)WIDTH / 5, (float)HEIGHT / 2 - 10,
+                4.0f);
+
+      glfwSwapBuffers(window);
+      break;
+    }
+
+    if (lelove >= 3)
     {
       levelUp = glfwGetTime();
       lup = true;
-      velocity += 0.0005;
+      velocity += 0.0002;
+      ENEMY_FREQUENCY += 0.0002;
 
       for (auto& enemy : enemies)
       {
         enemy.m_velocity = velocity;
       }
 
+      level++;
       lelove = 0;
     }
 
@@ -928,6 +945,15 @@ int main()
     {
       checkHitsAndCleanupMissiles();
       cleanupEnemies();
+    }
+
+    if (towers.size() == maxTower)
+      enemyCounter += ENEMY_FREQUENCY;
+
+    if (enemyCounter >= 1.0f)
+    {
+      addNewEnemy(enemy.get());
+      enemyCounter = 0.0f;
     }
   }
 
