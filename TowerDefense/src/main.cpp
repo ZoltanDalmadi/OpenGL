@@ -499,12 +499,12 @@ void cleanupEnemies()
       it->explosion = true;
       it->time = glfwGetTime();
       lelove++;
+      PlaySound("sfx/explosion.wav", nullptr, SND_ASYNC);
 
       for (auto& tower : towers)
       {
         if (tower.m_target == &it->m_position)
           tower.clearTarget();
-
       }
     }
 
