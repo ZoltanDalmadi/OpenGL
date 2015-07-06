@@ -2,7 +2,6 @@
 
 in vec3 normal;
 in vec3 fragPos;
-in vec2 texCoords;
 
 out vec4 fragColor;
 
@@ -13,11 +12,7 @@ uniform bool invalidPlacement;
 struct Material
 {
   vec3 diffuse;
-  //sampler2D diffuseTex;
-  //float diffMix;
   vec3 specular;
-  //sampler2D specularTex;
-  //float specMix;
   float shininess;
 };
 uniform Material material;
@@ -60,7 +55,6 @@ vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 camDir)
   vec3 specular = light.specular * spec * material.specular;
 
   // Apply attenuation
-  // ambient *= attenuation;
   diffuse *= attenuation;
   specular *= attenuation;
 
