@@ -328,11 +328,12 @@ void checkHitsAndCleanupMissiles()
         {
           if (enemy.isColliding(it->getPosition()))
           {
-            it = missiles.erase(it);
             enemy.damage(tower.getDamage());
 
-            if (enemy.isDestroyed())
+            if (enemy.isDestroyed() && enemy.m_explosionProgress == 0.0f)
               PlaySound("sfx/explosion.wav", nullptr, SND_ASYNC);
+
+            it = missiles.erase(it);
           }
           else if (length2(it->getPosition()) > 25.0f * 25.0f)
             it = missiles.erase(it);
