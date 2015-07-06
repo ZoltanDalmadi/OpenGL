@@ -153,6 +153,7 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 
 // SHADERS --------------------------------------------------------------------
 void setupShaders(GLTools::GLShaderProgram& shaderProgram,
+                  GLTools::GLShaderProgram& explosionProgram,
                   GLTools::GLShaderProgram& pathProgram,
                   GLTools::GLShaderProgram& gridProgram,
                   GLTools::GLShaderProgram& skyBoxProgram)
@@ -174,6 +175,19 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram,
   shaderProgram.addShader(fragmentShader);
   shaderProgram.link();
   std::cout << shaderProgram.log() << std::endl;
+
+  auto explosionGeometryShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::GEOMETRY_SHADER,
+     "shaders/geometry_shader.glsl");
+  std::cout << explosionGeometryShader->log() << std::endl;
+
+  explosionProgram.create();
+  explosionProgram.addShader(vertexShader);
+  explosionProgram.addShader(explosionGeometryShader);
+  explosionProgram.addShader(fragmentShader);
+  explosionProgram.link();
+  std::cout << explosionProgram.log() << std::endl;
 
   auto pathVertexShader =
     std::make_shared<GLTools::GLShader>
@@ -291,7 +305,7 @@ void scanForTarget(Tower& tower)
     auto d = tower.getPosition() - enemyPos;
     auto rangeSquared = tower.getRange() * tower.getRange();
 
-    if (length2(d) <= rangeSquared)
+    if (length2(d) <= rangeSquared && !enemy.isDestroyed())
     {
       tower.setTarget(&enemy.m_position);
       break;
@@ -316,6 +330,9 @@ void checkHitsAndCleanupMissiles()
           {
             it = missiles.erase(it);
             enemy.damage(tower.getDamage());
+
+            if (enemy.isDestroyed())
+              PlaySound("sfx/explosion.wav", nullptr, SND_ASYNC);
           }
           else if (length2(it->getPosition()) > 25.0f * 25.0f)
             it = missiles.erase(it);
@@ -341,15 +358,26 @@ void cleanupEnemies()
           tower.clearTarget();
       }
 
-      it = enemies.erase(it);
+      if (it->m_explosionProgress >= 20.0f)
+        it = enemies.erase(it);
+      else
+        ++it;
     }
     else
       ++it;
   }
 }
 
-void renderScene(const GLTools::GLShaderProgram& shaderProgram)
+void renderScene(const GLTools::GLShaderProgram& shaderProgram,
+                 const GLTools::GLShaderProgram& explosionProgram,
+                 const glm::mat4& viewProjectionMatrix)
 {
+  shaderProgram.use();
+  shaderProgram.setUniformValue("viewProjection", viewProjectionMatrix);
+  shaderProgram.setUniformValue("camPos", camera.m_position);
+  pointLight.setShaderUniform(shaderProgram);
+
+  // draw towers
   if (towerPlacementMode && towers.size() < MAX_TOWERS)
   {
     auto d = 0.0f;
@@ -382,20 +410,39 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram)
   else
     towerPlacementMode = false;
 
+  // draw enemies
   if (!enemies.empty())
   {
     for (auto& enemy : enemies)
     {
-      auto vectors = enemyPath.getPositionAndTangent(enemy.m_progress);
-      enemy.m_position = vectors.first;
-      enemy.m_direction = normalize(vectors.second);
-      enemy.draw(shaderProgram);
-
-      if (drawBoundingBox)
+      if (enemy.isDestroyed())
       {
-        auto bb = calcBoundingBox(enemy.m_minPoint, enemy.m_maxPoint);
-        boundingBox->draw(shaderProgram, bb.first,
-                          bb.second, enemy.m_modelMatrix);
+        enemy.m_explosionProgress += 0.2f;
+        explosionProgram.use();
+        explosionProgram.setUniformValue("viewProjection", viewProjectionMatrix);
+        explosionProgram.setUniformValue("camPos", camera.m_position);
+        explosionProgram.setUniformValue("explosionProgress",
+                                         enemy.m_explosionProgress);
+        pointLight.setShaderUniform(explosionProgram);
+        enemy.draw(explosionProgram);
+        shaderProgram.use();
+        shaderProgram.setUniformValue("viewProjection", viewProjectionMatrix);
+        shaderProgram.setUniformValue("camPos", camera.m_position);
+        pointLight.setShaderUniform(shaderProgram);
+      }
+      else
+      {
+        auto vectors = enemyPath.getPositionAndTangent(enemy.m_progress);
+        enemy.m_position = vectors.first;
+        enemy.m_direction = normalize(vectors.second);
+        enemy.draw(shaderProgram);
+
+        if (drawBoundingBox)
+        {
+          auto bb = calcBoundingBox(enemy.m_minPoint, enemy.m_maxPoint);
+          boundingBox->draw(shaderProgram, bb.first,
+                            bb.second, enemy.m_modelMatrix);
+        }
       }
     }
   }
@@ -490,10 +537,12 @@ int main()
   initGrid();
 
   auto shaderProgram = std::make_unique<GLTools::GLShaderProgram>();
+  auto explosionProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto pathProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto gridProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto skyBoxProgram = std::make_unique<GLTools::GLShaderProgram>();
-  setupShaders(*shaderProgram, *pathProgram, *gridProgram, *skyBoxProgram);
+  setupShaders(*shaderProgram, *explosionProgram, *pathProgram,
+               *gridProgram, *skyBoxProgram);
 
   auto defaultMaterial = std::make_unique<GLTools::GLMaterial>();
 
@@ -507,6 +556,7 @@ int main()
 
   base->m_materials[0] = *defaultMaterial;
   cannon->m_materials[0] = *defaultMaterial;
+  missile->m_materials[0] = *defaultMaterial;
 
   dummyTower = std::make_unique<Tower>(base.get(), cannon.get(), missile.get());
 
@@ -535,12 +585,7 @@ int main()
     gridProgram->setUniformValue("viewProjection", VP);
     grid->draw(*gridProgram);
 
-    shaderProgram->use();
-    shaderProgram->setUniformValue("viewProjection", VP);
-    shaderProgram->setUniformValue("camPos", camera.m_position);
-    pointLight.setShaderUniform(*shaderProgram);
-
-    renderScene(*shaderProgram);
+    renderScene(*shaderProgram, *explosionProgram, VP);
 
     glfwSwapBuffers(window);
 
