@@ -65,7 +65,7 @@ Laser laserObject;
 
 glm::mat4 projection;
 
-auto maxTower = 1;
+auto maxTower = 2;
 auto actualTower = 0;
 auto forbiddenPlace = false;
 auto inTower = -1;
