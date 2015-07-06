@@ -23,8 +23,8 @@
 #include "Laser.h"
 
 //constants
-const GLuint WIDTH = 1280;
-const GLuint HEIGHT = 720;
+const GLuint WIDTH = 1920;
+const GLuint HEIGHT = 1080;
 
 GLFWwindow *window;
 
@@ -81,6 +81,12 @@ auto atert = 0;
 auto lelove = 0;
 float levelUp = 0.0f;
 bool lup = false;
+
+//fire
+GLuint initVel, startTime, particles;
+GLTools::GLVertexArrayObject fire_VAO;
+GLuint nParticles;
+std::unique_ptr<GLTools::GLTexture> fireTexture;
 
 void addNewEnemy(GLTools::GLModel *enemyModel)
 {
@@ -236,7 +242,8 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram,
                   GLTools::GLShaderProgram& pathProgram,
                   GLTools::GLShaderProgram& gridProgram,
                   GLTools::GLShaderProgram& skyBoxProgram,
-                  GLTools::GLShaderProgram& textProgram)
+                  GLTools::GLShaderProgram& textProgram,
+                  GLTools::GLShaderProgram& fireProgram)
 {
   auto vertexShader =
     std::make_shared<GLTools::GLShader>
@@ -334,6 +341,24 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram,
   textProgram.addShader(textFragmentShader);
   textProgram.link();
   std::cout << textProgram.log() << std::endl;
+
+  auto fireVertexShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/fire_vertex_shader.glsl");
+  std::cout << fireVertexShader->log() << std::endl;
+
+  auto fireFragmentShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/fire_fragment_shader.glsl");
+  std::cout << fireFragmentShader->log() << std::endl;
+
+  fireProgram.create();
+  fireProgram.addShader(fireVertexShader);
+  fireProgram.addShader(fireFragmentShader);
+  fireProgram.link();
+  std::cout << fireProgram.log() << std::endl;
 }
 
 void init()
@@ -345,8 +370,8 @@ void init()
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   glfwWindowHint(GLFW_SAMPLES, 8);
 
-  window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense", nullptr
-                            /*glfwGetPrimaryMonitor()*/, nullptr);
+  window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense", /*nullptr*/
+                            glfwGetPrimaryMonitor(), nullptr);
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
 
@@ -461,7 +486,7 @@ void cleanupEnemies()
 }
 
 void renderScene(const GLTools::GLShaderProgram& shaderProgram,
-                 GLTools::GLShaderProgram& textProgram)
+                 GLTools::GLShaderProgram& textProgram, GLTools::GLShaderProgram& fireProgram)
 {
   if (!enemies.empty())
   {
@@ -525,7 +550,8 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram,
 
     /*itt vége.*/
     shaderProgram.setUniformValue("transparent", true);
-    towers.back().draw(shaderProgram, glfwGetTime(), false);
+    towers.back().draw(shaderProgram, glfwGetTime(), false, fireProgram, nParticles,
+                       initVel, particles);
     shaderProgram.setUniformValue("transparent", false);
     shaderProgram.setUniformValue("forbiddenTower", false);
   }
@@ -534,13 +560,81 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram,
 
   for (auto& tower : towers)
   {
+    fireTexture->bind(0);
+
     if (ciklusi == inTower)
-      tower.draw(shaderProgram, glfwGetTime(), true);
+      tower.draw(shaderProgram, glfwGetTime(), true, fireProgram, nParticles, initVel,
+                 particles);
     else
-      tower.draw(shaderProgram, glfwGetTime(), false);
+      tower.draw(shaderProgram, glfwGetTime(), false, fireProgram, nParticles,
+                 initVel, particles);
 
     ciklusi++;
   }
+}
+
+void initBuffer()
+{
+  nParticles = 8000;
+
+  // Generate the buffers
+  glGenBuffers(1, &initVel);   // Initial velocity buffer
+  glGenBuffers(1, &startTime); // Start time buffer
+
+  // Allocate space for all buffers
+  int size = nParticles * 3 * sizeof(float);
+  glBindBuffer(GL_ARRAY_BUFFER, initVel);
+  glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, startTime);
+  glBufferData(GL_ARRAY_BUFFER, nParticles * sizeof(float), NULL, GL_STATIC_DRAW);
+
+  // Fill the first velocity buffer with random velocities
+  glm::vec3 v(0.0f, 0.0f, 0.0f);
+  float velocity, theta, phi;
+  GLfloat *data = new GLfloat[nParticles * 3];
+
+  for (unsigned int i = 0; i < nParticles; i++)
+  {
+
+    data[3 * i] = v.x;
+    data[3 * i + 1] = v.y;
+    data[3 * i + 2] = v.z;
+  }
+
+  glBindBuffer(GL_ARRAY_BUFFER, initVel);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+
+  // Fill the start time buffer
+  delete[] data;
+  data = new GLfloat[nParticles];
+  float time = 0.0f;
+  float rate = 0.00075f;
+
+  for (unsigned int i = 0; i < nParticles; i++)
+  {
+    data[i] = time;
+    time += rate;
+  }
+
+  glBindBuffer(GL_ARRAY_BUFFER, startTime);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, nParticles * sizeof(float), data);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  delete[] data;
+
+  // Attach these to the torus's vertex array
+  glGenVertexArrays(1, &particles);
+  glBindVertexArray(particles);
+  glBindBuffer(GL_ARRAY_BUFFER, initVel);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+  glEnableVertexAttribArray(0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, startTime);
+  glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, NULL);
+  glEnableVertexAttribArray(1);
+
+  glBindVertexArray(0);
+
 }
 
 void renderSkyBox(const GLTools::GLShaderProgram& shaderProgram,
@@ -627,16 +721,20 @@ int main()
   setupSkyBox();
   setupEnemyPath();
   initGrid();
+  initBuffer();
 
   auto shaderProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto pathProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto gridProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto skyBoxProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto textProgram = std::make_unique<GLTools::GLShaderProgram>();
+  auto fireProgram = std::make_unique<GLTools::GLShaderProgram>();
   setupShaders(*shaderProgram, *pathProgram, *gridProgram, *skyBoxProgram,
-               *textProgram);
+               *textProgram, *fireProgram);
 
   auto defaultMaterial = std::make_unique<GLTools::GLMaterial>();
+
+  fireTexture = std::make_unique<GLTools::GLTexture>("textures/fire.png");
 
   enemy = std::make_unique<GLTools::GLModel>("models/enemyship.obj");
   base = std::make_unique<GLTools::GLModel>("models/turret_base.obj");
@@ -663,6 +761,11 @@ int main()
   text.initialize();
   glm::mat4 projection2 = glm::ortho(0.0f, (float)WIDTH, 0.0f, (float)HEIGHT);
 
+  fireProgram->use();
+  fireProgram->setUniformValue("ParticleLifetime", 2.5f);
+  fireProgram->setUniformValue("Gravity", glm::vec3(0.0f, 0.0f, 0.0f));
+  shaderProgram->use();
+
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
@@ -681,12 +784,16 @@ int main()
 
     auto VP = projection * camera.m_viewMatrix;
 
+    fireProgram->use();
+    fireProgram->setUniformValue("MVP", VP);
+
     shaderProgram->use();
     shaderProgram->setUniformValue("viewProjection", VP);
     shaderProgram->setUniformValue("camPos", camera.m_position);
     pointLight.setShaderUniform(*shaderProgram);
 
-    renderScene(*shaderProgram, *textProgram);
+    renderScene(*shaderProgram, *textProgram, *fireProgram);
+
 
     gridProgram->use();
     gridProgram->setUniformValue("viewProjection", VP);

@@ -14,7 +14,9 @@ Missile::Missile(GLTools::GLModel *model, const glm::vec3& position,
     m_acceleration(0.05f),
     m_spin(0.0f),
     m_spinSpeed(glm::radians(2.0f))
-{}
+{
+	time = glfwGetTime();
+}
 
 Missile::~Missile()
 {}
