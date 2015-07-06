@@ -82,11 +82,6 @@ auto lelove = 0;
 float levelUp = 0.0f;
 bool lup = false;
 
-//explose
-float time = -1.57;
-float explosionTime = 0.0f;
-bool explosion = false;
-
 //fire
 GLuint initVel, startTime, particles;
 GLTools::GLVertexArrayObject fire_VAO;
@@ -248,8 +243,7 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram,
                   GLTools::GLShaderProgram& gridProgram,
                   GLTools::GLShaderProgram& skyBoxProgram,
                   GLTools::GLShaderProgram& textProgram,
-                  GLTools::GLShaderProgram& fireProgram,
-                  GLTools::GLShaderProgram& explosionProgram)
+                  GLTools::GLShaderProgram& fireProgram)
 {
   auto vertexShader =
     std::make_shared<GLTools::GLShader>
@@ -365,26 +359,7 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram,
   fireProgram.addShader(fireFragmentShader);
   fireProgram.link();
   std::cout << fireProgram.log() << std::endl;
-
-  auto explosionVertexShader =
-    std::make_shared<GLTools::GLShader>
-    (GLTools::GLShader::shaderType::VERTEX_SHADER,
-     "shaders/explosion_vertex_shader.glsl");
-  std::cout << explosionVertexShader->log() << std::endl;
-
-  auto explosionFragmentShader =
-    std::make_shared<GLTools::GLShader>
-    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
-     "shaders/explosion_fragment_shader.glsl");
-  std::cout << explosionFragmentShader->log() << std::endl;
-
-  explosionProgram.create();
-  explosionProgram.addShader(explosionVertexShader);
-  explosionProgram.addShader(explosionFragmentShader);
-  explosionProgram.link();
-  std::cout << explosionProgram.log() << std::endl;
 }
-
 
 void init()
 {
@@ -511,8 +486,7 @@ void cleanupEnemies()
 }
 
 void renderScene(const GLTools::GLShaderProgram& shaderProgram,
-                 GLTools::GLShaderProgram& textProgram, GLTools::GLShaderProgram& fireProgram,
-                 GLTools::GLShaderProgram& explosionProgram)
+                 GLTools::GLShaderProgram& textProgram, GLTools::GLShaderProgram& fireProgram)
 {
   if (!enemies.empty())
   {
@@ -521,49 +495,31 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram,
       auto vectors = enemyPath.getPositionAndTangent(enemy.m_progress);
       enemy.m_position = vectors.first;
       enemy.m_direction = normalize(vectors.second);
+      enemy.draw(shaderProgram);
+      auto targetVector = enemy.m_position - camera.m_position;
+      targetVector.y = 0.0f;
+      auto angle = glm::acos(glm::dot(glm::vec3(0.0f, 0.0f, -1.0f),
+                                      glm::normalize(targetVector)));
 
-      explosionProgram.use();
-      //auto model = glm::mat4(1.0f);
-      auto normalMatrix = glm::mat3(enemy.m_modelMatrix);
-      explosionProgram.setUniformValue("model", enemy.m_modelMatrix);
-      explosionProgram.setUniformValue("normalMatrix", normalMatrix);
-      explosionProgram.setUniformValue("explosion", explosion);
+      auto model1 = glm::mat4(1.0f);
+      model1 *= glm::translate(enemy.m_position);
+      model1 *= glm::rotate(angle, glm::vec3(0.0f, 1.0f, 0.0f));
 
-      if (glfwGetTime() - time < 2 && explosion)
+      textProgram.use();
+      textProgram.setUniformValue("projection",
+                                  projection * camera.m_viewMatrix *
+                                  model1/*projection2*/);
+      text.color = glm::vec3(0.5, 0.8f, 0.2f);
+      std::string percent = std::to_string((int)enemy.m_hitPoints) + "%";
+      text.draw(textProgram, percent, -1.0f, 1.1f, 0.005f);
+
+      shaderProgram.use();
+
+      if (drawBoundingBox)
       {
-        explosionTime += 0.2;
-        explosionProgram.setUniformValue("time", explosionTime);
-      }
-
-      enemy.draw(explosionProgram);
-
-      if (!explosion)
-      {
-        auto targetVector = enemy.m_position - camera.m_position;
-        targetVector.y = 0.0f;
-        auto angle = glm::acos(glm::dot(glm::vec3(0.0f, 0.0f, -1.0f),
-                                        glm::normalize(targetVector)));
-
-        auto model1 = glm::mat4(1.0f);
-        model1 *= glm::translate(enemy.m_position);
-        model1 *= glm::rotate(angle, glm::vec3(0.0f, 1.0f, 0.0f));
-
-        textProgram.use();
-        textProgram.setUniformValue("projection",
-                                    projection * camera.m_viewMatrix *
-                                    model1/*projection2*/);
-        text.color = glm::vec3(0.5, 0.8f, 0.2f);
-        std::string percent = std::to_string((int)enemy.m_hitPoints) + "%";
-        text.draw(textProgram, percent, -1.0f, 1.1f, 0.005f);
-
-        shaderProgram.use();
-
-        if (drawBoundingBox)
-        {
-          auto bb = calcBoundingBox(enemy.m_minPoint, enemy.m_maxPoint);
-          boundingBox->draw(shaderProgram, bb.first,
-                            bb.second, enemy.m_modelMatrix);
-        }
+        auto bb = calcBoundingBox(enemy.m_minPoint, enemy.m_maxPoint);
+        boundingBox->draw(shaderProgram, bb.first,
+                          bb.second, enemy.m_modelMatrix);
       }
     }
   }
@@ -773,9 +729,8 @@ int main()
   auto skyBoxProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto textProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto fireProgram = std::make_unique<GLTools::GLShaderProgram>();
-  auto explosionProgram = std::make_unique<GLTools::GLShaderProgram>();
   setupShaders(*shaderProgram, *pathProgram, *gridProgram, *skyBoxProgram,
-               *textProgram, *fireProgram, *explosionProgram);
+               *textProgram, *fireProgram);
 
   auto defaultMaterial = std::make_unique<GLTools::GLMaterial>();
 
@@ -837,12 +792,7 @@ int main()
     shaderProgram->setUniformValue("camPos", camera.m_position);
     pointLight.setShaderUniform(*shaderProgram);
 
-    explosionProgram->setUniformValue("viewProjection",
-                                      projection * camera.m_viewMatrix);
-    explosionProgram->setUniformValue("camPos", camera.m_position);
-    pointLight.setShaderUniform(*explosionProgram);
-
-    renderScene(*shaderProgram, *textProgram, *fireProgram, *explosionProgram);
+    renderScene(*shaderProgram, *textProgram, *fireProgram);
 
 
     gridProgram->use();
