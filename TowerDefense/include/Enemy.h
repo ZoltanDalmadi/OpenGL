@@ -25,6 +25,10 @@ public:
   std::pair<glm::vec3, glm::vec3> calculate_AABB() const;
   bool isColliding(const glm::vec3& point) const;
 
+  bool explosion;
+  float time;
+  float explosionTime;
+
   glm::vec3 m_position;
   glm::vec3 m_direction;
   float m_progress = 0.0f;

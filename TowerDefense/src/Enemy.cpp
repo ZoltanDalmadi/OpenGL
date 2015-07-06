@@ -9,6 +9,9 @@ Enemy::Enemy(GLTools::GLModel *model, const glm::vec3& pos,
   : m_position(pos),
     m_direction(normalize(dir)),
     m_modelMatrix(glm::mat4()),
+    time(0.0f),
+    explosion(false),
+    explosionTime(0.0f),
     m_model(model)
 {
   auto aabb = calculate_AABB();
@@ -38,6 +41,7 @@ void Enemy::draw(const GLTools::GLShaderProgram& shaderProgram)
   shaderProgram.setUniformValue("model", m_modelMatrix);
   auto normalMatrix = glm::mat3(m_modelMatrix);
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
+  shaderProgram.setUniformValue("explosion", explosion);
   m_model->draw(shaderProgram);
 }
 

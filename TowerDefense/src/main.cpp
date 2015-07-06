@@ -23,8 +23,8 @@
 #include "Laser.h"
 
 //constants
-const GLuint WIDTH = 1920;
-const GLuint HEIGHT = 1080;
+const GLuint WIDTH = 800;
+const GLuint HEIGHT = 600;
 
 GLFWwindow *window;
 
@@ -243,7 +243,8 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram,
                   GLTools::GLShaderProgram& gridProgram,
                   GLTools::GLShaderProgram& skyBoxProgram,
                   GLTools::GLShaderProgram& textProgram,
-                  GLTools::GLShaderProgram& fireProgram)
+                  GLTools::GLShaderProgram& fireProgram,
+                  GLTools::GLShaderProgram& explosionProgram)
 {
   auto vertexShader =
     std::make_shared<GLTools::GLShader>
@@ -359,6 +360,31 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram,
   fireProgram.addShader(fireFragmentShader);
   fireProgram.link();
   std::cout << fireProgram.log() << std::endl;
+
+  auto explosionVertexShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/explosion_vertex_shader.glsl");
+  std::cout << explosionVertexShader->log() << std::endl;
+
+  auto explosionGeometryShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::GEOMETRY_SHADER,
+     "shaders/explosion_geometry_shader.glsl");
+  std::cout << explosionGeometryShader->log() << std::endl;
+
+  auto explosionFragmentShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::FRAGMENT_SHADER,
+     "shaders/explosion_fragment_shader.glsl");
+  std::cout << explosionFragmentShader->log() << std::endl;
+
+  explosionProgram.create();
+  explosionProgram.addShader(explosionVertexShader);
+  explosionProgram.addShader(explosionGeometryShader);
+  explosionProgram.addShader(explosionFragmentShader);
+  explosionProgram.link();
+  std::cout << explosionProgram.log() << std::endl;
 }
 
 void init()
@@ -370,8 +396,8 @@ void init()
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   glfwWindowHint(GLFW_SAMPLES, 8);
 
-  window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense", /*nullptr*/
-                            glfwGetPrimaryMonitor(), nullptr);
+  window = glfwCreateWindow(WIDTH, HEIGHT, "TowerDefense", nullptr
+                            /*glfwGetPrimaryMonitor()*/, nullptr);
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
 
@@ -467,10 +493,29 @@ void cleanupEnemies()
     if (it->m_progress >= 1.0f)
       atert++;
 
-    if (it->isDestroyed())
+    if (it->isDestroyed() && !it->explosion)
+    {
+      it->explosion = true;
+      it->explosionTime = 0.0f;
+      it->time = glfwGetTime();
       lelove++;
 
-    if (it->isDestroyed() || it->m_progress >= 1.0f)
+      for (auto& tower : towers)
+      {
+        if (tower.m_target == &it->m_position)
+          tower.clearTarget();
+
+      }
+    }
+
+    if (it->explosion)
+    {
+      if (glfwGetTime() - it->time > 2.0f)
+        it = enemies.erase(it);
+
+      ++it;
+    }
+    else if (it->m_progress >= 1.0f)
     {
       for (auto& tower : towers)
       {
@@ -486,7 +531,8 @@ void cleanupEnemies()
 }
 
 void renderScene(const GLTools::GLShaderProgram& shaderProgram,
-                 GLTools::GLShaderProgram& textProgram, GLTools::GLShaderProgram& fireProgram)
+                 GLTools::GLShaderProgram& textProgram, GLTools::GLShaderProgram& fireProgram,
+                 GLTools::GLShaderProgram& explosionProgram)
 {
   if (!enemies.empty())
   {
@@ -495,44 +541,57 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram,
       auto vectors = enemyPath.getPositionAndTangent(enemy.m_progress);
       enemy.m_position = vectors.first;
       enemy.m_direction = normalize(vectors.second);
-      enemy.draw(shaderProgram);
-      auto targetVector = enemy.m_position - camera.m_position;
-      targetVector.y = 0.0f;
-      auto angle = glm::acos(glm::dot(glm::vec3(0.0f, 0.0f, -1.0f),
-                                      glm::normalize(targetVector)));
+      explosionProgram.use();
 
-      auto model1 = glm::mat4(1.0f);
-      model1 *= glm::translate(enemy.m_position);
-      model1 *= glm::rotate(angle, glm::vec3(0.0f, 1.0f, 0.0f));
+      if (glfwGetTime() - enemy.time < 2 && enemy.explosion)
+      {
+        enemy.explosionTime += 0.2;
+        explosionProgram.setUniformValue("time", enemy.explosionTime);
+      }
 
-      textProgram.use();
-      textProgram.setUniformValue("projection",
-                                  projection * camera.m_viewMatrix *
-                                  model1/*projection2*/);
-      text.color = glm::vec3(0.5, 0.8f, 0.2f);
-      std::string percent = std::to_string((int)enemy.m_hitPoints) + "%";
-      text.draw(textProgram, percent, -1.0f, 1.1f, 0.005f);
-
+      enemy.draw(explosionProgram);
       shaderProgram.use();
 
-      if (drawBoundingBox)
+      if (!enemy.explosion)
       {
-        auto bb = calcBoundingBox(enemy.m_minPoint, enemy.m_maxPoint);
-        boundingBox->draw(shaderProgram, bb.first,
-                          bb.second, enemy.m_modelMatrix);
+
+        auto targetVector = enemy.m_position - camera.m_position;
+        targetVector.y = 0.0f;
+        auto angle = glm::acos(glm::dot(glm::vec3(0.0f, 0.0f, -1.0f),
+                                        glm::normalize(targetVector)));
+
+        auto model1 = glm::mat4(1.0f);
+        model1 *= glm::translate(enemy.m_position);
+        model1 *= glm::rotate(angle, glm::vec3(0.0f, 1.0f, 0.0f));
+
+        textProgram.use();
+        textProgram.setUniformValue("projection",
+                                    projection * camera.m_viewMatrix *
+                                    model1/*projection2*/);
+        text.color = glm::vec3(0.5, 0.8f, 0.2f);
+        std::string percent = std::to_string((int)enemy.m_hitPoints) + "%";
+        text.draw(textProgram, percent, -1.0f, 1.1f, 0.005f);
+
+        shaderProgram.use();
+
+        if (drawBoundingBox)
+        {
+          auto bb = calcBoundingBox(enemy.m_minPoint, enemy.m_maxPoint);
+          boundingBox->draw(shaderProgram, bb.first,
+                            bb.second, enemy.m_modelMatrix);
+        }
       }
     }
   }
 
-  float d = 0.0f;
-  bool intersect = glm::intersectRayPlane(camera.m_position, -camera.m_front,
-                                          glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), d);
-
-  auto temp = -camera.m_front * d;
-  temp.y = 0.0f;
-
   if (actualTower < maxTower)
   {
+    float d = 0.0f;
+    bool intersect = glm::intersectRayPlane(camera.m_position, -camera.m_front,
+                                            glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), d);
+
+    auto temp = -camera.m_front * d;
+    temp.y = 0.0f;
     glm::vec3 temp2;
     auto found = grid->getCenter(temp, temp2);
     towers.back().setPosition(temp2);
@@ -729,8 +788,9 @@ int main()
   auto skyBoxProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto textProgram = std::make_unique<GLTools::GLShaderProgram>();
   auto fireProgram = std::make_unique<GLTools::GLShaderProgram>();
+  auto explosionProgram = std::make_unique<GLTools::GLShaderProgram>();
   setupShaders(*shaderProgram, *pathProgram, *gridProgram, *skyBoxProgram,
-               *textProgram, *fireProgram);
+               *textProgram, *fireProgram, *explosionProgram);
 
   auto defaultMaterial = std::make_unique<GLTools::GLMaterial>();
 
@@ -787,12 +847,17 @@ int main()
     fireProgram->use();
     fireProgram->setUniformValue("MVP", VP);
 
+    explosionProgram->use();
+    explosionProgram->setUniformValue("viewProjection", VP);
+    explosionProgram->setUniformValue("camPos", camera.m_position);
+    pointLight.setShaderUniform(*explosionProgram);
+
     shaderProgram->use();
     shaderProgram->setUniformValue("viewProjection", VP);
     shaderProgram->setUniformValue("camPos", camera.m_position);
     pointLight.setShaderUniform(*shaderProgram);
 
-    renderScene(*shaderProgram, *textProgram, *fireProgram);
+    renderScene(*shaderProgram, *textProgram, *fireProgram, *explosionProgram);
 
 
     gridProgram->use();
