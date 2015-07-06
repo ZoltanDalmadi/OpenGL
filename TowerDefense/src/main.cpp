@@ -23,8 +23,8 @@
 #include "Laser.h"
 
 //constants
-const GLuint WIDTH = 800;
-const GLuint HEIGHT = 600;
+const GLuint WIDTH = 1280;
+const GLuint HEIGHT = 720;
 
 GLFWwindow *window;
 
@@ -81,7 +81,7 @@ auto atert = 0;
 auto lelove = 0;
 float levelUp = 0.0f;
 bool lup = false;
-
+float velocity = 0.001f;
 //fire
 GLuint initVel, startTime, particles;
 GLTools::GLVertexArrayObject fire_VAO;
@@ -92,6 +92,7 @@ void addNewEnemy(GLTools::GLModel *enemyModel)
 {
   auto startVectors = enemyPath.getPositionAndTangent(0.0f);
   enemies.emplace_back(enemyModel, startVectors.first, startVectors.second);
+  enemies.front().m_velocity = velocity;
 }
 
 void clearPreviousTarget()
@@ -118,7 +119,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     glfwSetWindowShouldClose(window, GL_TRUE);
 
   if (key == GLFW_KEY_E && action == GLFW_PRESS)
+  {
     addNewEnemy(enemy.get());
+  }
 
   if (key == GLFW_KEY_B && action == GLFW_PRESS)
     drawBoundingBox = !drawBoundingBox;
@@ -490,13 +493,10 @@ void cleanupEnemies()
 {
   for (auto it = enemies.begin(); it != enemies.end();)
   {
-    if (it->m_progress >= 1.0f)
-      atert++;
 
     if (it->isDestroyed() && !it->explosion)
     {
       it->explosion = true;
-      it->explosionTime = 0.0f;
       it->time = glfwGetTime();
       lelove++;
 
@@ -517,6 +517,8 @@ void cleanupEnemies()
     }
     else if (it->m_progress >= 1.0f)
     {
+      atert++;
+
       for (auto& tower : towers)
       {
         if (tower.m_target == &it->m_position)
@@ -541,14 +543,13 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram,
       auto vectors = enemyPath.getPositionAndTangent(enemy.m_progress);
       enemy.m_position = vectors.first;
       enemy.m_direction = normalize(vectors.second);
-      explosionProgram.use();
 
       if (glfwGetTime() - enemy.time < 2 && enemy.explosion)
       {
         enemy.explosionTime += 0.2;
-        explosionProgram.setUniformValue("time", enemy.explosionTime);
       }
 
+      explosionProgram.use();
       enemy.draw(explosionProgram);
       shaderProgram.use();
 
@@ -895,10 +896,11 @@ int main()
     {
       levelUp = glfwGetTime();
       lup = true;
+      velocity += 0.0005;
 
       for (auto& enemy : enemies)
       {
-        enemy.m_velocity += 0.0005;
+        enemy.m_velocity = velocity;
       }
 
       lelove = 0;

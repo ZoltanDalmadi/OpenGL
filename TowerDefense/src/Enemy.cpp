@@ -41,6 +41,7 @@ void Enemy::draw(const GLTools::GLShaderProgram& shaderProgram)
   shaderProgram.setUniformValue("model", m_modelMatrix);
   auto normalMatrix = glm::mat3(m_modelMatrix);
   shaderProgram.setUniformValue("normalMatrix", normalMatrix);
+  shaderProgram.setUniformValue("time", explosionTime);
   shaderProgram.setUniformValue("explosion", explosion);
   m_model->draw(shaderProgram);
 }
