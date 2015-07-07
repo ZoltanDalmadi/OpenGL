@@ -176,14 +176,20 @@ void setupShaders(GLTools::GLShaderProgram& shaderProgram,
   shaderProgram.link();
   std::cout << shaderProgram.log() << std::endl;
 
+  auto explosionVertexShader =
+    std::make_shared<GLTools::GLShader>
+    (GLTools::GLShader::shaderType::VERTEX_SHADER,
+     "shaders/explosion_vertex_shader.glsl");
+  std::cout << explosionVertexShader->log() << std::endl;
+
   auto explosionGeometryShader =
     std::make_shared<GLTools::GLShader>
     (GLTools::GLShader::shaderType::GEOMETRY_SHADER,
-     "shaders/geometry_shader.glsl");
+     "shaders/explosion_geometry_shader.glsl");
   std::cout << explosionGeometryShader->log() << std::endl;
 
   explosionProgram.create();
-  explosionProgram.addShader(vertexShader);
+  explosionProgram.addShader(explosionVertexShader);
   explosionProgram.addShader(explosionGeometryShader);
   explosionProgram.addShader(fragmentShader);
   explosionProgram.link();
