@@ -357,7 +357,7 @@ void cleanupEnemies()
 {
   for (auto it = enemies.begin(); it != enemies.end();)
   {
-    if (it->isDestroyed() || it->m_progress >= 1.0f)
+    if (it->isDestroyed())
     {
       for (auto& tower : towers)
       {
@@ -369,6 +369,16 @@ void cleanupEnemies()
         it = enemies.erase(it);
       else
         ++it;
+    }
+    else if (it->m_progress >= 1.0f)
+    {
+      for (auto& tower : towers)
+      {
+        if (tower.m_target == &it->m_position)
+          tower.clearTarget();
+      }
+
+      it = enemies.erase(it);
     }
     else
       ++it;
@@ -447,6 +457,7 @@ void renderScene(const GLTools::GLShaderProgram& shaderProgram,
         if (drawBoundingBox)
         {
           auto bb = calcBoundingBox(enemy.m_minPoint, enemy.m_maxPoint);
+          shaderProgram.setUniformValue("material.diffuse", glm::vec3(1.0f));
           boundingBox->draw(shaderProgram, bb.first,
                             bb.second, enemy.m_modelMatrix);
         }
